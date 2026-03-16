@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dice Combination Sheet - ToolBox</title>
+  <meta name="description" content="Generate full probability tables for any dice notation like 3d6, 2d8+1, or 1d20. See every possible outcome, probability, and distribution at a glance.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    /* Input bar */
+    .dice-input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .dice-input-row input[type="text"] {
+      flex: 1;
+      min-width: 180px;
+      padding: 10px 16px;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      color: var(--color-text);
+      font-size: 1.1rem;
+      font-family: 'Consolas', 'Monaco', monospace;
+      letter-spacing: 0.5px;
+    }
+
+    .dice-input-row input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+
+    .dice-input-row .btn-primary {
+      padding: 10px 24px;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .dice-input-row .btn-primary:hover {
+      background: var(--color-primary-hover);
+    }
+
+    /* Quick presets */
+    .preset-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .preset-row label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      align-self: center;
+      margin-right: 4px;
+    }
+
+    .preset-chip {
+      padding: 6px 14px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 20px;
+      color: var(--color-text-muted);
+      font-size: 0.85rem;
+      font-family: 'Consolas', 'Monaco', monospace;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .preset-chip:hover {
+      border-color: var(--color-primary);
+      color: var(--color-text);
+    }
+
+    /* Parsed info */
+    .parsed-info {
+      display: none;
+      padding: 12px 16px;
+      background: rgba(108, 99, 255, 0.06);
+      border: 1px solid rgba(108, 99, 255, 0.15);
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+    }
+
+    .parsed-info.visible {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .parsed-info .info-item strong {
+      color: var(--color-text);
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-card .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    /* Chart */
+    .chart-wrapper {
+      position: relative;
+      margin-bottom: 24px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    .chart-wrapper canvas {
+      display: block;
+      width: 100%;
+      max-height: 300px;
+    }
+
+    /* Table */
+    .result-table-wrap {
+      overflow-x: auto;
+      margin-bottom: 24px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+    }
+
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    .result-table th,
+    .result-table td {
+      padding: 10px 14px;
+      text-align: right;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .result-table th {
+      background: var(--color-surface);
+      color: var(--color-text-muted);
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+    }
+
+    .result-table th:first-child,
+    .result-table td:first-child {
+      text-align: center;
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+
+    .result-table tr:hover td {
+      background: rgba(108, 99, 255, 0.04);
+    }
+
+    .result-table .bar-cell {
+      text-align: left;
+      width: 30%;
+    }
+
+    .prob-bar {
+      display: inline-block;
+      height: 16px;
+      background: var(--color-primary);
+      border-radius: 3px;
+      opacity: 0.7;
+      vertical-align: middle;
+    }
+
+    /* Export buttons */
+    .export-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-secondary {
+      padding: 8px 18px;
+      background: transparent;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      color: var(--color-text-muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--color-primary);
+      color: var(--color-text);
+    }
+
+    /* Status */
+    .status-msg {
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .status-msg.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    /* Results container */
+    .results-container {
+      display: none;
+    }
+
+    .results-container.visible {
+      display: block;
+    }
+
+    /* Feature cards */
+    .features-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .feature-item {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .feature-item h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .feature-item p {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    /* Notation table */
+    .notation-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.88rem;
+    }
+
+    .notation-table th,
+    .notation-table td {
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .notation-table th {
+      color: var(--color-text-muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .notation-table code {
+      padding: 2px 7px;
+      background: var(--color-bg);
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: var(--color-primary);
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 1.6rem; }
+      .dice-input-row input[type="text"] { min-width: 0; width: 100%; }
+      .dice-input-row .btn-primary { width: 100%; min-height: 44px; }
+      .preset-chip { min-height: 44px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .chart-wrapper { overflow-x: auto; max-width: 100%; }
+      .chart-wrapper canvas { max-width: 100%; }
+      .result-table-wrap { overflow-x: auto; max-width: 100%; }
+      .result-table .bar-cell { min-width: 80px; }
+      .export-row { flex-direction: column; }
+      .export-row .btn-secondary { width: 100%; min-height: 44px; }
+      .features-list { grid-template-columns: 1fr; }
+      .notation-table { font-size: 0.8rem; }
+      .notation-table th, .notation-table td { padding: 8px 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header and footer injected by page-consistency.js -->
+
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Dice Combination Sheet</h1>
+      <p>Enter any dice notation and get the full probability breakdown — every outcome, its odds, and a distribution chart.</p>
+    </div>
+
+    <!-- TOOL SECTION -->
+    <section class="tool-box">
+      <div class="dice-input-row">
+        <input type="text" id="diceInput" placeholder="e.g. 3d6, 2d8+1, 1d20" spellcheck="false" autocomplete="off">
+        <button class="btn-primary" id="generateBtn">Generate</button>
+      </div>
+
+      <div class="preset-row">
+        <label>Presets</label>
+        <button class="preset-chip" data-dice="1d6">1d6</button>
+        <button class="preset-chip" data-dice="2d6">2d6</button>
+        <button class="preset-chip" data-dice="3d6">3d6</button>
+        <button class="preset-chip" data-dice="1d20">1d20</button>
+        <button class="preset-chip" data-dice="1d20+5">1d20+5</button>
+        <button class="preset-chip" data-dice="2d8">2d8</button>
+        <button class="preset-chip" data-dice="4d6">4d6</button>
+        <button class="preset-chip" data-dice="2d10+2">2d10+2</button>
+        <button class="preset-chip" data-dice="1d12">1d12</button>
+        <button class="preset-chip" data-dice="2d4">2d4</button>
+      </div>
+
+      <div class="status-msg" id="statusMsg"></div>
+
+      <div class="parsed-info" id="parsedInfo">
+        <span class="info-item">Rolling <strong id="infoNotation"></strong></span>
+        <span class="info-item">Total combinations: <strong id="infoCombinations"></strong></span>
+      </div>
+
+      <div class="results-container" id="resultsContainer">
+        <div class="stats-row" id="statsRow"></div>
+
+        <div class="chart-wrapper">
+          <canvas id="distChart"></canvas>
+        </div>
+
+        <div class="result-table-wrap">
+          <table class="result-table" id="resultTable">
+            <thead>
+              <tr>
+                <th>Sum</th>
+                <th>Combinations</th>
+                <th>Probability</th>
+                <th>Cumulative &le;</th>
+                <th>Cumulative &ge;</th>
+                <th class="bar-cell">Distribution</th>
+              </tr>
+            </thead>
+            <tbody id="resultBody"></tbody>
+          </table>
+        </div>
+
+        <div class="export-row">
+          <button class="btn-secondary" id="copyTableBtn">Copy as CSV</button>
+          <button class="btn-secondary" id="downloadCsvBtn">Download CSV</button>
+          <button class="btn-secondary" id="downloadImgBtn">Download Chart</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPLANATION -->
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>
+        The Dice Combination Sheet takes standard dice notation — like <code>3d6</code> (roll three
+        six-sided dice and sum them) — and computes every possible outcome. For each total, it shows
+        how many dice combinations produce that result, the exact probability as a percentage, and
+        cumulative probabilities in both directions (chance of rolling at most or at least that value).
+        A bar chart visualizes the full distribution so you can see the bell curve or flat spread at a glance.
+      </p>
+      <p>
+        This is useful for game designers balancing mechanics, tabletop RPG players comparing weapon
+        damage dice, probability students studying distributions, or anyone who wants to understand
+        what happens when you roll dice.
+      </p>
+    </section>
+
+    <!-- SUPPORTED NOTATION -->
+    <section>
+      <h2>Supported Notation</h2>
+      <table class="notation-table">
+        <thead>
+          <tr><th>Notation</th><th>Meaning</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>NdS</code></td><td>Roll N dice with S sides</td><td><code>3d6</code> — three six-sided dice</td></tr>
+          <tr><td><code>NdS+M</code></td><td>Roll and add a flat modifier</td><td><code>1d20+5</code> — one d20 plus 5</td></tr>
+          <tr><td><code>NdS-M</code></td><td>Roll and subtract a modifier</td><td><code>2d6-1</code> — two d6 minus 1</td></tr>
+          <tr><td><code>dS</code></td><td>Shorthand for 1 die</td><td><code>d20</code> — one twenty-sided die</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- FEATURES -->
+    <section>
+      <h2>Features</h2>
+      <div class="features-list">
+        <div class="feature-item">
+          <h4>Full Probability Table</h4>
+          <p>Every possible sum with its exact combination count, percentage probability, and cumulative odds in both directions.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Distribution Chart</h4>
+          <p>A bar chart drawn on canvas showing the probability distribution. See the classic bell curve for multi-die rolls or the flat line for a single die.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Quick Stats</h4>
+          <p>At-a-glance stats: minimum, maximum, mean (expected value), and standard deviation for the roll.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Flexible Notation</h4>
+          <p>Supports NdS, NdS+M, NdS-M, and shorthand like d20. Presets for the most common rolls are one click away.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Export Options</h4>
+          <p>Copy the full table as CSV to your clipboard, download it as a CSV file, or save the distribution chart as a PNG image.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Instant Calculation</h4>
+          <p>Results compute immediately using dynamic programming — no simulation or sampling. Every probability is exact.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW TO USE -->
+    <section>
+      <h2>How to Use</h2>
+      <ol>
+        <li><strong>Enter dice notation</strong> in the input field using the format <code>NdS</code> (e.g., <code>3d6</code>), optionally with a modifier like <code>+5</code> or <code>-2</code>. Or click a preset chip to fill it in automatically.</li>
+        <li><strong>Click Generate</strong> (or press Enter) to compute the distribution. The tool parses your input, calculates every combination, and displays the results.</li>
+        <li><strong>Review the stats</strong> — minimum, maximum, mean, and standard deviation appear at the top.</li>
+        <li><strong>Read the chart</strong> — the bar chart shows the probability of each possible sum. Taller bars mean more likely outcomes.</li>
+        <li><strong>Explore the table</strong> — every row shows one possible sum, the number of ways to roll it, the probability, and cumulative odds. The visual bar on the right gives a quick sense of relative likelihood.</li>
+        <li><strong>Export your results</strong> — copy as CSV, download the CSV file, or save the chart as a PNG image.</li>
+      </ol>
+    </section>
+
+    <!-- EXAMPLE -->
+    <section>
+      <h2>Example</h2>
+      <p>
+        Entering <code>3d6</code> generates the probability table for rolling three standard six-sided dice.
+        The minimum sum is 3 and maximum is 18, with 216 total combinations. The most probable outcome is
+        10 or 11, each occurring in about 12.5% of rolls. The distribution forms a symmetric bell curve
+        centered on 10.5 (the mean). The cumulative columns tell you, for example, that you have roughly
+        a 37.5% chance of rolling 9 or less, and a 62.5% chance of rolling 10 or more.
+      </p>
+    </section>
+
+    <!-- FAQ -->
+    <section>
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>How does it calculate the probabilities?</h3>
+      <p>The tool uses dynamic programming (convolution) to compute exact combination counts. It starts with one die and iteratively adds each additional die, tracking how many ways each sum can be reached. No random sampling is involved — every value is mathematically exact.</p>
+
+      <h3>What's the largest roll I can compute?</h3>
+      <p>Practical limits depend on your browser, but rolls like 10d10 (10 billion combinations) compute almost instantly. Very large rolls (e.g., 100d6) work but the table will be long. The tool handles any input where the total number of outcomes fits in JavaScript's number precision.</p>
+
+      <h3>What do the cumulative columns mean?</h3>
+      <p>"Cumulative &le;" shows the probability of rolling that value or lower. "Cumulative &ge;" shows the probability of rolling that value or higher. For example, on 1d20 the row for 15 shows Cumulative &ge; 30%, meaning you have a 30% chance of rolling 15 or higher.</p>
+
+      <h3>Can I use custom die sizes like d3 or d100?</h3>
+      <p>Yes. Any positive integer works as the die size — d3, d7, d100, d37, whatever you need. The notation is the same: <code>2d3</code>, <code>1d100+10</code>, etc.</p>
+
+      <h3>What about modifiers?</h3>
+      <p>Add <code>+N</code> or <code>-N</code> after the dice to apply a flat modifier. For example, <code>1d20+5</code> shifts the entire distribution up by 5 (range becomes 6–25). The modifier is applied to the sum, not to each die individually.</p>
+
+      <h3>Are the probabilities exact?</h3>
+      <p>Yes. The tool computes every combination, not a Monte Carlo estimate. The percentages shown are exact to the precision displayed. Very large combination counts may show slight rounding in the percentage column but the combination counts themselves are exact.</p>
+    </section>
+
+    <!-- RELATED TOOLS -->
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../sprite-slicer/index.html">Sprite Slicer</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'game-dev-tools',
+      title: 'Dice Combination Sheet',
+      breadcrumbs: [
+        { label: 'Game Dev Tools', href: '../index.html' },
+        { label: 'Dice Combination Sheet' }
+      ]
+    });
+  </script>
+  <script>
+    (() => {
+      const diceInput = document.getElementById('diceInput');
+      const generateBtn = document.getElementById('generateBtn');
+      const statusMsg = document.getElementById('statusMsg');
+      const parsedInfo = document.getElementById('parsedInfo');
+      const infoNotation = document.getElementById('infoNotation');
+      const infoCombinations = document.getElementById('infoCombinations');
+      const statsRow = document.getElementById('statsRow');
+      const resultBody = document.getElementById('resultBody');
+      const resultsContainer = document.getElementById('resultsContainer');
+      const chartCanvas = document.getElementById('distChart');
+      const copyTableBtn = document.getElementById('copyTableBtn');
+      const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+      const downloadImgBtn = document.getElementById('downloadImgBtn');
+
+      // Presets
+      document.querySelectorAll('.preset-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          diceInput.value = chip.dataset.dice;
+          generate();
+        });
+      });
+
+      generateBtn.addEventListener('click', generate);
+      diceInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') generate();
+      });
+
+      function generate() {
+        const raw = diceInput.value.trim().toLowerCase();
+        statusMsg.className = 'status-msg';
+        statusMsg.textContent = '';
+
+        if (!raw) {
+          showError('Enter a dice notation like 3d6 or 1d20+5.');
+          return;
+        }
+
+        const parsed = parseDice(raw);
+        if (!parsed) {
+          showError('Invalid notation. Use the format NdS, NdS+M, or NdS-M (e.g., 3d6, 2d8+1, 1d20-2).');
+          return;
+        }
+
+        const { count, sides, modifier } = parsed;
+
+        if (count < 1 || count > 200) {
+          showError('Number of dice must be between 1 and 200.');
+          return;
+        }
+        if (sides < 2 || sides > 1000) {
+          showError('Die sides must be between 2 and 1000.');
+          return;
+        }
+
+        const combos = computeCombinations(count, sides);
+        const totalCombinations = Math.pow(sides, count);
+
+        // Build result data
+        const minSum = count + modifier;
+        const maxSum = count * sides + modifier;
+        const results = [];
+        let cumulativeLe = 0;
+
+        for (let sum = minSum; sum <= maxSum; sum++) {
+          const idx = sum - modifier - count;
+          const combCount = combos[idx] || 0;
+          const prob = combCount / totalCombinations;
+          cumulativeLe += prob;
+          results.push({
+            sum,
+            combinations: combCount,
+            probability: prob,
+            cumulativeLe
+          });
+        }
+
+        // Cumulative >=
+        for (let i = 0; i < results.length; i++) {
+          results[i].cumulativeGe = 1 - results[i].cumulativeLe + results[i].probability;
+        }
+
+        // Stats
+        let mean = 0;
+        let variance = 0;
+        for (const r of results) {
+          mean += r.sum * r.probability;
+        }
+        for (const r of results) {
+          variance += r.probability * Math.pow(r.sum - mean, 2);
+        }
+        const stddev = Math.sqrt(variance);
+
+        // Display
+        const notationStr = count + 'd' + sides + (modifier > 0 ? '+' + modifier : modifier < 0 ? modifier : '');
+        infoNotation.textContent = notationStr;
+        infoCombinations.textContent = totalCombinations.toLocaleString();
+        parsedInfo.classList.add('visible');
+
+        renderStats(minSum, maxSum, mean, stddev);
+        renderTable(results);
+        renderChart(results);
+        resultsContainer.classList.add('visible');
+      }
+
+      function parseDice(str) {
+        // Match: optional N, d, S, optional +/- M
+        const match = str.match(/^(\d*)d(\d+)([+-]\d+)?$/);
+        if (!match) return null;
+
+        const count = match[1] ? parseInt(match[1]) : 1;
+        const sides = parseInt(match[2]);
+        const modifier = match[3] ? parseInt(match[3]) : 0;
+
+        return { count, sides, modifier };
+      }
+
+      function computeCombinations(numDice, numSides) {
+        // Dynamic programming convolution
+        // combos[i] = number of ways to reach sum (numDice + i) with numDice dice
+        let combos = new Array(numSides).fill(1); // 1 die: each face once
+
+        for (let d = 1; d < numDice; d++) {
+          const maxVal = (d + 1) * numSides - (d + 1); // max index
+          const next = new Array(maxVal + 1).fill(0);
+          for (let prev = 0; prev < combos.length; prev++) {
+            if (combos[prev] === 0) continue;
+            for (let face = 0; face < numSides; face++) {
+              next[prev + face] += combos[prev];
+            }
+          }
+          combos = next;
+        }
+
+        return combos;
+      }
+
+      function renderStats(min, max, mean, stddev) {
+        statsRow.innerHTML = [
+          { label: 'Minimum', value: min },
+          { label: 'Maximum', value: max },
+          { label: 'Mean', value: mean.toFixed(2) },
+          { label: 'Std Dev', value: stddev.toFixed(2) }
+        ].map(s => `
+          <div class="stat-card">
+            <div class="stat-value">${s.value}</div>
+            <div class="stat-label">${s.label}</div>
+          </div>
+        `).join('');
+      }
+
+      function renderTable(results) {
+        const maxProb = Math.max(...results.map(r => r.probability));
+
+        resultBody.innerHTML = results.map(r => {
+          const barWidth = Math.max(1, (r.probability / maxProb) * 100);
+          return `<tr>
+            <td>${r.sum}</td>
+            <td>${r.combinations.toLocaleString()}</td>
+            <td>${(r.probability * 100).toFixed(2)}%</td>
+            <td>${(r.cumulativeLe * 100).toFixed(2)}%</td>
+            <td>${(r.cumulativeGe * 100).toFixed(2)}%</td>
+            <td class="bar-cell"><span class="prob-bar" style="width:${barWidth}%"></span></td>
+          </tr>`;
+        }).join('');
+      }
+
+      function renderChart(results) {
+        const ctx = chartCanvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        const wrapWidth = chartCanvas.parentElement.clientWidth - 40;
+        const chartW = Math.max(400, wrapWidth);
+        const chartH = 260;
+
+        chartCanvas.width = chartW * dpr;
+        chartCanvas.height = chartH * dpr;
+        chartCanvas.style.width = chartW + 'px';
+        chartCanvas.style.height = chartH + 'px';
+        ctx.scale(dpr, dpr);
+
+        ctx.clearRect(0, 0, chartW, chartH);
+
+        const padLeft = 50;
+        const padRight = 20;
+        const padTop = 20;
+        const padBottom = 40;
+        const plotW = chartW - padLeft - padRight;
+        const plotH = chartH - padTop - padBottom;
+
+        const n = results.length;
+        const maxProb = Math.max(...results.map(r => r.probability));
+        const barGap = Math.max(1, Math.min(3, Math.floor(plotW / n * 0.15)));
+        const barW = Math.max(2, (plotW - barGap * (n - 1)) / n);
+
+        // Y-axis gridlines
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.lineWidth = 1;
+        ctx.font = '11px system-ui, sans-serif';
+        ctx.fillStyle = '#9ca3af';
+        ctx.textAlign = 'right';
+
+        const ySteps = 5;
+        for (let i = 0; i <= ySteps; i++) {
+          const y = padTop + plotH - (plotH * i / ySteps);
+          ctx.beginPath();
+          ctx.moveTo(padLeft, y);
+          ctx.lineTo(chartW - padRight, y);
+          ctx.stroke();
+          const pct = (maxProb * i / ySteps * 100).toFixed(1);
+          ctx.fillText(pct + '%', padLeft - 8, y + 4);
+        }
+
+        // Bars
+        ctx.fillStyle = '#6c63ff';
+        results.forEach((r, i) => {
+          const x = padLeft + i * (barW + barGap);
+          const h = (r.probability / maxProb) * plotH;
+          const y = padTop + plotH - h;
+
+          ctx.globalAlpha = 0.85;
+          ctx.beginPath();
+          const radius = Math.min(3, barW / 2);
+          ctx.moveTo(x, y + radius);
+          ctx.arcTo(x, y, x + barW, y, radius);
+          ctx.arcTo(x + barW, y, x + barW, y + h, radius);
+          ctx.lineTo(x + barW, padTop + plotH);
+          ctx.lineTo(x, padTop + plotH);
+          ctx.closePath();
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        });
+
+        // X-axis labels
+        ctx.fillStyle = '#9ca3af';
+        ctx.textAlign = 'center';
+        ctx.font = '11px system-ui, sans-serif';
+
+        const labelEvery = n <= 30 ? 1 : n <= 60 ? 2 : n <= 120 ? 5 : 10;
+        results.forEach((r, i) => {
+          if (i % labelEvery === 0 || i === n - 1) {
+            const x = padLeft + i * (barW + barGap) + barW / 2;
+            ctx.fillText(r.sum, x, padTop + plotH + 20);
+          }
+        });
+      }
+
+      // Export
+      copyTableBtn.addEventListener('click', () => {
+        const rows = [['Sum', 'Combinations', 'Probability', 'Cumulative <=', 'Cumulative >=']];
+        resultBody.querySelectorAll('tr').forEach(tr => {
+          const cells = tr.querySelectorAll('td');
+          rows.push([cells[0].textContent, cells[1].textContent, cells[2].textContent, cells[3].textContent, cells[4].textContent]);
+        });
+        const csv = rows.map(r => r.join(',')).join('\n');
+        navigator.clipboard.writeText(csv).then(() => {
+          copyTableBtn.textContent = 'Copied!';
+          setTimeout(() => { copyTableBtn.textContent = 'Copy as CSV'; }, 1500);
+        });
+      });
+
+      downloadCsvBtn.addEventListener('click', () => {
+        const rows = [['Sum', 'Combinations', 'Probability', 'Cumulative <=', 'Cumulative >=']];
+        resultBody.querySelectorAll('tr').forEach(tr => {
+          const cells = tr.querySelectorAll('td');
+          rows.push([cells[0].textContent, cells[1].textContent, cells[2].textContent, cells[3].textContent, cells[4].textContent]);
+        });
+        const csv = rows.map(r => r.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.download = diceInput.value.trim().replace(/[^a-z0-9d+\-]/gi, '_') + '_probabilities.csv';
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+      });
+
+      downloadImgBtn.addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = diceInput.value.trim().replace(/[^a-z0-9d+\-]/gi, '_') + '_chart.png';
+        link.href = chartCanvas.toDataURL('image/png');
+        link.click();
+      });
+
+      function showError(msg) {
+        statusMsg.textContent = msg;
+        statusMsg.className = 'status-msg error';
+        parsedInfo.classList.remove('visible');
+        resultsContainer.classList.remove('visible');
+      }
+
+      // Resize chart
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (resultsContainer.classList.contains('visible')) {
+            const rows = [];
+            resultBody.querySelectorAll('tr').forEach(tr => {
+              const cells = tr.querySelectorAll('td');
+              rows.push({
+                sum: parseInt(cells[0].textContent),
+                probability: parseFloat(cells[2].textContent) / 100
+              });
+            });
+            if (rows.length) renderChart(rows);
+          }
+        }, 200);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIF to PNG Converter - ToolBox</title>
+  <meta name="description" content="Convert GIF images to PNG online for free. Get better color depth, lossless quality, and preserved transparency — all processed in your browser with no upload.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>GIF to PNG Converter</h1>
+      <p>Upgrade GIF images to PNG for millions of colors, lossless quality, and full transparency</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../index.html">&larr; All Image Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts GIF images into PNG format directly in your browser. GIF is limited to a palette of 256 colors, which can cause visible banding and dithering in detailed images. PNG supports millions of colors with lossless compression and superior transparency handling. For animated GIFs, this converter extracts the first frame as a high-quality PNG still image.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert GIF to PNG</h2>
+      <ol>
+        <li><strong>Upload your GIF file</strong> — drag and drop or click.</li>
+        <li><strong>Verify the format</strong> — auto-detected.</li>
+        <li><strong>Adjust quality</strong> — PNG is lossless, so no quality slider is needed.</li>
+        <li><strong>Click Convert</strong> — instant in browser.</li>
+        <li><strong>Compare results</strong> — side by side with sizes.</li>
+        <li><strong>Download</strong> — save converted file.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>GIF vs PNG — Key Differences</h2>
+      <p>GIF supports only 256 colors per frame and uses LZW compression, making it suitable for simple graphics but poor for photographic content. PNG supports 24-bit true color (over 16 million colors) and 32-bit color with a full 8-bit alpha channel for smooth, variable transparency. Both formats are lossless, but PNG achieves better compression for static images thanks to its DEFLATE algorithm and predictive filtering. GIF's main advantage is animation support, which PNG does not offer natively — so converting an animated GIF will extract a single frame.</p>
+    </section>
+
+    <section>
+      <h2>When to Use PNG Instead of GIF</h2>
+      <p>PNG is the better choice for any static image, especially those requiring more than 256 colors or smooth gradient transparency. Use PNG for logos, screenshots, illustrations, and UI elements where crisp edges and accurate colors are essential. PNG is also preferred when you need a high-quality still image extracted from an animated GIF for use as a thumbnail or preview.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>What happens to animated GIFs?</h3>
+      <p>Since PNG does not support animation, this converter extracts the first frame of an animated GIF and saves it as a high-quality PNG image. All color and transparency data from that frame is fully preserved.</p>
+      <h3>Will the file size increase when converting GIF to PNG?</h3>
+      <p>It depends on the image. Simple graphics with few colors may produce a slightly larger PNG, but images with gradients or many colors often compress better as PNG. The key benefit is the dramatic improvement in color accuracy and transparency quality.</p>
+      <h3>Does PNG preserve GIF transparency?</h3>
+      <p>Yes, and it improves on it. GIF only supports binary transparency (each pixel is either fully transparent or fully opaque), while PNG supports 256 levels of transparency per pixel, enabling smooth anti-aliased edges and gradient fades.</p>
+      <h3>Is my image uploaded to a server?</h3>
+      <p>No. The conversion happens entirely in your browser using the HTML Canvas API. Your image never leaves your device.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Conversions</h2>
+      <a href="../gif-to-jpg/index.html">GIF to JPG</a>
+      <a href="../gif-to-webp/index.html">GIF to WebP</a>
+      <a href="../png-to-jpg/index.html">PNG to JPG</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'image-tools',
+      title: 'GIF to PNG Converter',
+      breadcrumbs: [
+        { label: 'Image Tools', href: '../index.html' },
+        { label: 'GIF to PNG Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/converter.js"></script>
+  <script>initConverter({ from: 'image/gif', to: 'image/png', mountTo: '#converter-mount' });</script>
+</body>
+</html>

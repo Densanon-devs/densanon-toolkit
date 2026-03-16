@@ -1,0 +1,2254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Deck Generator - ToolBox</title>
+    <meta name="description" content="Design and generate custom card decks for board games and TCG prototypes. Create cards with custom art, stats, and styling, then export as PNG, printable PDF sheets, or JSON.">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        :root {
+            --color-bg: #0f1117;
+            --color-surface: #1a1d27;
+            --color-border: #2a2e3d;
+            --color-primary: #6c63ff;
+            --color-primary-hover: #5a52e0;
+            --color-text: #e4e4e7;
+            --color-text-muted: #9ca3af;
+            --color-accent-green: #34d399;
+            --color-accent-blue: #60a5fa;
+            --color-accent-orange: #fb923c;
+            --radius: 10px;
+        }
+
+        .tool-app {
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .tool-app {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card List Panel */
+        .card-list-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px;
+            max-height: 700px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-list-panel h3 {
+            margin: 0 0 12px 0;
+            color: var(--color-text);
+            font-size: 1rem;
+        }
+
+        .card-list-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .card-list-actions button {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background: var(--color-surface);
+            color: var(--color-text);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .card-list-actions button:hover {
+            border-color: var(--color-primary);
+        }
+
+        .card-list-actions .btn-add {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: #fff;
+        }
+
+        .card-list-actions .btn-add:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .card-entries {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .card-entry {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .card-entry:hover,
+        .card-entry.active {
+            border-color: var(--color-primary);
+        }
+
+        .card-entry .card-entry-name {
+            flex: 1;
+            color: var(--color-text);
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-entry .card-entry-type {
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            background: var(--color-surface);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .card-entry .btn-delete-card {
+            background: none;
+            border: none;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0 4px;
+            line-height: 1;
+        }
+
+        .card-entry .btn-delete-card:hover {
+            color: #ef4444;
+        }
+
+        .card-entry .btn-move {
+            background: none;
+            border: none;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0 2px;
+            line-height: 1;
+        }
+
+        .card-entry .btn-move:hover {
+            color: var(--color-primary);
+        }
+
+        /* Card Editor */
+        .card-editor {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .card-editor h3 {
+            margin: 0 0 16px 0;
+            color: var(--color-text);
+            font-size: 1rem;
+        }
+
+        .editor-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .field-group label {
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .field-group input[type="text"],
+        .field-group input[type="number"],
+        .field-group textarea,
+        .field-group select {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .field-group input:focus,
+        .field-group textarea:focus,
+        .field-group select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .field-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .field-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .color-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-input-wrap input[type="color"] {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: var(--color-bg);
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .color-input-wrap span {
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+        }
+
+        .field-group input[type="file"] {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        .layout-presets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .layout-presets button {
+            padding: 8px;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius);
+            background: var(--color-bg);
+            color: var(--color-text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .layout-presets button:hover {
+            border-color: var(--color-primary);
+            color: var(--color-text);
+        }
+
+        .layout-presets button.active {
+            background: rgba(108, 99, 255, 0.15);
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        /* Card preview layout variants */
+        .card-preview .card-header-strip {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card-preview .card-header-strip .card-title-text {
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .card-preview .card-type-inline {
+            font-size: 0.6rem;
+            opacity: 0.6;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .card-preview.layout-header .card-img-area {
+            height: 35%;
+        }
+
+        .card-preview.layout-fullart .card-img-area {
+            height: 55%;
+        }
+
+        .card-preview.layout-textonly .card-body {
+            flex: 1;
+        }
+
+        .card-preview.layout-textonly .card-desc-text {
+            flex: 1;
+        }
+
+        /* Custom layout elements */
+        .card-preview.layout-custom {
+            flex-direction: unset;
+        }
+
+        .custom-el {
+            position: absolute;
+            cursor: move;
+            overflow: hidden;
+            border: 1px dashed transparent;
+            transition: border-color 0.15s;
+            user-select: none;
+            z-index: 1;
+        }
+
+        .custom-el:hover,
+        .custom-el.dragging {
+            border-color: rgba(108, 99, 255, 0.6);
+        }
+
+        .custom-el .resize-handle {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 10px;
+            height: 10px;
+            background: var(--color-primary);
+            cursor: nwse-resize;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 2;
+        }
+
+        .custom-el:hover .resize-handle {
+            opacity: 0.8;
+        }
+
+        .custom-el-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            line-height: 1.2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .custom-el-type {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            opacity: 0.6;
+            letter-spacing: 0.5px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .custom-el-image {
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .custom-el-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .custom-el-desc {
+            font-size: 0.7rem;
+            line-height: 1.4;
+            opacity: 0.85;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .custom-el-stats {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .custom-el-stats span {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+        }
+
+        .custom-el-stats .stat-label {
+            font-size: 0.5rem;
+            opacity: 0.6;
+            font-weight: 400;
+            text-transform: uppercase;
+        }
+
+        /* Custom layout controls panel */
+        .custom-layout-controls {
+            display: none;
+            margin-top: 10px;
+            padding: 12px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+        }
+
+        .custom-layout-controls.visible {
+            display: block;
+        }
+
+        .custom-layout-controls h4 {
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            color: var(--color-text);
+        }
+
+        .custom-el-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .custom-el-row:last-child {
+            border-bottom: none;
+        }
+
+        .custom-el-row label {
+            flex: 1;
+            font-size: 0.8rem;
+            color: var(--color-text);
+            font-weight: 500;
+        }
+
+        .custom-el-row .toggle-vis {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .custom-el-row .toggle-vis:checked {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .custom-el-row .toggle-vis:checked::after {
+            content: '\2713';
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.65rem;
+        }
+
+        .custom-el-row .btn-reset-el {
+            background: none;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+        }
+
+        .custom-el-row .btn-reset-el:hover {
+            border-color: var(--color-primary);
+            color: var(--color-text);
+        }
+
+        .size-presets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .size-presets button {
+            padding: 6px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background: var(--color-bg);
+            color: var(--color-text-muted);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .size-presets button:hover {
+            border-color: var(--color-primary);
+            color: var(--color-text);
+        }
+
+        .size-presets button.active {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: #fff;
+        }
+
+        .custom-size-row {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .custom-size-row.visible {
+            display: grid;
+        }
+
+        /* Preview Panel */
+        .preview-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .preview-panel h3 {
+            margin: 0 0 12px 0;
+            color: var(--color-text);
+            font-size: 1rem;
+            align-self: flex-start;
+        }
+
+        .card-preview-wrap {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .card-preview {
+            width: 210px;
+            height: 294px;
+            border-radius: 10px;
+            border: 3px solid #6c63ff;
+            background: linear-gradient(135deg, #1a1d27, #2a2e3d);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            font-size: 12px;
+            color: #e4e4e7;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .card-preview .card-img-area {
+            width: 100%;
+            height: 40%;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .card-preview .card-img-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-preview .card-img-area .placeholder-icon {
+            color: var(--color-text-muted);
+            font-size: 2rem;
+            opacity: 0.4;
+        }
+
+        .card-preview .card-type-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(108, 99, 255, 0.8);
+            color: #fff;
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .card-preview .card-body {
+            flex: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .card-preview .card-title-text {
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .card-preview .card-desc-text {
+            font-size: 0.7rem;
+            line-height: 1.4;
+            opacity: 0.85;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .card-preview .card-stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 6px 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .card-preview .card-stats span {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .card-preview .card-stats .stat-label {
+            font-size: 0.55rem;
+            opacity: 0.6;
+            font-weight: 400;
+            text-transform: uppercase;
+        }
+
+        .card-preview .card-header-strip {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card-preview .card-type-inline {
+            font-size: 0.6rem;
+            color: inherit;
+            opacity: 0.6;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .card-preview.layout-header .card-img-area {
+            height: 35%;
+        }
+
+        .card-preview.layout-fullart .card-img-area {
+            height: 55%;
+        }
+
+        .card-preview.layout-textonly .card-body {
+            flex: 1;
+        }
+
+        /* Export Buttons */
+        .export-actions {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .export-actions button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background: var(--color-surface);
+            color: var(--color-text);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .export-actions button:hover {
+            border-color: var(--color-primary);
+            background: rgba(108, 99, 255, 0.1);
+        }
+
+        .export-actions .btn-export-png {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: #fff;
+        }
+
+        .export-actions .btn-export-png:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .export-actions .btn-export-pdf {
+            background: var(--color-accent-green);
+            border-color: var(--color-accent-green);
+            color: #0f1117;
+            font-weight: 600;
+        }
+
+        .export-actions .btn-export-pdf:hover {
+            opacity: 0.9;
+        }
+
+        /* Hidden canvas for rendering */
+        #exportCanvas {
+            display: none;
+        }
+
+        /* JSON import area */
+        .import-area {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .import-area input[type="file"] {
+            display: none;
+        }
+
+        .import-area button {
+            width: 100%;
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin-top: 40px;
+        }
+
+        .content-section h2 {
+            color: var(--color-text);
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+        }
+
+        .content-section p,
+        .content-section li {
+            color: var(--color-text-muted);
+            line-height: 1.7;
+        }
+
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .feature-item {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .feature-item h3 {
+            color: var(--color-text);
+            font-size: 1rem;
+            margin: 0 0 8px 0;
+        }
+
+        .feature-item p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .content-section ol {
+            padding-left: 20px;
+        }
+
+        .content-section ol li {
+            margin-bottom: 10px;
+        }
+
+        .faq-item {
+            margin-bottom: 20px;
+        }
+
+        .faq-item h3 {
+            color: var(--color-text);
+            font-size: 1rem;
+            margin: 0 0 6px 0;
+        }
+
+        .faq-item p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .related-tools {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .related-tools a {
+            display: block;
+            padding: 16px 24px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .related-tools a:hover {
+            border-color: var(--color-primary);
+            background: rgba(108, 99, 255, 0.1);
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.6rem; }
+            .field-row, .field-row-3 { grid-template-columns: 1fr; }
+            .custom-size-row.visible { grid-template-columns: 1fr; }
+            .card-list-actions button { min-height: 44px; }
+            .size-presets button { min-height: 44px; }
+            .layout-presets button { min-height: 44px; }
+            .export-actions button { min-height: 44px; }
+            .card-preview { max-width: 100%; }
+            .features-list { grid-template-columns: 1fr; }
+            .related-tools { flex-direction: column; }
+            .related-tools a { width: 100%; text-align: center; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Card Deck Generator</h1>
+            <p>Design custom card decks for board games and TCG prototypes with live preview and export options</p>
+        </div>
+
+        <section class="tool-box">
+            <div class="tool-app">
+                <!-- Card List Panel -->
+                <div class="card-list-panel">
+                    <h3>Deck Cards</h3>
+                    <div class="card-list-actions">
+                        <button class="btn-add" id="btnAddCard">+ Add Card</button>
+                        <button id="btnDuplicateCard">Duplicate</button>
+                    </div>
+                    <div class="card-entries" id="cardEntries">
+                        <!-- Card entries populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Card Editor -->
+                <div class="card-editor">
+                    <h3>Card Editor</h3>
+                    <div class="editor-fields">
+                        <div class="field-group">
+                            <label for="cardTitle">Title</label>
+                            <input type="text" id="cardTitle" placeholder="Card name">
+                        </div>
+
+                        <div class="field-group">
+                            <label for="cardDescription">Description / Body Text</label>
+                            <textarea id="cardDescription" placeholder="Card description or ability text"></textarea>
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="cardType">Type / Category</label>
+                                <input type="text" id="cardType" placeholder="e.g. Creature, Spell">
+                            </div>
+                            <div class="field-group">
+                                <label for="cardImage">Image (optional)</label>
+                                <input type="file" id="cardImage" accept="image/*">
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Power / Stat Values (optional)</label>
+                            <div class="field-row-3">
+                                <div class="field-group">
+                                    <input type="text" id="statLabel1" placeholder="Label (ATK)">
+                                    <input type="number" id="statValue1" placeholder="Value">
+                                </div>
+                                <div class="field-group">
+                                    <input type="text" id="statLabel2" placeholder="Label (DEF)">
+                                    <input type="number" id="statValue2" placeholder="Value">
+                                </div>
+                                <div class="field-group">
+                                    <input type="text" id="statLabel3" placeholder="Label (HP)">
+                                    <input type="number" id="statValue3" placeholder="Value">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Card Layout</label>
+                            <div class="layout-presets" id="layoutPresets">
+                                <button class="active" data-layout="standard" title="Standard">
+                                    <svg viewBox="0 0 40 56" width="40" height="56">
+                                        <rect x="1" y="1" width="38" height="54" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                                        <rect x="4" y="4" width="32" height="20" rx="1" fill="currentColor" opacity="0.2"/>
+                                        <rect x="4" y="27" width="20" height="3" rx="1" fill="currentColor" opacity="0.5"/>
+                                        <rect x="4" y="33" width="32" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <rect x="4" y="37" width="28" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <rect x="4" y="41" width="24" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <line x1="4" y1="48" x2="36" y2="48" stroke="currentColor" opacity="0.15" stroke-width="0.5"/>
+                                        <rect x="8" y="50" width="6" height="3" rx="1" fill="currentColor" opacity="0.3"/>
+                                        <rect x="17" y="50" width="6" height="3" rx="1" fill="currentColor" opacity="0.3"/>
+                                        <rect x="26" y="50" width="6" height="3" rx="1" fill="currentColor" opacity="0.3"/>
+                                    </svg>
+                                </button>
+                                <button data-layout="header" title="Header">
+                                    <svg viewBox="0 0 40 56" width="40" height="56">
+                                        <rect x="1" y="1" width="38" height="54" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                                        <rect x="1" y="1" width="38" height="14" rx="3" fill="currentColor" opacity="0.25"/>
+                                        <rect x="4" y="4" width="20" height="3" rx="1" fill="currentColor" opacity="0.6"/>
+                                        <rect x="4" y="9" width="12" height="2" rx="1" fill="currentColor" opacity="0.3"/>
+                                        <rect x="4" y="18" width="32" height="16" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <rect x="4" y="37" width="32" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <rect x="4" y="41" width="24" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <line x1="4" y1="48" x2="36" y2="48" stroke="currentColor" opacity="0.15" stroke-width="0.5"/>
+                                        <rect x="8" y="50" width="6" height="3" rx="1" fill="currentColor" opacity="0.3"/>
+                                        <rect x="17" y="50" width="6" height="3" rx="1" fill="currentColor" opacity="0.3"/>
+                                        <rect x="26" y="50" width="6" height="3" rx="1" fill="currentColor" opacity="0.3"/>
+                                    </svg>
+                                </button>
+                                <button data-layout="fullart" title="Full Art">
+                                    <svg viewBox="0 0 40 56" width="40" height="56">
+                                        <rect x="1" y="1" width="38" height="54" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                                        <rect x="4" y="4" width="32" height="30" rx="1" fill="currentColor" opacity="0.2"/>
+                                        <rect x="4" y="37" width="20" height="3" rx="1" fill="currentColor" opacity="0.5"/>
+                                        <rect x="26" y="37" width="10" height="2" rx="1" fill="currentColor" opacity="0.25"/>
+                                        <rect x="4" y="42" width="32" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <rect x="4" y="46" width="24" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <line x1="4" y1="51" x2="36" y2="51" stroke="currentColor" opacity="0.15" stroke-width="0.5"/>
+                                    </svg>
+                                </button>
+                                <button data-layout="textonly" title="Text Only">
+                                    <svg viewBox="0 0 40 56" width="40" height="56">
+                                        <rect x="1" y="1" width="38" height="54" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                                        <rect x="1" y="1" width="38" height="14" rx="3" fill="currentColor" opacity="0.25"/>
+                                        <rect x="4" y="4" width="20" height="3" rx="1" fill="currentColor" opacity="0.6"/>
+                                        <rect x="4" y="9" width="12" height="2" rx="1" fill="currentColor" opacity="0.3"/>
+                                        <rect x="4" y="19" width="32" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <rect x="4" y="23" width="28" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <rect x="4" y="27" width="32" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <rect x="4" y="31" width="20" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <rect x="4" y="35" width="30" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <rect x="4" y="39" width="26" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <line x1="4" y1="48" x2="36" y2="48" stroke="currentColor" opacity="0.15" stroke-width="0.5"/>
+                                        <rect x="8" y="50" width="6" height="3" rx="1" fill="currentColor" opacity="0.3"/>
+                                        <rect x="17" y="50" width="6" height="3" rx="1" fill="currentColor" opacity="0.3"/>
+                                        <rect x="26" y="50" width="6" height="3" rx="1" fill="currentColor" opacity="0.3"/>
+                                    </svg>
+                                </button>
+                                <button data-layout="custom" title="Custom Layout">
+                                    <svg viewBox="0 0 40 56" width="40" height="56">
+                                        <rect x="1" y="1" width="38" height="54" rx="3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3,2"/>
+                                        <rect x="4" y="4" width="18" height="12" rx="1" fill="currentColor" opacity="0.2"/>
+                                        <rect x="24" y="4" width="12" height="6" rx="1" fill="currentColor" opacity="0.35"/>
+                                        <rect x="4" y="20" width="32" height="14" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <rect x="4" y="38" width="14" height="4" rx="1" fill="currentColor" opacity="0.5"/>
+                                        <rect x="4" y="46" width="32" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <rect x="4" y="50" width="24" height="2" rx="1" fill="currentColor" opacity="0.15"/>
+                                        <circle cx="35" cy="50" r="3" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+                                        <line x1="33" y1="50" x2="37" y2="50" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+                                        <line x1="35" y1="48" x2="35" y2="52" stroke="currentColor" stroke-width="0.8" opacity="0.4"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="custom-layout-controls" id="customLayoutControls">
+                                <h4>Element Visibility</h4>
+                                <div id="customElList"></div>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Card Size Preset</label>
+                            <div class="size-presets" id="sizePresets">
+                                <button class="active" data-w="2.5" data-h="3.5">Poker (2.5x3.5")</button>
+                                <button data-w="2.75" data-h="4.75">Tarot (2.75x4.75")</button>
+                                <button data-w="1.75" data-h="2.5">Mini (1.75x2.5")</button>
+                                <button data-w="custom" data-h="custom">Custom</button>
+                            </div>
+                            <div class="custom-size-row" id="customSizeRow">
+                                <div class="field-group">
+                                    <label for="customWidth">Width (inches)</label>
+                                    <input type="number" id="customWidth" step="0.25" value="2.5" min="1" max="8">
+                                </div>
+                                <div class="field-group">
+                                    <label for="customHeight">Height (inches)</label>
+                                    <input type="number" id="customHeight" step="0.25" value="3.5" min="1" max="11">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Card Styling</label>
+                            <div class="field-row-3">
+                                <div class="color-input-wrap">
+                                    <input type="color" id="borderColor" value="#6c63ff">
+                                    <span>Border</span>
+                                </div>
+                                <div class="color-input-wrap">
+                                    <input type="color" id="bgColor" value="#1a1d27">
+                                    <span>Background</span>
+                                </div>
+                                <div class="color-input-wrap">
+                                    <input type="color" id="textColor" value="#e4e4e7">
+                                    <span>Text</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Panel -->
+                <div class="preview-panel">
+                    <h3>Live Preview</h3>
+                    <div class="card-preview-wrap">
+                        <div class="card-preview" id="cardPreview">
+                        </div>
+                    </div>
+                    <div class="export-actions">
+                        <button class="btn-export-png" id="btnExportPNG">Download Card as PNG</button>
+                        <button class="btn-export-pdf" id="btnExportPDF">Download Deck as Print Sheet</button>
+                        <button id="btnExportJSON">Export Deck as JSON</button>
+                        <div class="import-area">
+                            <input type="file" id="importJSON" accept=".json">
+                            <button id="btnImportJSON">Import Deck from JSON</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <canvas id="exportCanvas"></canvas>
+        </section>
+
+        <!-- What Does This Tool Do? -->
+        <div class="content-section">
+            <h2>What Does This Tool Do?</h2>
+            <p>The Card Deck Generator is a browser-based design tool for creating custom playing cards for board games, trading card games, and tabletop prototypes. It provides a full card editor with live visual preview, letting you define each card's title, description, type, stats, and artwork. You can build entire decks of cards, style them with custom colors and borders, choose from standard card size presets, and export your creations as individual PNG images, printable grid-layout sheets for cutting, or JSON files for saving and sharing your deck data. Whether you are rapid-prototyping a new game idea or producing print-ready assets for a small-run production, this tool streamlines the entire card creation workflow without requiring any design software.</p>
+        </div>
+
+        <!-- Features -->
+        <div class="content-section">
+            <h2>Features</h2>
+            <div class="features-list">
+                <div class="feature-item">
+                    <h3>Live Card Preview</h3>
+                    <p>See your card update in real time as you type titles, descriptions, stats, and adjust colors. The visual preview mirrors exactly what your exported card will look like, eliminating guesswork from the design process.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Multiple Size Presets</h3>
+                    <p>Choose from industry-standard card dimensions including Poker (2.5 x 3.5 inches), Tarot (2.75 x 4.75 inches), Mini (1.75 x 2.5 inches), or define your own custom size for unique card formats.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Custom Card Styling</h3>
+                    <p>Personalize every card with configurable border colors, background colors, and text colors. Create visually distinct card types by assigning different color schemes to different categories within your deck.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Deck Management</h3>
+                    <p>Build multi-card decks with an intuitive list panel. Add, duplicate, delete, and reorder cards freely. Click any card in the list to instantly load it into the editor for modifications.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Flexible Export Options</h3>
+                    <p>Download individual cards as high-resolution PNG images, generate a printable sheet with all cards arranged in a grid layout ready for cutting, or save your entire deck as a JSON file for backup and sharing.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>JSON Import and Export</h3>
+                    <p>Save your deck progress as a JSON file and reload it later to continue editing. Share deck files with collaborators or use them as templates for creating new card sets from existing designs.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- How to Use -->
+        <div class="content-section">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Add a New Card:</strong> Click the "Add Card" button in the Deck Cards panel on the left to create a new blank card. The card appears in the list and is automatically selected for editing.</li>
+                <li><strong>Fill in Card Details:</strong> Enter the card's title, description, type or category label, and optionally set up to three stat values with custom labels such as ATK, DEF, or HP. Upload an image if desired.</li>
+                <li><strong>Choose Card Size:</strong> Select a size preset from the options beneath the editor fields. Pick Poker, Tarot, or Mini for standard dimensions, or choose Custom to specify your own width and height in inches.</li>
+                <li><strong>Style the Card:</strong> Use the color pickers to set the card's border color, background color, and text color. The live preview updates immediately so you can fine-tune the look before exporting.</li>
+                <li><strong>Build Your Deck:</strong> Continue adding cards to build your full deck. Use the Duplicate button to create copies of existing cards for faster creation. Drag or use the reorder arrows to arrange cards in your preferred order.</li>
+                <li><strong>Export Your Work:</strong> Download the currently selected card as a PNG image, generate a printable sheet of the entire deck arranged in a grid, or export the deck data as JSON to save your progress and reload it later.</li>
+            </ol>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section">
+            <h2>FAQ</h2>
+            <div class="faq-item">
+                <h3>What image formats can I upload for card artwork?</h3>
+                <p>The card image field accepts any standard web image format including PNG, JPG, GIF, SVG, and WebP. For the best results, use images with an aspect ratio close to the card's image area dimensions. Transparent PNG files work well for icons and character art.</p>
+            </div>
+            <div class="faq-item">
+                <h3>What resolution are the exported PNG cards?</h3>
+                <p>Cards are rendered at 300 DPI based on the selected card size, which produces print-quality images. A standard Poker-sized card exports at approximately 750 x 1050 pixels, suitable for both digital use and physical printing.</p>
+            </div>
+            <div class="faq-item">
+                <h3>How does the printable sheet export work?</h3>
+                <p>The print sheet export arranges all cards in your deck onto pages in a grid layout, fitting as many cards as possible per page at their selected dimensions. The output is designed so you can print it on standard paper and cut along the card edges.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Can I save my deck and come back to it later?</h3>
+                <p>Yes. Use the "Export Deck as JSON" button to download a JSON file containing all your card data, styling, and order. When you return, click "Import Deck from JSON" and select the saved file to restore your entire deck exactly as you left it.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Is there a limit to how many cards I can add to a deck?</h3>
+                <p>There is no hard limit enforced by the tool. You can create as many cards as your browser memory allows. For very large decks with many high-resolution images, performance may vary depending on your device's available resources.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Can I use different sizes for different cards in the same deck?</h3>
+                <p>The card size setting applies to the entire deck uniformly to ensure consistency for printing and layout. If you need cards of different sizes, you can create separate decks for each size and export them independently.</p>
+            </div>
+        </div>
+
+        <!-- Related Tools -->
+        <div class="content-section">
+            <h2>Related Tools</h2>
+            <div class="related-tools">
+                <a href="../sprite-slicer/index.html">Sprite Slicer</a>
+                <a href="../dice-combination-sheet/index.html">Dice Combination Sheet</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'game-dev-tools',
+            title: 'Card Deck Generator',
+            breadcrumbs: [
+                { label: 'Game Dev Tools', href: '../index.html' },
+                { label: 'Card Deck Generator' }
+            ]
+        });
+    </script>
+    <script>
+        (function() {
+            // --- State ---
+            let deck = [];
+            let activeIndex = 0;
+            let cardSize = { w: 2.5, h: 3.5 };
+            const DPI = 300;
+
+            const $ = (sel) => document.querySelector(sel);
+            const $$ = (sel) => document.querySelectorAll(sel);
+
+            // --- DOM refs ---
+            const cardEntries = $('#cardEntries');
+            const cardPreview = $('#cardPreview');
+            const exportCanvas = $('#exportCanvas');
+
+            const inputTitle = $('#cardTitle');
+            const inputDesc = $('#cardDescription');
+            const inputType = $('#cardType');
+            const inputImage = $('#cardImage');
+            const statLabel1 = $('#statLabel1');
+            const statValue1 = $('#statValue1');
+            const statLabel2 = $('#statLabel2');
+            const statValue2 = $('#statValue2');
+            const statLabel3 = $('#statLabel3');
+            const statValue3 = $('#statValue3');
+            const borderColor = $('#borderColor');
+            const bgColor = $('#bgColor');
+            const textColor = $('#textColor');
+            const customSizeRow = $('#customSizeRow');
+            const customWidth = $('#customWidth');
+            const customHeight = $('#customHeight');
+
+            // --- Default card ---
+            function getDefaultCustomLayout() {
+                return {
+                    title:  { x: 5, y: 62, w: 90, h: 10, visible: true },
+                    type:   { x: 5, y: 73, w: 40, h: 6, visible: true },
+                    image:  { x: 5, y: 3, w: 90, h: 55, visible: true },
+                    desc:   { x: 5, y: 80, w: 90, h: 12, visible: true },
+                    stats:  { x: 5, y: 93, w: 90, h: 7, visible: true }
+                };
+            }
+
+            function createDefaultCard() {
+                return {
+                    title: 'Untitled Card',
+                    description: '',
+                    type: '',
+                    imageData: null,
+                    stats: [
+                        { label: 'ATK', value: '' },
+                        { label: 'DEF', value: '' },
+                        { label: 'HP', value: '' }
+                    ],
+                    borderColor: '#6c63ff',
+                    bgColor: '#1a1d27',
+                    textColor: '#e4e4e7',
+                    layout: 'standard',
+                    customLayout: getDefaultCustomLayout()
+                };
+            }
+
+            // --- Init ---
+            function init() {
+                deck.push(createDefaultCard());
+                activeIndex = 0;
+                renderList();
+                loadCardToEditor(0);
+                updatePreview();
+            }
+
+            // --- Render card list ---
+            function renderList() {
+                cardEntries.innerHTML = '';
+                deck.forEach(function(card, i) {
+                    const entry = document.createElement('div');
+                    entry.className = 'card-entry' + (i === activeIndex ? ' active' : '');
+                    entry.innerHTML =
+                        '<button class="btn-move" data-dir="up" data-idx="' + i + '" title="Move up">&#9650;</button>' +
+                        '<button class="btn-move" data-dir="down" data-idx="' + i + '" title="Move down">&#9660;</button>' +
+                        '<span class="card-entry-name">' + escHtml(card.title || 'Untitled Card') + '</span>' +
+                        (card.type ? '<span class="card-entry-type">' + escHtml(card.type) + '</span>' : '') +
+                        '<button class="btn-delete-card" data-idx="' + i + '" title="Delete card">&times;</button>';
+                    entry.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('btn-delete-card') || e.target.classList.contains('btn-move')) return;
+                        saveCurrentCard();
+                        activeIndex = i;
+                        renderList();
+                        loadCardToEditor(i);
+                        updatePreview();
+                    });
+                    cardEntries.appendChild(entry);
+                });
+
+                // Bind delete buttons
+                cardEntries.querySelectorAll('.btn-delete-card').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var idx = parseInt(this.dataset.idx);
+                        if (deck.length <= 1) return;
+                        deck.splice(idx, 1);
+                        if (activeIndex >= deck.length) activeIndex = deck.length - 1;
+                        renderList();
+                        loadCardToEditor(activeIndex);
+                        updatePreview();
+                    });
+                });
+
+                // Bind move buttons
+                cardEntries.querySelectorAll('.btn-move').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var idx = parseInt(this.dataset.idx);
+                        var dir = this.dataset.dir;
+                        if (dir === 'up' && idx > 0) {
+                            var tmp = deck[idx]; deck[idx] = deck[idx - 1]; deck[idx - 1] = tmp;
+                            if (activeIndex === idx) activeIndex--;
+                            else if (activeIndex === idx - 1) activeIndex++;
+                        } else if (dir === 'down' && idx < deck.length - 1) {
+                            var tmp2 = deck[idx]; deck[idx] = deck[idx + 1]; deck[idx + 1] = tmp2;
+                            if (activeIndex === idx) activeIndex++;
+                            else if (activeIndex === idx + 1) activeIndex--;
+                        }
+                        renderList();
+                        loadCardToEditor(activeIndex);
+                        updatePreview();
+                    });
+                });
+            }
+
+            function escHtml(str) {
+                var d = document.createElement('div');
+                d.textContent = str;
+                return d.innerHTML;
+            }
+
+            // --- Load card data into editor ---
+            function loadCardToEditor(idx) {
+                var card = deck[idx];
+                if (!card) return;
+                inputTitle.value = card.title;
+                inputDesc.value = card.description;
+                inputType.value = card.type;
+                statLabel1.value = card.stats[0].label;
+                statValue1.value = card.stats[0].value;
+                statLabel2.value = card.stats[1].label;
+                statValue2.value = card.stats[1].value;
+                statLabel3.value = card.stats[2].label;
+                statValue3.value = card.stats[2].value;
+                borderColor.value = card.borderColor;
+                bgColor.value = card.bgColor;
+                textColor.value = card.textColor;
+                inputImage.value = '';
+                document.querySelectorAll('#layoutPresets button').forEach(function(b) {
+                    b.classList.toggle('active', b.dataset.layout === (card.layout || 'standard'));
+                });
+                var isCustom = (card.layout || 'standard') === 'custom';
+                $('#customLayoutControls').classList.toggle('visible', isCustom);
+                if (isCustom) renderCustomElList();
+            }
+
+            // --- Save current editor state to deck ---
+            function saveCurrentCard() {
+                var card = deck[activeIndex];
+                if (!card) return;
+                card.title = inputTitle.value;
+                card.description = inputDesc.value;
+                card.type = inputType.value;
+                card.stats = [
+                    { label: statLabel1.value || 'ATK', value: statValue1.value },
+                    { label: statLabel2.value || 'DEF', value: statValue2.value },
+                    { label: statLabel3.value || 'HP', value: statValue3.value }
+                ];
+                card.borderColor = borderColor.value;
+                card.bgColor = bgColor.value;
+                card.textColor = textColor.value;
+                card.layout = document.querySelector('#layoutPresets button.active')?.dataset.layout || 'standard';
+                if (!card.customLayout) card.customLayout = getDefaultCustomLayout();
+            }
+
+            // --- Update preview ---
+            function updatePreview() {
+                var card = deck[activeIndex];
+                if (!card) return;
+
+                var layout = card.layout || 'standard';
+                var titleText = escHtml(inputTitle.value || 'Card Title');
+                var descText = escHtml(inputDesc.value || 'Card description will appear here as you type.');
+                var typeText = escHtml(inputType.value || 'Type');
+                var hasType = !!inputType.value;
+
+                // Remove old layout classes
+                cardPreview.classList.remove('layout-standard', 'layout-header', 'layout-fullart', 'layout-textonly', 'layout-custom');
+                cardPreview.classList.add('layout-' + layout);
+
+                cardPreview.style.borderColor = borderColor.value;
+                cardPreview.style.background = bgColor.value;
+                cardPreview.style.color = textColor.value;
+
+                // Stats HTML
+                var statsHtml = '';
+                var sl1 = statLabel1.value || 'ATK';
+                var sv1 = statValue1.value;
+                var sl2 = statLabel2.value || 'DEF';
+                var sv2 = statValue2.value;
+                var sl3 = statLabel3.value || 'HP';
+                var sv3 = statValue3.value;
+                var hasStats = sv1 !== '' || sv2 !== '' || sv3 !== '';
+                if (hasStats) {
+                    if (sv1 !== '') statsHtml += '<span><span class="stat-label">' + escHtml(sl1) + '</span>' + escHtml(sv1) + '</span>';
+                    if (sv2 !== '') statsHtml += '<span><span class="stat-label">' + escHtml(sl2) + '</span>' + escHtml(sv2) + '</span>';
+                    if (sv3 !== '') statsHtml += '<span><span class="stat-label">' + escHtml(sl3) + '</span>' + escHtml(sv3) + '</span>';
+                }
+
+                // Image HTML
+                var imgHtml = '';
+                if (card.imageData) {
+                    imgHtml = '<img src="' + card.imageData + '" alt="Card art">';
+                } else {
+                    imgHtml = '<span class="placeholder-icon">&#9830;</span>';
+                }
+
+                var html = '';
+
+                if (layout === 'header') {
+                    html += '<div class="card-header-strip">';
+                    html += '<div class="card-title-text">' + titleText + '</div>';
+                    if (hasType) html += '<div class="card-type-inline">' + typeText + '</div>';
+                    html += '</div>';
+                    html += '<div class="card-img-area">' + imgHtml + '</div>';
+                    html += '<div class="card-body">';
+                    html += '<div class="card-desc-text">' + descText + '</div>';
+                    html += '</div>';
+                    if (hasStats) html += '<div class="card-stats">' + statsHtml + '</div>';
+                } else if (layout === 'fullart') {
+                    html += '<div class="card-img-area">' + imgHtml + '</div>';
+                    html += '<div class="card-body">';
+                    html += '<div class="card-title-text">' + titleText;
+                    if (hasType) html += ' <span class="card-type-inline">' + typeText + '</span>';
+                    html += '</div>';
+                    html += '<div class="card-desc-text">' + descText + '</div>';
+                    html += '</div>';
+                    if (hasStats) html += '<div class="card-stats">' + statsHtml + '</div>';
+                } else if (layout === 'textonly') {
+                    html += '<div class="card-header-strip">';
+                    html += '<div class="card-title-text">' + titleText + '</div>';
+                    if (hasType) html += '<div class="card-type-inline">' + typeText + '</div>';
+                    html += '</div>';
+                    html += '<div class="card-body">';
+                    html += '<div class="card-desc-text">' + descText + '</div>';
+                    html += '</div>';
+                    if (hasStats) html += '<div class="card-stats">' + statsHtml + '</div>';
+                } else if (layout === 'custom') {
+                    var cl = card.customLayout || getDefaultCustomLayout();
+                    var elDefs = [
+                        { key: 'image', cls: 'custom-el-image', content: card.imageData ? '<img src="' + card.imageData + '" alt="Card art">' : '<span class="placeholder-icon">&#9830;</span>' },
+                        { key: 'title', cls: 'custom-el-title', content: titleText },
+                        { key: 'type', cls: 'custom-el-type', content: typeText },
+                        { key: 'desc', cls: 'custom-el-desc', content: descText },
+                        { key: 'stats', cls: 'custom-el-stats', content: statsHtml || '' }
+                    ];
+                    elDefs.forEach(function(def) {
+                        var pos = cl[def.key];
+                        if (!pos || !pos.visible) return;
+                        html += '<div class="custom-el" data-el="' + def.key + '" style="left:' + pos.x + '%;top:' + pos.y + '%;width:' + pos.w + '%;height:' + pos.h + '%;">';
+                        html += '<div class="' + def.cls + '">' + def.content + '</div>';
+                        html += '<div class="resize-handle"></div>';
+                        html += '</div>';
+                    });
+                } else {
+                    // standard
+                    html += '<div class="card-img-area">' + imgHtml + '</div>';
+                    if (hasType) html += '<div class="card-type-badge">' + typeText + '</div>';
+                    html += '<div class="card-body">';
+                    html += '<div class="card-title-text">' + titleText + '</div>';
+                    html += '<div class="card-desc-text">' + descText + '</div>';
+                    html += '</div>';
+                    if (hasStats) html += '<div class="card-stats">' + statsHtml + '</div>';
+                }
+
+                cardPreview.innerHTML = html;
+
+                // Update card aspect ratio based on size
+                var ratio = cardSize.h / cardSize.w;
+                var previewW = 210;
+                cardPreview.style.width = previewW + 'px';
+                cardPreview.style.height = Math.round(previewW * ratio) + 'px';
+
+                if (layout === 'custom') initCustomDrag();
+            }
+
+            // --- Custom layout drag & resize ---
+            function initCustomDrag() {
+                var card = deck[activeIndex];
+                if (!card) return;
+                var cl = card.customLayout || getDefaultCustomLayout();
+                var previewRect = cardPreview.getBoundingClientRect();
+
+                cardPreview.querySelectorAll('.custom-el').forEach(function(el) {
+                    var elKey = el.dataset.el;
+                    var pos = cl[elKey];
+                    if (!pos) return;
+
+                    // Drag to move
+                    el.addEventListener('mousedown', function(e) {
+                        if (e.target.classList.contains('resize-handle')) return;
+                        e.preventDefault();
+                        el.classList.add('dragging');
+                        var startX = e.clientX;
+                        var startY = e.clientY;
+                        var origX = pos.x;
+                        var origY = pos.y;
+                        previewRect = cardPreview.getBoundingClientRect();
+
+                        function onMove(ev) {
+                            var dx = (ev.clientX - startX) / previewRect.width * 100;
+                            var dy = (ev.clientY - startY) / previewRect.height * 100;
+                            pos.x = Math.max(0, Math.min(100 - pos.w, origX + dx));
+                            pos.y = Math.max(0, Math.min(100 - pos.h, origY + dy));
+                            el.style.left = pos.x + '%';
+                            el.style.top = pos.y + '%';
+                        }
+                        function onUp() {
+                            el.classList.remove('dragging');
+                            document.removeEventListener('mousemove', onMove);
+                            document.removeEventListener('mouseup', onUp);
+                            saveCurrentCard();
+                        }
+                        document.addEventListener('mousemove', onMove);
+                        document.addEventListener('mouseup', onUp);
+                    });
+
+                    // Touch drag
+                    el.addEventListener('touchstart', function(e) {
+                        if (e.target.classList.contains('resize-handle')) return;
+                        var touch = e.touches[0];
+                        el.classList.add('dragging');
+                        var startX = touch.clientX;
+                        var startY = touch.clientY;
+                        var origX = pos.x;
+                        var origY = pos.y;
+                        previewRect = cardPreview.getBoundingClientRect();
+
+                        function onMove(ev) {
+                            ev.preventDefault();
+                            var t = ev.touches[0];
+                            var dx = (t.clientX - startX) / previewRect.width * 100;
+                            var dy = (t.clientY - startY) / previewRect.height * 100;
+                            pos.x = Math.max(0, Math.min(100 - pos.w, origX + dx));
+                            pos.y = Math.max(0, Math.min(100 - pos.h, origY + dy));
+                            el.style.left = pos.x + '%';
+                            el.style.top = pos.y + '%';
+                        }
+                        function onEnd() {
+                            el.classList.remove('dragging');
+                            document.removeEventListener('touchmove', onMove);
+                            document.removeEventListener('touchend', onEnd);
+                            saveCurrentCard();
+                        }
+                        document.addEventListener('touchmove', onMove, { passive: false });
+                        document.addEventListener('touchend', onEnd);
+                    }, { passive: false });
+
+                    // Resize handle
+                    var handle = el.querySelector('.resize-handle');
+                    if (handle) {
+                        handle.addEventListener('mousedown', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            var startX = e.clientX;
+                            var startY = e.clientY;
+                            var origW = pos.w;
+                            var origH = pos.h;
+                            previewRect = cardPreview.getBoundingClientRect();
+
+                            function onMove(ev) {
+                                var dw = (ev.clientX - startX) / previewRect.width * 100;
+                                var dh = (ev.clientY - startY) / previewRect.height * 100;
+                                pos.w = Math.max(10, Math.min(100 - pos.x, origW + dw));
+                                pos.h = Math.max(5, Math.min(100 - pos.y, origH + dh));
+                                el.style.width = pos.w + '%';
+                                el.style.height = pos.h + '%';
+                            }
+                            function onUp() {
+                                document.removeEventListener('mousemove', onMove);
+                                document.removeEventListener('mouseup', onUp);
+                                saveCurrentCard();
+                            }
+                            document.addEventListener('mousemove', onMove);
+                            document.addEventListener('mouseup', onUp);
+                        });
+
+                        handle.addEventListener('touchstart', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            var touch = e.touches[0];
+                            var startX = touch.clientX;
+                            var startY = touch.clientY;
+                            var origW = pos.w;
+                            var origH = pos.h;
+                            previewRect = cardPreview.getBoundingClientRect();
+
+                            function onMove(ev) {
+                                ev.preventDefault();
+                                var t = ev.touches[0];
+                                var dw = (t.clientX - startX) / previewRect.width * 100;
+                                var dh = (t.clientY - startY) / previewRect.height * 100;
+                                pos.w = Math.max(10, Math.min(100 - pos.x, origW + dw));
+                                pos.h = Math.max(5, Math.min(100 - pos.y, origH + dh));
+                                el.style.width = pos.w + '%';
+                                el.style.height = pos.h + '%';
+                            }
+                            function onEnd() {
+                                document.removeEventListener('touchmove', onMove);
+                                document.removeEventListener('touchend', onEnd);
+                                saveCurrentCard();
+                            }
+                            document.addEventListener('touchmove', onMove, { passive: false });
+                            document.addEventListener('touchend', onEnd);
+                        }, { passive: false });
+                    }
+                });
+            }
+
+            // --- Render custom element visibility list ---
+            function renderCustomElList() {
+                var card = deck[activeIndex];
+                if (!card) return;
+                if (!card.customLayout) card.customLayout = getDefaultCustomLayout();
+                var cl = card.customLayout;
+                var container = $('#customElList');
+                var labels = { title: 'Title', type: 'Type/Category', image: 'Image', desc: 'Description', stats: 'Stats' };
+                var html = '';
+                ['title', 'type', 'image', 'desc', 'stats'].forEach(function(key) {
+                    var pos = cl[key];
+                    html += '<div class="custom-el-row">';
+                    html += '<input type="checkbox" class="toggle-vis" data-el="' + key + '"' + (pos.visible ? ' checked' : '') + '>';
+                    html += '<label>' + labels[key] + '</label>';
+                    html += '<button class="btn-reset-el" data-el="' + key + '">Reset</button>';
+                    html += '</div>';
+                });
+                container.innerHTML = html;
+
+                // Bind visibility toggles
+                container.querySelectorAll('.toggle-vis').forEach(function(cb) {
+                    cb.addEventListener('change', function() {
+                        cl[this.dataset.el].visible = this.checked;
+                        saveCurrentCard();
+                        updatePreview();
+                    });
+                });
+
+                // Bind reset buttons
+                container.querySelectorAll('.btn-reset-el').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var def = getDefaultCustomLayout();
+                        var key = this.dataset.el;
+                        cl[key] = JSON.parse(JSON.stringify(def[key]));
+                        saveCurrentCard();
+                        updatePreview();
+                        renderCustomElList();
+                    });
+                });
+            }
+
+            // --- Editor input events ---
+            [inputTitle, inputDesc, inputType, statLabel1, statValue1, statLabel2, statValue2, statLabel3, statValue3, borderColor, bgColor, textColor].forEach(function(el) {
+                el.addEventListener('input', function() {
+                    saveCurrentCard();
+                    updatePreview();
+                    // Update list entry name
+                    var entry = cardEntries.querySelector('.card-entry.active .card-entry-name');
+                    if (entry) entry.textContent = inputTitle.value || 'Untitled Card';
+                });
+            });
+
+            // Image upload
+            inputImage.addEventListener('change', function(e) {
+                var file = e.target.files[0];
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function(ev) {
+                    deck[activeIndex].imageData = ev.target.result;
+                    updatePreview();
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // --- Size presets ---
+            var sizeButtons = $$('#sizePresets button');
+            sizeButtons.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    sizeButtons.forEach(function(b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                    if (btn.dataset.w === 'custom') {
+                        customSizeRow.classList.add('visible');
+                        cardSize.w = parseFloat(customWidth.value) || 2.5;
+                        cardSize.h = parseFloat(customHeight.value) || 3.5;
+                    } else {
+                        customSizeRow.classList.remove('visible');
+                        cardSize.w = parseFloat(btn.dataset.w);
+                        cardSize.h = parseFloat(btn.dataset.h);
+                    }
+                    updatePreview();
+                });
+            });
+
+            // --- Layout presets ---
+            document.querySelectorAll('#layoutPresets button').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#layoutPresets button').forEach(function(b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                    saveCurrentCard();
+                    var isCustom = btn.dataset.layout === 'custom';
+                    $('#customLayoutControls').classList.toggle('visible', isCustom);
+                    if (isCustom) renderCustomElList();
+                    updatePreview();
+                });
+            });
+
+            customWidth.addEventListener('input', function() {
+                cardSize.w = parseFloat(this.value) || 2.5;
+                updatePreview();
+            });
+            customHeight.addEventListener('input', function() {
+                cardSize.h = parseFloat(this.value) || 3.5;
+                updatePreview();
+            });
+
+            // --- Add card ---
+            $('#btnAddCard').addEventListener('click', function() {
+                saveCurrentCard();
+                deck.push(createDefaultCard());
+                activeIndex = deck.length - 1;
+                renderList();
+                loadCardToEditor(activeIndex);
+                updatePreview();
+            });
+
+            // --- Duplicate card ---
+            $('#btnDuplicateCard').addEventListener('click', function() {
+                saveCurrentCard();
+                var copy = JSON.parse(JSON.stringify(deck[activeIndex]));
+                copy.title = copy.title + ' (Copy)';
+                deck.splice(activeIndex + 1, 0, copy);
+                activeIndex = activeIndex + 1;
+                renderList();
+                loadCardToEditor(activeIndex);
+                updatePreview();
+            });
+
+            // --- Render card to canvas ---
+            function renderCardToCanvas(card, callback) {
+                var cw = Math.round(cardSize.w * DPI);
+                var ch = Math.round(cardSize.h * DPI);
+                exportCanvas.width = cw;
+                exportCanvas.height = ch;
+                var ctx = exportCanvas.getContext('2d');
+
+                // Background
+                ctx.fillStyle = card.bgColor;
+                ctx.fillRect(0, 0, cw, ch);
+
+                // Border
+                ctx.strokeStyle = card.borderColor;
+                ctx.lineWidth = Math.round(DPI * 0.04);
+                var br = Math.round(DPI * 0.15);
+                roundRect(ctx, ctx.lineWidth / 2, ctx.lineWidth / 2, cw - ctx.lineWidth, ch - ctx.lineWidth, br, false, true);
+
+                var textC = card.textColor;
+                var padding = Math.round(cw * 0.06);
+                var layout = card.layout || 'standard';
+
+                // --- Shared: draw stats at bottom ---
+                function drawStats() {
+                    var hasStats = card.stats.some(function(s) { return s.value !== ''; });
+                    if (hasStats) {
+                        var statsY = ch - Math.round(cw * 0.14);
+                        ctx.strokeStyle = textC;
+                        ctx.globalAlpha = 0.15;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(padding, statsY - Math.round(cw * 0.03));
+                        ctx.lineTo(cw - padding, statsY - Math.round(cw * 0.03));
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+
+                        var statSlots = card.stats.filter(function(s) { return s.value !== ''; });
+                        var slotW = (cw - padding * 2) / statSlots.length;
+                        statSlots.forEach(function(s, si) {
+                            var sx = padding + slotW * si + slotW / 2;
+                            ctx.fillStyle = textC;
+                            ctx.globalAlpha = 0.5;
+                            ctx.font = Math.round(cw * 0.03) + 'px sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'top';
+                            ctx.fillText((s.label || '').toUpperCase(), sx, statsY);
+                            ctx.globalAlpha = 1;
+                            ctx.font = 'bold ' + Math.round(cw * 0.06) + 'px sans-serif';
+                            ctx.fillText(s.value, sx, statsY + Math.round(cw * 0.04));
+                        });
+                    }
+                }
+
+                // --- Shared: draw header strip ---
+                function drawHeaderStrip() {
+                    var stripH = Math.round(ch * 0.13);
+                    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                    ctx.fillRect(0, 0, cw, stripH);
+                    // Title in strip
+                    ctx.fillStyle = textC;
+                    ctx.font = 'bold ' + Math.round(cw * 0.06) + 'px sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(card.title || 'Untitled', padding, padding, cw - padding * 2);
+                    // Type in strip
+                    if (card.type) {
+                        ctx.globalAlpha = 0.6;
+                        ctx.font = '600 ' + Math.round(cw * 0.035) + 'px sans-serif';
+                        ctx.fillText(card.type.toUpperCase(), padding, padding + Math.round(cw * 0.08));
+                        ctx.globalAlpha = 1;
+                    }
+                    return stripH;
+                }
+
+                // --- Shared: draw image into area ---
+                function drawImageArea(imgTop, imgH, afterDraw) {
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(255,255,255,0.04)';
+                    ctx.fillRect(padding / 2, imgTop, cw - padding, imgH);
+                    ctx.restore();
+
+                    if (card.imageData) {
+                        var img = new Image();
+                        img.onload = function() {
+                            ctx.save();
+                            ctx.beginPath();
+                            ctx.rect(padding / 2, imgTop, cw - padding, imgH);
+                            ctx.clip();
+                            var scale = Math.max((cw - padding) / img.width, imgH / img.height);
+                            var iw = img.width * scale;
+                            var ih = img.height * scale;
+                            var ix = (cw - iw) / 2;
+                            var iy = imgTop + (imgH - ih) / 2;
+                            ctx.drawImage(img, ix, iy, iw, ih);
+                            ctx.restore();
+                            afterDraw();
+                        };
+                        img.src = card.imageData;
+                    } else {
+                        ctx.fillStyle = textC;
+                        ctx.globalAlpha = 0.15;
+                        ctx.font = Math.round(cw * 0.15) + 'px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('\u2666', cw / 2, imgTop + imgH / 2);
+                        ctx.globalAlpha = 1;
+                        afterDraw();
+                    }
+                }
+
+                if (layout === 'header') {
+                    var stripH = drawHeaderStrip();
+                    var imgAreaH = Math.round(ch * 0.35);
+                    drawImageArea(stripH, imgAreaH, function() {
+                        // Description
+                        var descY = stripH + imgAreaH + padding;
+                        ctx.fillStyle = textC;
+                        ctx.font = Math.round(cw * 0.04) + 'px sans-serif';
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'top';
+                        ctx.globalAlpha = 0.85;
+                        wrapText(ctx, card.description || '', padding, descY, cw - padding * 2, Math.round(cw * 0.055));
+                        ctx.globalAlpha = 1;
+                        drawStats();
+                        callback(exportCanvas);
+                    });
+                } else if (layout === 'fullart') {
+                    var imgAreaH = Math.round(ch * 0.6);
+                    drawImageArea(padding / 2, imgAreaH, function() {
+                        // Title + type inline
+                        var titleY = imgAreaH + padding;
+                        ctx.fillStyle = textC;
+                        ctx.font = 'bold ' + Math.round(cw * 0.07) + 'px sans-serif';
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'top';
+                        var titleStr = card.title || 'Untitled';
+                        ctx.fillText(titleStr, padding, titleY);
+                        if (card.type) {
+                            var titleWidth = ctx.measureText(titleStr).width;
+                            ctx.globalAlpha = 0.6;
+                            ctx.font = '600 ' + Math.round(cw * 0.035) + 'px sans-serif';
+                            ctx.fillText(card.type.toUpperCase(), padding + titleWidth + Math.round(cw * 0.02), titleY + Math.round(cw * 0.02));
+                            ctx.globalAlpha = 1;
+                        }
+                        // Description
+                        var descY = titleY + Math.round(cw * 0.1);
+                        ctx.font = Math.round(cw * 0.04) + 'px sans-serif';
+                        ctx.globalAlpha = 0.85;
+                        wrapText(ctx, card.description || '', padding, descY, cw - padding * 2, Math.round(cw * 0.055));
+                        ctx.globalAlpha = 1;
+                        drawStats();
+                        callback(exportCanvas);
+                    });
+                } else if (layout === 'textonly') {
+                    var stripH = drawHeaderStrip();
+                    // Description fills remaining space
+                    var descY = stripH + padding;
+                    ctx.fillStyle = textC;
+                    ctx.font = Math.round(cw * 0.04) + 'px sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.globalAlpha = 0.85;
+                    wrapText(ctx, card.description || '', padding, descY, cw - padding * 2, Math.round(cw * 0.055));
+                    ctx.globalAlpha = 1;
+                    drawStats();
+                    callback(exportCanvas);
+                } else if (layout === 'custom') {
+                    var cl = card.customLayout || getDefaultCustomLayout();
+
+                    // Convert percentage to pixels
+                    function pxX(pct) { return Math.round(cw * pct / 100); }
+                    function pxY(pct) { return Math.round(ch * pct / 100); }
+
+                    // Draw non-image elements
+                    function drawCustomText() {
+                        // Title
+                        if (cl.title && cl.title.visible) {
+                            var tx = pxX(cl.title.x), ty = pxY(cl.title.y);
+                            var tw = pxX(cl.title.w);
+                            ctx.fillStyle = textC;
+                            ctx.font = 'bold ' + Math.round(cw * 0.07) + 'px sans-serif';
+                            ctx.textAlign = 'left';
+                            ctx.textBaseline = 'top';
+                            ctx.fillText(card.title || 'Untitled', tx, ty, tw);
+                        }
+
+                        // Type
+                        if (cl.type && cl.type.visible && card.type) {
+                            var tpx = pxX(cl.type.x), tpy = pxY(cl.type.y);
+                            ctx.fillStyle = textC;
+                            ctx.globalAlpha = 0.6;
+                            ctx.font = '600 ' + Math.round(cw * 0.035) + 'px sans-serif';
+                            ctx.textAlign = 'left';
+                            ctx.textBaseline = 'top';
+                            ctx.fillText(card.type.toUpperCase(), tpx, tpy);
+                            ctx.globalAlpha = 1;
+                        }
+
+                        // Description
+                        if (cl.desc && cl.desc.visible) {
+                            var dx = pxX(cl.desc.x), dy = pxY(cl.desc.y);
+                            var dw = pxX(cl.desc.w);
+                            ctx.fillStyle = textC;
+                            ctx.font = Math.round(cw * 0.04) + 'px sans-serif';
+                            ctx.textAlign = 'left';
+                            ctx.textBaseline = 'top';
+                            ctx.globalAlpha = 0.85;
+                            wrapText(ctx, card.description || '', dx, dy, dw, Math.round(cw * 0.055));
+                            ctx.globalAlpha = 1;
+                        }
+
+                        // Stats
+                        if (cl.stats && cl.stats.visible) {
+                            var hasStats = card.stats.some(function(s) { return s.value !== ''; });
+                            if (hasStats) {
+                                var sx = pxX(cl.stats.x), sy = pxY(cl.stats.y);
+                                var sw = pxX(cl.stats.w);
+                                // Divider line
+                                ctx.strokeStyle = textC;
+                                ctx.globalAlpha = 0.15;
+                                ctx.lineWidth = 1;
+                                ctx.beginPath();
+                                ctx.moveTo(sx, sy);
+                                ctx.lineTo(sx + sw, sy);
+                                ctx.stroke();
+                                ctx.globalAlpha = 1;
+
+                                var statSlots = card.stats.filter(function(s) { return s.value !== ''; });
+                                var slotW = sw / statSlots.length;
+                                statSlots.forEach(function(s, si) {
+                                    var scx = sx + slotW * si + slotW / 2;
+                                    ctx.fillStyle = textC;
+                                    ctx.globalAlpha = 0.5;
+                                    ctx.font = Math.round(cw * 0.03) + 'px sans-serif';
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'top';
+                                    ctx.fillText((s.label || '').toUpperCase(), scx, sy + Math.round(cw * 0.01));
+                                    ctx.globalAlpha = 1;
+                                    ctx.font = 'bold ' + Math.round(cw * 0.06) + 'px sans-serif';
+                                    ctx.fillText(s.value, scx, sy + Math.round(cw * 0.05));
+                                });
+                            }
+                        }
+
+                        callback(exportCanvas);
+                    }
+
+                    // Draw image element if visible
+                    if (cl.image && cl.image.visible) {
+                        var imgX = pxX(cl.image.x), imgY = pxY(cl.image.y);
+                        var imgW = pxX(cl.image.w), imgH = pxY(cl.image.h);
+
+                        ctx.save();
+                        ctx.fillStyle = 'rgba(255,255,255,0.04)';
+                        ctx.fillRect(imgX, imgY, imgW, imgH);
+                        ctx.restore();
+
+                        if (card.imageData) {
+                            var img = new Image();
+                            img.onload = function() {
+                                ctx.save();
+                                ctx.beginPath();
+                                ctx.rect(imgX, imgY, imgW, imgH);
+                                ctx.clip();
+                                var scale = Math.max(imgW / img.width, imgH / img.height);
+                                var iw = img.width * scale;
+                                var ih = img.height * scale;
+                                var ix = imgX + (imgW - iw) / 2;
+                                var iy = imgY + (imgH - ih) / 2;
+                                ctx.drawImage(img, ix, iy, iw, ih);
+                                ctx.restore();
+                                drawCustomText();
+                            };
+                            img.src = card.imageData;
+                        } else {
+                            ctx.fillStyle = textC;
+                            ctx.globalAlpha = 0.15;
+                            ctx.font = Math.round(cw * 0.15) + 'px sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText('\u2666', imgX + imgW / 2, imgY + imgH / 2);
+                            ctx.globalAlpha = 1;
+                            drawCustomText();
+                        }
+                    } else {
+                        drawCustomText();
+                    }
+                } else {
+                    // standard layout
+                    var imgAreaH = Math.round(ch * 0.38);
+
+                    function drawTextStandard() {
+                        // Type badge
+                        if (card.type) {
+                            ctx.fillStyle = card.borderColor;
+                            var badgeW = Math.min(ctx.measureText(card.type.toUpperCase()).width + padding, cw * 0.5);
+                            ctx.font = 'bold ' + Math.round(cw * 0.04) + 'px sans-serif';
+                            badgeW = ctx.measureText(card.type.toUpperCase()).width + padding;
+                            var badgeH = Math.round(cw * 0.07);
+                            var bx = cw - padding - badgeW;
+                            var by = padding;
+                            ctx.beginPath();
+                            ctx.roundRect(bx, by, badgeW, badgeH, badgeH / 2);
+                            ctx.fill();
+                            ctx.fillStyle = '#ffffff';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(card.type.toUpperCase(), bx + badgeW / 2, by + badgeH / 2);
+                        }
+
+                        // Title
+                        var titleY = imgAreaH + padding * 1.5;
+                        ctx.fillStyle = textC;
+                        ctx.font = 'bold ' + Math.round(cw * 0.07) + 'px sans-serif';
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'top';
+                        ctx.fillText(card.title || 'Untitled', padding, titleY, cw - padding * 2);
+
+                        // Description
+                        var descY = titleY + Math.round(cw * 0.1);
+                        ctx.font = Math.round(cw * 0.04) + 'px sans-serif';
+                        ctx.globalAlpha = 0.85;
+                        wrapText(ctx, card.description || '', padding, descY, cw - padding * 2, Math.round(cw * 0.055));
+                        ctx.globalAlpha = 1;
+
+                        drawStats();
+                        callback(exportCanvas);
+                    }
+
+                    drawImageArea(padding / 2, imgAreaH, drawTextStandard);
+                }
+            }
+
+            function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+                ctx.beginPath();
+                ctx.moveTo(x + r, y);
+                ctx.lineTo(x + w - r, y);
+                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                ctx.lineTo(x + w, y + h - r);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                ctx.lineTo(x + r, y + h);
+                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                ctx.lineTo(x, y + r);
+                ctx.quadraticCurveTo(x, y, x + r, y);
+                ctx.closePath();
+                if (fill) ctx.fill();
+                if (stroke) ctx.stroke();
+            }
+
+            function wrapText(ctx, text, x, y, maxW, lineH) {
+                var words = text.split(' ');
+                var line = '';
+                var curY = y;
+                for (var i = 0; i < words.length; i++) {
+                    var test = line + words[i] + ' ';
+                    if (ctx.measureText(test).width > maxW && line !== '') {
+                        ctx.fillText(line.trim(), x, curY);
+                        line = words[i] + ' ';
+                        curY += lineH;
+                    } else {
+                        line = test;
+                    }
+                }
+                if (line.trim()) ctx.fillText(line.trim(), x, curY);
+            }
+
+            // --- Export PNG ---
+            $('#btnExportPNG').addEventListener('click', function() {
+                saveCurrentCard();
+                var card = deck[activeIndex];
+                renderCardToCanvas(card, function(canvas) {
+                    var link = document.createElement('a');
+                    link.download = (card.title || 'card').replace(/[^a-zA-Z0-9]/g, '_') + '.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+            });
+
+            // --- Export printable sheet (PDF-style PNG grid) ---
+            $('#btnExportPDF').addEventListener('click', function() {
+                saveCurrentCard();
+                if (deck.length === 0) return;
+
+                var cw = Math.round(cardSize.w * DPI);
+                var ch = Math.round(cardSize.h * DPI);
+                var pagePadding = Math.round(DPI * 0.5);
+                var gap = Math.round(DPI * 0.1);
+
+                // US Letter: 8.5 x 11 inches
+                var pageW = Math.round(8.5 * DPI);
+                var pageH = Math.round(11 * DPI);
+
+                var cols = Math.floor((pageW - pagePadding * 2 + gap) / (cw + gap));
+                var rows = Math.floor((pageH - pagePadding * 2 + gap) / (ch + gap));
+                if (cols < 1) cols = 1;
+                if (rows < 1) rows = 1;
+                var perPage = cols * rows;
+
+                var rendered = [];
+                var count = 0;
+
+                function renderNext() {
+                    if (count >= deck.length) {
+                        assembleSheets();
+                        return;
+                    }
+                    renderCardToCanvas(deck[count], function(canvas) {
+                        var img = new Image();
+                        img.onload = function() {
+                            rendered.push(img);
+                            count++;
+                            renderNext();
+                        };
+                        img.src = canvas.toDataURL('image/png');
+                    });
+                }
+
+                function assembleSheets() {
+                    var totalPages = Math.ceil(rendered.length / perPage);
+                    for (var p = 0; p < totalPages; p++) {
+                        var sheetCanvas = document.createElement('canvas');
+                        sheetCanvas.width = pageW;
+                        sheetCanvas.height = pageH;
+                        var sctx = sheetCanvas.getContext('2d');
+                        sctx.fillStyle = '#ffffff';
+                        sctx.fillRect(0, 0, pageW, pageH);
+
+                        for (var s = 0; s < perPage; s++) {
+                            var ci = p * perPage + s;
+                            if (ci >= rendered.length) break;
+                            var col = s % cols;
+                            var row = Math.floor(s / cols);
+                            var dx = pagePadding + col * (cw + gap);
+                            var dy = pagePadding + row * (ch + gap);
+                            sctx.drawImage(rendered[ci], dx, dy, cw, ch);
+                        }
+
+                        var link = document.createElement('a');
+                        link.download = 'deck_sheet_page' + (p + 1) + '.png';
+                        link.href = sheetCanvas.toDataURL('image/png');
+                        link.click();
+                    }
+                }
+
+                renderNext();
+            });
+
+            // --- Export JSON ---
+            $('#btnExportJSON').addEventListener('click', function() {
+                saveCurrentCard();
+                var data = {
+                    version: 1,
+                    cardSize: cardSize,
+                    cards: deck.map(function(c) {
+                        return {
+                            title: c.title,
+                            description: c.description,
+                            type: c.type,
+                            imageData: c.imageData,
+                            stats: c.stats,
+                            borderColor: c.borderColor,
+                            bgColor: c.bgColor,
+                            textColor: c.textColor,
+                            layout: c.layout,
+                            customLayout: c.customLayout
+                        };
+                    })
+                };
+                var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                var link = document.createElement('a');
+                link.download = 'deck.json';
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                URL.revokeObjectURL(link.href);
+            });
+
+            // --- Import JSON ---
+            var importInput = $('#importJSON');
+            $('#btnImportJSON').addEventListener('click', function() {
+                importInput.click();
+            });
+
+            importInput.addEventListener('change', function(e) {
+                var file = e.target.files[0];
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function(ev) {
+                    try {
+                        var data = JSON.parse(ev.target.result);
+                        if (!data.cards || !Array.isArray(data.cards)) throw new Error('Invalid deck file');
+                        deck = data.cards.map(function(c) {
+                            return {
+                                title: c.title || '',
+                                description: c.description || '',
+                                type: c.type || '',
+                                imageData: c.imageData || null,
+                                stats: c.stats || [
+                                    { label: 'ATK', value: '' },
+                                    { label: 'DEF', value: '' },
+                                    { label: 'HP', value: '' }
+                                ],
+                                borderColor: c.borderColor || '#6c63ff',
+                                bgColor: c.bgColor || '#1a1d27',
+                                textColor: c.textColor || '#e4e4e7',
+                                layout: c.layout || 'standard',
+                                customLayout: c.customLayout || getDefaultCustomLayout()
+                            };
+                        });
+                        if (data.cardSize) {
+                            cardSize.w = data.cardSize.w || 2.5;
+                            cardSize.h = data.cardSize.h || 3.5;
+                        }
+                        activeIndex = 0;
+                        renderList();
+                        loadCardToEditor(0);
+                        updatePreview();
+                    } catch (err) {
+                        alert('Failed to load deck: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+                importInput.value = '';
+            });
+
+            // --- Start ---
+            init();
+        })();
+    </script>
+</body>
+</html>

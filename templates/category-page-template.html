@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CATEGORY_NAME - ToolBox</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>CATEGORY_NAME</h1>
+      <p>Short description of what tools live in this category.</p>
+    </div>
+
+    <!--
+      Primary tools grid.
+      Each card links to a tool page at TOOL_SLUG/index.html.
+    -->
+    <div class="tools-grid">
+      <a href="TOOL_SLUG/index.html" class="tool-card">
+        <h4>Tool Name</h4>
+        <p>Brief description of the tool and what it does.</p>
+      </a>
+      <!-- Repeat for each tool -->
+    </div>
+
+    <!--
+      Optional: Tool family sub-section.
+      Use when a group of related landing pages (converters, generators, etc.)
+      share a universal engine and have their own hub page.
+    -->
+    <!--
+    <div class="category-header" style="padding-top:40px;">
+      <h2>FAMILY_NAME</h2>
+      <p>Family description. <a href="FAMILY_HUB/index.html" style="font-weight:600;">View all &rarr;</a></p>
+    </div>
+
+    <div class="tools-grid">
+      <a href="LANDING_SLUG/index.html" class="tool-card">
+        <h4>Landing Page Title</h4>
+        <p>Brief description of this specific variant.</p>
+      </a>
+    </div>
+    -->
+  </main>
+
+  <script src="../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 2,
+      activeCategory: 'CATEGORY_ID',   // game-dev-tools | image-tools | developer-tools | math-tools
+      title: 'CATEGORY_NAME',
+      breadcrumbs: [
+        { label: 'CATEGORY_NAME' }
+      ]
+    });
+  </script>
+</body>
+</html>

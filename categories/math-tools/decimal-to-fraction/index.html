@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decimal to Fraction Converter - ToolBox</title>
+    <meta name="description" content="Convert any decimal number to a fraction. See the simplified fraction, original fraction, and mixed number with step-by-step conversion process.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        .input-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .input-row label {
+            font-size: 1rem;
+            color: var(--color-text);
+            white-space: nowrap;
+        }
+
+        .input-row input[type="text"] {
+            width: 200px;
+            padding: 10px 14px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            font-size: 1.2rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-row input[type="text"]:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .repeating-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .repeating-toggle input[type="checkbox"] {
+            accent-color: var(--color-primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .repeating-toggle label {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            cursor: pointer;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .result-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-card .label {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .result-card .value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--color-accent-green);
+        }
+
+        .steps-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .steps-panel h3 {
+            margin: 0 0 16px 0;
+            font-size: 1rem;
+            color: var(--color-text);
+        }
+
+        .step {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            background: var(--color-primary);
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-text {
+            color: var(--color-text-muted);
+            line-height: 1.6;
+            padding-top: 2px;
+        }
+
+        .step-text strong {
+            color: var(--color-text);
+        }
+
+        .step-text code {
+            background: var(--color-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: var(--color-accent-blue);
+        }
+
+        .error-message {
+            color: var(--color-accent-orange);
+            font-size: 0.9rem;
+            padding: 10px;
+            background: rgba(251, 146, 60, 0.1);
+            border-radius: var(--radius);
+            display: none;
+            margin-top: 12px;
+        }
+
+        .examples-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+
+        .examples-table th, .examples-table td {
+            padding: 10px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .examples-table th {
+            color: var(--color-text);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .examples-table td {
+            color: var(--color-text-muted);
+        }
+
+        .how-to ol {
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+
+        .how-to ol li {
+            margin-bottom: 8px;
+            color: var(--color-text-muted);
+        }
+
+        .how-to ol li strong {
+            color: var(--color-text);
+        }
+
+        .faq-section h3 {
+            color: var(--color-text);
+            margin: 20px 0 8px 0;
+            font-size: 1rem;
+        }
+
+        .faq-section p {
+            color: var(--color-text-muted);
+            line-height: 1.6;
+            margin: 0 0 16px 0;
+        }
+
+        .related-tools {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            color: var(--color-text-muted);
+            margin-top: 20px;
+        }
+
+        .related-tools a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+
+        .related-tools a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.6rem; }
+            .input-row { flex-direction: column; align-items: stretch; }
+            .input-row input[type="text"] { width: 100%; }
+            .results-grid { grid-template-columns: repeat(2, 1fr); }
+            .examples-table { font-size: 0.85rem; }
+            .examples-table th, .examples-table td { padding: 8px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Decimal to Fraction Converter</h1>
+            <p>Convert any decimal number to its fraction equivalent with step-by-step explanation</p>
+        </div>
+
+        <section class="tool-box">
+            <div class="input-panel">
+                <div class="input-row">
+                    <label for="decimalInput">Decimal:</label>
+                    <input type="text" id="decimalInput" value="0.75" placeholder="e.g. 0.75 or 3.125">
+                </div>
+                <div class="repeating-toggle">
+                    <input type="checkbox" id="repeatingToggle">
+                    <label for="repeatingToggle">Treat as repeating decimal (e.g., 0.333... or 0.142857...)</label>
+                </div>
+                <div class="error-message" id="errorMsg"></div>
+            </div>
+
+            <div class="results-grid" id="resultsGrid">
+                <div class="result-card">
+                    <div class="label">Simplified Fraction</div>
+                    <div class="value" id="simplifiedFraction">3/4</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Original Fraction</div>
+                    <div class="value" id="originalFraction">75/100</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Mixed Number</div>
+                    <div class="value" id="mixedNumber">—</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Percentage</div>
+                    <div class="value" id="percentage">75%</div>
+                </div>
+            </div>
+
+            <div class="steps-panel" id="stepsPanel">
+                <h3>Step-by-Step Conversion</h3>
+                <div id="stepsContent"></div>
+            </div>
+        </section>
+
+        <section class="tool-box">
+            <h2>What Does This Tool Do?</h2>
+            <p>The Decimal to Fraction Converter transforms any decimal number into its fractional equivalent. Enter a decimal like 0.75, and instantly see that it equals 3/4. The tool shows both the original unsimplified fraction and the reduced form, converts to a mixed number when the value is greater than one, and walks you through the conversion process step by step. It also handles repeating decimals: enable the repeating toggle and enter 0.333 to get 1/3, or 0.142857 to get 1/7. This is useful for students learning number conversions, cooks adjusting recipe measurements, and engineers who need exact fractional values.</p>
+        </section>
+
+        <section class="tool-box how-to">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Enter a decimal number</strong> in the input field. You can type values like 0.5, 3.125, or 0.666.</li>
+                <li><strong>View the results</strong> that appear instantly: the simplified fraction, original fraction, mixed number (if applicable), and percentage.</li>
+                <li><strong>Enable the repeating toggle</strong> if your decimal repeats (like 0.333... for 1/3). The tool will detect the repeating pattern and produce the exact fraction.</li>
+                <li><strong>Read the step-by-step breakdown</strong> to understand how the conversion was performed.</li>
+            </ol>
+        </section>
+
+        <section class="tool-box">
+            <h2>Conversion Examples</h2>
+            <table class="examples-table">
+                <thead>
+                    <tr>
+                        <th>Decimal</th>
+                        <th>Fraction</th>
+                        <th>Simplified</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>0.5</td><td>5/10</td><td>1/2</td><td>Terminating</td></tr>
+                    <tr><td>0.25</td><td>25/100</td><td>1/4</td><td>Terminating</td></tr>
+                    <tr><td>0.75</td><td>75/100</td><td>3/4</td><td>Terminating</td></tr>
+                    <tr><td>0.125</td><td>125/1000</td><td>1/8</td><td>Terminating</td></tr>
+                    <tr><td>0.333...</td><td>—</td><td>1/3</td><td>Repeating</td></tr>
+                    <tr><td>0.666...</td><td>—</td><td>2/3</td><td>Repeating</td></tr>
+                    <tr><td>0.142857...</td><td>—</td><td>1/7</td><td>Repeating</td></tr>
+                    <tr><td>0.1</td><td>1/10</td><td>1/10</td><td>Terminating</td></tr>
+                    <tr><td>1.5</td><td>15/10</td><td>3/2</td><td>Terminating</td></tr>
+                    <tr><td>2.75</td><td>275/100</td><td>11/4</td><td>Terminating</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="tool-box faq-section">
+            <h2>FAQ</h2>
+            <h3>How do I enter a repeating decimal?</h3>
+            <p>Check the "Treat as repeating decimal" box, then type the decimal digits that repeat. For example, type 0.333 with the toggle enabled and the tool recognizes it as 0.333... repeating, giving you 1/3. For a number like 1/7, type 0.142857 with the toggle on.</p>
+
+            <h3>What if my decimal has many digits, like 0.3752?</h3>
+            <p>The tool handles decimals of any length. It will place the digits over the appropriate power of 10 (for example, 3752/10000) and then simplify the fraction by dividing both by their greatest common divisor.</p>
+
+            <h3>Can I convert negative decimals?</h3>
+            <p>Yes. Enter a negative decimal like -0.75 and the tool will produce -3/4. The sign is carried through to the simplified fraction and mixed number.</p>
+
+            <h3>Why does the mixed number show a dash for values less than 1?</h3>
+            <p>Mixed numbers are only meaningful when the value is 1 or greater. For decimals between -1 and 1 (exclusive), the fraction is already a proper fraction, so a mixed number representation is not needed.</p>
+
+            <h3>How does the tool handle 0.999...?</h3>
+            <p>With the repeating toggle enabled, 0.999... correctly converts to 1/1, which equals 1. This is mathematically correct: the repeating decimal 0.999... is exactly equal to 1.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>Related Tools</h2>
+            <div class="related-tools">
+                <p>
+                    <a href="../fraction-to-decimal/index.html">Fraction to Decimal Converter</a> &mdash; Convert fractions back to decimals.
+                    &nbsp;&bull;&nbsp;
+                    <a href="../fraction-visualizer/index.html">Fraction Visualizer</a> &mdash; See fractions as visual diagrams.
+                    &nbsp;&bull;&nbsp;
+                    <a href="../percent-calculator/index.html">Percent Calculator</a> &mdash; Calculate percentages quickly.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'math-tools',
+            title: 'Decimal to Fraction Converter',
+            breadcrumbs: [
+                { label: 'Math Tools', href: '../index.html' },
+                { label: 'Decimal to Fraction Converter' }
+            ]
+        });
+    </script>
+    <script src="decimal-to-fraction.js"></script>
+</body>
+</html>

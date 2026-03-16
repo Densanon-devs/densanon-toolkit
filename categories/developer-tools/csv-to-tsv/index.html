@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV to TSV Converter - ToolBox</title>
+  <meta name="description" content="Convert comma-separated values (CSV) to tab-separated values (TSV) instantly. Prepare data for spreadsheet pasting, database imports, and bioinformatics workflows.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/data-converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>CSV to TSV Converter</h1>
+      <p>Convert comma-separated data to tab-separated format for spreadsheets and database tools.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../file-converter/index.html">&larr; All Data Converters</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts comma-separated values (CSV) to tab-separated values (TSV). TSV is the preferred format for pasting data directly into spreadsheets, importing into certain database systems, and working with bioinformatics tools that expect tab-delimited input. The converter properly parses quoted CSV fields — including fields that contain commas, newlines, and escaped quotes — and produces clean TSV output where each original field is separated by a single tab character. Everything runs locally in your browser with no data transmitted to any external server.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert CSV to TSV</h2>
+      <ol>
+        <li><strong>Paste your CSV data</strong> — enter comma-separated text into the input area, or drag and drop a .csv file onto the upload zone.</li>
+        <li><strong>Verify the conversion type</strong> — CSV to TSV is preselected. You can switch to other formats using the dropdown.</li>
+        <li><strong>Click Convert</strong> — the tool parses each CSV row, handles quoted fields correctly, and outputs tab-separated data.</li>
+        <li><strong>Copy or download</strong> — copy the TSV text to paste into a spreadsheet, or download it as a .tsv file for import.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>When to Use TSV Over CSV</h2>
+      <p>TSV is advantageous in workflows where commas frequently appear inside data values, such as addresses, descriptions, or financial figures formatted with comma separators. Since tabs rarely appear in natural text, TSV avoids the quoting complexity that CSV requires. Bioinformatics pipelines, genomics databases, and many Unix command-line tools default to tab-delimited formats. Pasting TSV data directly into a spreadsheet preserves column structure automatically, because spreadsheet applications interpret tab characters as cell boundaries. If you are preparing data for any of these scenarios, converting from CSV to TSV eliminates potential parsing ambiguities.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>How are quoted CSV fields handled during conversion?</h3>
+      <p>The parser follows RFC 4180 rules: fields enclosed in double quotes are unquoted, escaped double quotes (represented as two consecutive quotes) are reduced to single quotes, and embedded commas or newlines within quoted fields are preserved as literal characters in the TSV output.</p>
+      <h3>What if my CSV data contains tab characters?</h3>
+      <p>Tab characters within CSV field values will appear literally in the TSV output. This could cause column misalignment when the TSV is parsed by other tools. If your data contains tabs, consider cleaning them before conversion or using a different delimiter altogether.</p>
+      <h3>Can I paste the TSV output directly into Excel?</h3>
+      <p>Yes. Copy the TSV result and paste it into a cell in Excel or Google Sheets. The spreadsheet will automatically split the data into separate columns at each tab boundary, preserving the full table structure.</p>
+      <h3>Is my data processed on a remote server?</h3>
+      <p>No. The conversion is performed entirely in your browser using JavaScript. Your data stays on your device and is never transmitted over the network.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../tsv-to-csv/index.html">TSV to CSV Converter</a>
+      <a href="../csv-to-json/index.html">CSV to JSON Converter</a>
+      <a href="../json-to-csv/index.html">JSON to CSV Converter</a>
+      <a href="../file-converter/index.html">File Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'developer-tools',
+      title: 'CSV to TSV Converter',
+      breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'CSV to TSV Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/data-converter.js"></script>
+  <script>initDataConverter({ type: 'csv-to-tsv', mountTo: '#converter-mount' });</script>
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Format Converter - ToolBox</title>
+  <meta name="description" content="Convert between image formats online — PNG, JPG, WebP, BMP, and GIF. Free browser-based converter with quality control, side-by-side preview, and instant download.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    .hub-intro {
+      max-width: 640px;
+      margin-bottom: 40px;
+    }
+    .hub-intro p {
+      color: var(--color-text-muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+    .hub-section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--color-primary);
+      margin-bottom: 16px;
+    }
+    .featured-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    .featured-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-primary);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+    .featured-card::before {
+      content: 'Popular';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(108, 99, 255, 0.15);
+      color: var(--color-primary);
+      padding: 3px 8px;
+      border-radius: 10px;
+    }
+    .featured-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 20px rgba(108, 99, 255, 0.15);
+    }
+    .featured-card h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .featured-card p {
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+      flex-grow: 1;
+    }
+    .featured-card .card-link {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+    .all-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+    .all-grid .tool-card {
+      padding: 18px;
+    }
+    .all-grid .tool-card h4 {
+      font-size: 0.98rem;
+    }
+    .all-grid .tool-card p {
+      font-size: 0.84rem;
+    }
+    .format-matrix {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 0.88rem;
+    }
+    .format-matrix th,
+    .format-matrix td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--color-border);
+      text-align: center;
+    }
+    .format-matrix th {
+      color: var(--color-text-muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .format-matrix th:first-child,
+    .format-matrix td:first-child {
+      text-align: left;
+      font-weight: 600;
+    }
+    .format-matrix .check {
+      color: var(--color-accent-green);
+    }
+    .format-matrix .dash {
+      color: var(--color-text-muted);
+      opacity: 0.3;
+    }
+    @media (max-width: 640px) {
+      .featured-grid { grid-template-columns: 1fr; }
+      .all-grid { grid-template-columns: 1fr; }
+      .format-matrix { font-size: 0.78rem; }
+      .format-matrix th, .format-matrix td { padding: 8px 6px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Image Format Converter</h1>
+      <p>Convert between PNG, JPG, WebP, BMP, GIF, and SVG instantly in your browser. No uploads, no installs.</p>
+    </div>
+
+    <div class="hub-intro">
+      <p>Choose the conversion you need below. Every conversion runs entirely in your browser — your images never leave your device. Adjust quality for lossy formats, compare original vs converted side-by-side, and download instantly.</p>
+    </div>
+
+    <!-- FEATURED / POPULAR -->
+    <div class="hub-section-label">Most Popular Conversions</div>
+    <div class="featured-grid">
+      <a href="../png-to-jpg/index.html" class="featured-card">
+        <h4>PNG to JPG</h4>
+        <p>The most common conversion — dramatically reduce file size by switching from lossless PNG to compressed JPG.</p>
+        <span class="card-link">Convert now</span>
+      </a>
+      <a href="../jpg-to-png/index.html" class="featured-card">
+        <h4>JPG to PNG</h4>
+        <p>Convert JPG to lossless PNG when you need pixel-perfect quality or transparency support.</p>
+        <span class="card-link">Convert now</span>
+      </a>
+      <a href="../png-to-webp/index.html" class="featured-card">
+        <h4>PNG to WebP</h4>
+        <p>Get the best of both worlds — WebP offers smaller files than JPG with better quality than PNG at the same size.</p>
+        <span class="card-link">Convert now</span>
+      </a>
+      <a href="../webp-to-jpg/index.html" class="featured-card">
+        <h4>WebP to JPG</h4>
+        <p>Convert modern WebP images to universally compatible JPG for sharing and legacy software.</p>
+        <span class="card-link">Convert now</span>
+      </a>
+    </div>
+
+    <!-- ALL CONVERTERS -->
+    <div class="hub-section-label">All Image Conversions</div>
+    <div class="all-grid">
+      <a href="../png-to-jpg/index.html" class="tool-card">
+        <h4>PNG to JPG</h4>
+        <p>Reduce PNG file sizes with lossy JPG compression.</p>
+      </a>
+      <a href="../png-to-webp/index.html" class="tool-card">
+        <h4>PNG to WebP</h4>
+        <p>Convert PNG to modern WebP for superior compression.</p>
+      </a>
+      <a href="../png-to-bmp/index.html" class="tool-card">
+        <h4>PNG to BMP</h4>
+        <p>Convert PNG to uncompressed BMP for legacy use.</p>
+      </a>
+      <a href="../jpg-to-png/index.html" class="tool-card">
+        <h4>JPG to PNG</h4>
+        <p>Convert JPG to lossless PNG with transparency.</p>
+      </a>
+      <a href="../jpg-to-webp/index.html" class="tool-card">
+        <h4>JPG to WebP</h4>
+        <p>Better compression than JPG at the same quality.</p>
+      </a>
+      <a href="../jpg-to-bmp/index.html" class="tool-card">
+        <h4>JPG to BMP</h4>
+        <p>Convert JPG to uncompressed BMP format.</p>
+      </a>
+      <a href="../webp-to-png/index.html" class="tool-card">
+        <h4>WebP to PNG</h4>
+        <p>Convert WebP to universally supported PNG.</p>
+      </a>
+      <a href="../webp-to-jpg/index.html" class="tool-card">
+        <h4>WebP to JPG</h4>
+        <p>Convert WebP to widely compatible JPG format.</p>
+      </a>
+      <a href="../webp-to-bmp/index.html" class="tool-card">
+        <h4>WebP to BMP</h4>
+        <p>Convert WebP to raw uncompressed BMP.</p>
+      </a>
+      <a href="../bmp-to-png/index.html" class="tool-card">
+        <h4>BMP to PNG</h4>
+        <p>Compress large BMP files to lossless PNG.</p>
+      </a>
+      <a href="../bmp-to-jpg/index.html" class="tool-card">
+        <h4>BMP to JPG</h4>
+        <p>Dramatically shrink BMP files with JPG compression.</p>
+      </a>
+      <a href="../bmp-to-webp/index.html" class="tool-card">
+        <h4>BMP to WebP</h4>
+        <p>Best compression ratio for converting BMP files.</p>
+      </a>
+      <a href="../gif-to-png/index.html" class="tool-card">
+        <h4>GIF to PNG</h4>
+        <p>Better color depth and quality from GIF to PNG.</p>
+      </a>
+      <a href="../gif-to-jpg/index.html" class="tool-card">
+        <h4>GIF to JPG</h4>
+        <p>Convert GIF to JPG for smaller photo files.</p>
+      </a>
+      <a href="../gif-to-webp/index.html" class="tool-card">
+        <h4>GIF to WebP</h4>
+        <p>Convert GIF to modern WebP compression.</p>
+      </a>
+      <a href="../svg-to-png/index.html" class="tool-card">
+        <h4>SVG to PNG</h4>
+        <p>Rasterize SVG vectors to PNG with transparency.</p>
+      </a>
+      <a href="../svg-to-jpg/index.html" class="tool-card">
+        <h4>SVG to JPG</h4>
+        <p>Convert SVG vectors to compressed JPG images.</p>
+      </a>
+      <a href="../svg-to-webp/index.html" class="tool-card">
+        <h4>SVG to WebP</h4>
+        <p>Convert SVG vectors to modern WebP format.</p>
+      </a>
+      <a href="../svg-to-bmp/index.html" class="tool-card">
+        <h4>SVG to BMP</h4>
+        <p>Convert SVG vectors to uncompressed BMP.</p>
+      </a>
+      <a href="../png-to-svg/index.html" class="tool-card">
+        <h4>PNG to SVG</h4>
+        <p>Trace PNG images into scalable vector SVG.</p>
+      </a>
+      <a href="../jpg-to-svg/index.html" class="tool-card">
+        <h4>JPG to SVG</h4>
+        <p>Trace JPG images into scalable vector SVG.</p>
+      </a>
+      <a href="../webp-to-svg/index.html" class="tool-card">
+        <h4>WebP to SVG</h4>
+        <p>Trace WebP images into scalable vector SVG.</p>
+      </a>
+      <a href="../bmp-to-svg/index.html" class="tool-card">
+        <h4>BMP to SVG</h4>
+        <p>Trace BMP images into scalable vector SVG.</p>
+      </a>
+      <a href="../gif-to-svg/index.html" class="tool-card">
+        <h4>GIF to SVG</h4>
+        <p>Trace GIF images into scalable vector SVG.</p>
+      </a>
+    </div>
+
+    <!-- FORMAT COMPARISON -->
+    <section>
+      <h2>Image Format Comparison</h2>
+      <p>Each format has strengths and trade-offs. Use this table to decide which format is right for your use case.</p>
+      <table class="format-matrix">
+        <thead>
+          <tr>
+            <th>Format</th>
+            <th>Compression</th>
+            <th>Transparency</th>
+            <th>Animation</th>
+            <th>Best For</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>PNG</td>
+            <td>Lossless</td>
+            <td class="check">Yes</td>
+            <td class="dash">No</td>
+            <td>Screenshots, graphics, logos</td>
+          </tr>
+          <tr>
+            <td>JPG</td>
+            <td>Lossy</td>
+            <td class="dash">No</td>
+            <td class="dash">No</td>
+            <td>Photos, web images</td>
+          </tr>
+          <tr>
+            <td>WebP</td>
+            <td>Both</td>
+            <td class="check">Yes</td>
+            <td class="check">Yes</td>
+            <td>Web performance, modern apps</td>
+          </tr>
+          <tr>
+            <td>BMP</td>
+            <td>None</td>
+            <td class="dash">No</td>
+            <td class="dash">No</td>
+            <td>Legacy software, raw data</td>
+          </tr>
+          <tr>
+            <td>GIF</td>
+            <td>Lossless (256 colors)</td>
+            <td class="check">Yes</td>
+            <td class="check">Yes</td>
+            <td>Simple animations, icons</td>
+          </tr>
+          <tr>
+            <td>SVG</td>
+            <td>Vector (N/A)</td>
+            <td class="check">Yes</td>
+            <td class="check">Yes</td>
+            <td>Logos, icons, scalable graphics</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section>
+      <h2>How It Works</h2>
+      <ol>
+        <li><strong>Pick a conversion</strong> from the options above, or go directly to the converter you need.</li>
+        <li><strong>Upload your image</strong> by dragging it onto the drop zone or clicking to browse your files.</li>
+        <li><strong>Adjust quality</strong> if converting to a lossy format (JPG or WebP). The slider lets you balance file size against visual fidelity.</li>
+        <li><strong>Click Convert</strong> to process the image instantly in your browser.</li>
+        <li><strong>Compare results</strong> with the side-by-side preview showing original and converted versions with file sizes.</li>
+        <li><strong>Download</strong> the converted image to your device.</li>
+      </ol>
+    </section>
+
+    <!-- FAQ -->
+    <section>
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>Are my images uploaded to a server?</h3>
+      <p>No. Every conversion runs entirely in your browser using the HTML Canvas API. Your images never leave your device — there is no server upload, no cloud processing, and no data collection.</p>
+
+      <h3>Which format gives the smallest file size?</h3>
+      <p>For photographs, WebP typically produces the smallest files at equivalent quality, followed by JPG. For graphics with flat colors and sharp edges, PNG can sometimes be smaller than JPG. BMP is always the largest since it stores raw uncompressed pixel data.</p>
+
+      <h3>Will I lose image quality when converting?</h3>
+      <p>Converting to lossless formats (PNG, BMP) preserves exact pixel data. Converting to lossy formats (JPG, WebP) may reduce quality depending on the quality setting — higher settings preserve more detail. Converting from lossy to lossless does not restore lost quality; it only prevents further degradation.</p>
+
+      <h3>What is the maximum file size I can convert?</h3>
+      <p>There is no hard limit. Since processing happens in your browser, the practical limit depends on your device's available memory. Most images under 50MB convert without issues. Very large images (100MB+) may cause slower browsers to struggle.</p>
+
+      <h3>Can I convert multiple images at once?</h3>
+      <p>Each converter handles one image at a time to give you full control over quality settings and preview comparison. For batch conversion, convert each image individually — the process is instant so it's quick even for several files.</p>
+
+      <h3>Why does my converted image have a white background?</h3>
+      <p>If your original image has transparency (common in PNG and WebP) and you convert to JPG or BMP, the transparent areas are filled with white because these formats do not support transparency. Convert to PNG or WebP instead if you need to keep transparency.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../color-palette-extractor/index.html">Color Palette Extractor</a>
+      <a href="../pixel-art-palette/index.html">Pixel Art Palette Generator</a>
+      <a href="../../developer-tools/file-converter/index.html">File Converter (All Formats)</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'image-tools',
+      title: 'Image Format Converter',
+      breadcrumbs: [
+        { label: 'Image Tools', href: '../index.html' },
+        { label: 'Image Format Converter' }
+      ]
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+/* Statistics Calculator — shared styles */
+.sc-input-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.sc-input-panel label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+.sc-input-panel textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px 14px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  font-size: 1.1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.sc-input-panel textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+.sc-error {
+  color: var(--color-accent-orange);
+  font-size: 0.9rem;
+  padding: 10px;
+  background: rgba(251, 146, 60, 0.1);
+  border-radius: var(--radius);
+  display: none;
+  margin-top: 12px;
+}
+
+/* Results grid */
+.sc-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.sc-result-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+.sc-result-card .sc-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.sc-result-card .sc-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-accent-green);
+}
+.sc-highlight-mean .sc-value { color: var(--color-accent-blue); }
+.sc-highlight-median .sc-value { color: var(--color-primary); }
+.sc-highlight-mode .sc-value { color: var(--color-accent-orange); }
+
+/* Focused card (for landing pages) */
+.sc-focused {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 12px rgba(108, 99, 255, 0.2);
+}
+.sc-focused .sc-label {
+  color: var(--color-text);
+  font-weight: 700;
+}
+.sc-focused .sc-value {
+  font-size: 1.6rem;
+}
+
+/* Sorted list */
+.sc-sorted-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+.sc-sorted-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+}
+.sc-sorted-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sc-sorted-item {
+  background: var(--color-bg);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  font-weight: 500;
+}
+.sc-sorted-item.sc-is-mode {
+  background: rgba(251, 146, 60, 0.2);
+  color: var(--color-accent-orange);
+  border: 1px solid var(--color-accent-orange);
+}
+.sc-sorted-item.sc-is-median {
+  background: rgba(108, 99, 255, 0.2);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+/* Chart */
+.sc-chart-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+.sc-chart-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+}
+.sc-chart-section canvas {
+  border-radius: var(--radius);
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .sc-results-grid { grid-template-columns: repeat(2, 1fr); }
+  .sc-sorted-list { gap: 6px; }
+  .sc-sorted-item { padding: 6px 8px; font-size: 0.85rem; min-height: 44px; display: flex; align-items: center; }
+}

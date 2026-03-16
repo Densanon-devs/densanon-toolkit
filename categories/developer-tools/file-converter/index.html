@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Converter - ToolBox</title>
+  <meta name="description" content="Convert between common file formats in your browser. Images, data files, and text — no uploads, no installs.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    /* Conversion mode tabs */
+    .mode-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--color-bg);
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+
+    .mode-tab {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      border-radius: 6px;
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .mode-tab:hover {
+      color: var(--color-text);
+    }
+
+    .mode-tab.active {
+      background: var(--color-primary);
+      color: #fff;
+    }
+
+    /* Conversion panel */
+    .conversion-panel {
+      display: none;
+    }
+
+    .conversion-panel.active {
+      display: block;
+    }
+
+    /* Upload / drop zone */
+    .drop-zone {
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius);
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 20px;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: var(--color-primary);
+      background: rgba(108, 99, 255, 0.05);
+    }
+
+    .drop-zone .drop-label {
+      color: var(--color-text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    .drop-zone .drop-hint {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      opacity: 0.5;
+    }
+
+    .drop-zone .file-name {
+      color: var(--color-primary);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    /* Format selector row */
+    .format-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .format-row label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+    }
+
+    .format-row select {
+      padding: 8px 14px;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      color: var(--color-text);
+      font-size: 0.9rem;
+      min-width: 140px;
+    }
+
+    .format-row select:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+
+    .arrow-icon {
+      color: var(--color-text-muted);
+      font-size: 1.2rem;
+    }
+
+    /* Options row */
+    .options-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    .option-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .option-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+    }
+
+    .option-group input[type="range"] {
+      width: 160px;
+      accent-color: var(--color-primary);
+    }
+
+    .option-group .range-value {
+      font-size: 0.8rem;
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    /* Action buttons */
+    .action-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .btn-primary {
+      padding: 10px 24px;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--color-primary-hover);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      padding: 10px 24px;
+      background: transparent;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      color: var(--color-text-muted);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--color-primary);
+      color: var(--color-text);
+    }
+
+    /* Preview area */
+    .preview-area {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .preview-area.visible {
+      display: block;
+    }
+
+    .preview-area h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .preview-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .preview-pane {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    .preview-pane .pane-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .preview-pane img {
+      max-width: 100%;
+      max-height: 300px;
+      display: block;
+      margin: 0 auto;
+      image-rendering: auto;
+      border-radius: 4px;
+    }
+
+    .preview-pane .file-meta {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+    }
+
+    /* Text preview */
+    .text-preview {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      max-height: 400px;
+      overflow: auto;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.85rem;
+      color: var(--color-text);
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.5;
+    }
+
+    /* Text input area for data conversions */
+    .text-input-area {
+      width: 100%;
+      min-height: 200px;
+      padding: 16px;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      color: var(--color-text);
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      resize: vertical;
+      margin-bottom: 16px;
+    }
+
+    .text-input-area:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+
+    .text-input-area::placeholder {
+      color: var(--color-text-muted);
+      opacity: 0.4;
+    }
+
+    /* Status message */
+    .status-msg {
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .status-msg.success {
+      display: block;
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      color: var(--color-accent-green);
+    }
+
+    .status-msg.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    /* Features grid */
+    .features-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .feature-item {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .feature-item h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .feature-item p {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    .conversion-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.88rem;
+    }
+
+    .conversion-table th,
+    .conversion-table td {
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .conversion-table th {
+      color: var(--color-text-muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .conversion-table td {
+      color: var(--color-text);
+    }
+
+    .conversion-table code {
+      padding: 2px 7px;
+      background: var(--color-bg);
+      border-radius: 4px;
+      font-size: 0.82rem;
+      color: var(--color-primary);
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 1.6rem; }
+      .preview-compare { grid-template-columns: 1fr; }
+      .mode-tabs { flex-wrap: nowrap; overflow-x: auto; }
+      .mode-tab { min-height: 44px; }
+      .format-row { flex-direction: column; align-items: stretch; }
+      .format-row select { width: 100%; min-width: 0; min-height: 44px; }
+      .arrow-icon { text-align: center; }
+      .action-row { flex-direction: column; }
+      .btn-primary, .btn-secondary { width: 100%; min-height: 44px; }
+      .option-group input[type="range"] { width: 100%; }
+      .options-row { flex-direction: column; align-items: stretch; }
+      .features-list { grid-template-columns: 1fr; }
+      .conversion-table { font-size: 0.8rem; }
+      .conversion-table th, .conversion-table td { padding: 8px; }
+      .text-input-area { min-height: 150px; }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>File Converter</h1>
+      <p>Convert between common file formats directly in your browser. No uploads, no installs.</p>
+    </div>
+
+    <section class="tool-box">
+      <!-- Mode tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="image">Images</button>
+        <button class="mode-tab" data-mode="data">Data / Text</button>
+      </div>
+
+      <!-- IMAGE CONVERSION -->
+      <div class="conversion-panel active" id="panel-image">
+        <div class="drop-zone" id="imgDropZone">
+          <p class="drop-label">Drop an image here or click to upload</p>
+          <span class="drop-hint">PNG, JPG, WebP, BMP, GIF</span>
+          <input type="file" id="imgFileInput" accept="image/png,image/jpeg,image/webp,image/bmp,image/gif" hidden>
+        </div>
+
+        <div class="format-row">
+          <label>From</label>
+          <select id="imgFromFormat" disabled>
+            <option value="">Upload a file</option>
+          </select>
+          <span class="arrow-icon">&#8594;</span>
+          <label>To</label>
+          <select id="imgToFormat">
+            <option value="image/png">PNG</option>
+            <option value="image/jpeg">JPG</option>
+            <option value="image/webp">WebP</option>
+            <option value="image/bmp">BMP</option>
+          </select>
+        </div>
+
+        <div class="options-row" id="imgOptions" style="display:none;">
+          <div class="option-group" id="qualityGroup">
+            <label>Quality <span class="range-value" id="qualityValue">92%</span></label>
+            <input type="range" id="qualitySlider" min="1" max="100" value="92">
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-primary" id="imgConvertBtn" disabled>Convert</button>
+          <button class="btn-secondary" id="imgDownloadBtn" style="display:none;">Download</button>
+        </div>
+
+        <div class="status-msg" id="imgStatus"></div>
+
+        <div class="preview-area" id="imgPreview">
+          <h3>Preview</h3>
+          <div class="preview-compare">
+            <div class="preview-pane">
+              <div class="pane-label">Original</div>
+              <img id="imgOriginal" alt="Original">
+              <div class="file-meta" id="imgOrigMeta"></div>
+            </div>
+            <div class="preview-pane">
+              <div class="pane-label">Converted</div>
+              <img id="imgConverted" alt="Converted">
+              <div class="file-meta" id="imgConvMeta"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DATA CONVERSION -->
+      <div class="conversion-panel" id="panel-data">
+        <div class="format-row">
+          <label>Conversion</label>
+          <select id="dataConversionType">
+            <option value="csv-to-json">CSV to JSON</option>
+            <option value="json-to-csv">JSON to CSV</option>
+            <option value="json-prettify">JSON Prettify</option>
+            <option value="json-minify">JSON Minify</option>
+            <option value="tsv-to-csv">TSV to CSV</option>
+            <option value="csv-to-tsv">CSV to TSV</option>
+            <option value="markdown-to-html">Markdown to HTML</option>
+            <option value="yaml-to-json">YAML to JSON</option>
+            <option value="base64-encode">Base64 Encode</option>
+            <option value="base64-decode">Base64 Decode</option>
+          </select>
+        </div>
+
+        <div class="drop-zone" id="dataDropZone" style="padding:20px; margin-bottom:12px;">
+          <p class="drop-label" style="margin:0; font-size:0.85rem;">Drop a file to load its contents, or paste below</p>
+          <input type="file" id="dataFileInput" hidden>
+        </div>
+
+        <textarea class="text-input-area" id="dataInput" placeholder="Paste or type your input here..."></textarea>
+
+        <div class="action-row">
+          <button class="btn-primary" id="dataConvertBtn">Convert</button>
+          <button class="btn-secondary" id="dataCopyBtn" style="display:none;">Copy Result</button>
+          <button class="btn-secondary" id="dataDownloadBtn" style="display:none;">Download Result</button>
+        </div>
+
+        <div class="status-msg" id="dataStatus"></div>
+
+        <div class="preview-area" id="dataPreview">
+          <h3>Result</h3>
+          <div class="text-preview" id="dataOutput"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHAT IT DOES -->
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>
+        File Converter handles the most common format conversions you'd need day-to-day, all
+        inside your browser. Upload an image and convert it between PNG, JPG, WebP, and BMP with
+        adjustable quality. Or paste data and convert between CSV, JSON, TSV, YAML, Markdown,
+        and Base64. There's nothing to install and your files never leave your machine.
+      </p>
+    </section>
+
+    <!-- SUPPORTED CONVERSIONS -->
+    <section>
+      <h2>Supported Conversions</h2>
+      <table class="conversion-table">
+        <thead>
+          <tr><th>Category</th><th>From</th><th>To</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Image</td><td><code>PNG</code> <code>JPG</code> <code>WebP</code> <code>BMP</code> <code>GIF</code></td><td><code>PNG</code> <code>JPG</code> <code>WebP</code> <code>BMP</code></td></tr>
+          <tr><td>Data</td><td><code>CSV</code></td><td><code>JSON</code> <code>TSV</code></td></tr>
+          <tr><td>Data</td><td><code>JSON</code></td><td><code>CSV</code> Prettified / Minified</td></tr>
+          <tr><td>Data</td><td><code>TSV</code></td><td><code>CSV</code></td></tr>
+          <tr><td>Text</td><td><code>Markdown</code></td><td><code>HTML</code></td></tr>
+          <tr><td>Data</td><td><code>YAML</code></td><td><code>JSON</code></td></tr>
+          <tr><td>Encoding</td><td>Text / <code>Base64</code></td><td><code>Base64</code> / Text</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- FEATURES -->
+    <section>
+      <h2>Features</h2>
+      <div class="features-list">
+        <div class="feature-item">
+          <h4>Image Conversion</h4>
+          <p>Convert between PNG, JPG, WebP, and BMP. Adjust quality for lossy formats with a slider and compare original vs converted side-by-side with file size info.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Data Conversion</h4>
+          <p>Transform structured data between CSV, JSON, TSV, and YAML. Paste text directly or drop a file. Copy the result to clipboard or download it.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Quality Control</h4>
+          <p>When converting to JPG or WebP, a quality slider lets you balance file size against image fidelity. The preview shows both versions so you can compare.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Markdown to HTML</h4>
+          <p>Convert Markdown text into clean HTML. Supports headings, bold, italic, links, lists, code blocks, blockquotes, and horizontal rules.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Base64 Encoding</h4>
+          <p>Encode any text to Base64 or decode Base64 strings back to plain text. Useful for embedding data or working with APIs.</p>
+        </div>
+        <div class="feature-item">
+          <h4>100% Client-Side</h4>
+          <p>Everything runs in your browser. No server uploads, no accounts, no tracking. Your files stay on your machine.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW TO USE -->
+    <section>
+      <h2>How to Use</h2>
+      <h3>Image Conversion</h3>
+      <ol>
+        <li><strong>Select the Images tab</strong> at the top of the tool.</li>
+        <li><strong>Upload your image</strong> by clicking the drop zone or dragging a file onto it. The source format is detected automatically.</li>
+        <li><strong>Choose your target format</strong> from the "To" dropdown (PNG, JPG, WebP, or BMP).</li>
+        <li><strong>Adjust quality</strong> if converting to JPG or WebP — the slider appears automatically for lossy formats.</li>
+        <li><strong>Click Convert</strong> to process the image. A side-by-side preview shows the original and converted versions with file sizes.</li>
+        <li><strong>Click Download</strong> to save the converted file.</li>
+      </ol>
+      <h3>Data / Text Conversion</h3>
+      <ol>
+        <li><strong>Select the Data / Text tab</strong>.</li>
+        <li><strong>Pick a conversion type</strong> from the dropdown (e.g., CSV to JSON, Markdown to HTML).</li>
+        <li><strong>Paste your input</strong> into the text area, or drop a file to load its contents.</li>
+        <li><strong>Click Convert</strong> to run the transformation. The result appears below.</li>
+        <li><strong>Copy or Download</strong> the result using the buttons that appear after conversion.</li>
+      </ol>
+    </section>
+
+    <!-- FAQ -->
+    <section>
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>Does this tool upload my files to a server?</h3>
+      <p>No. Every conversion runs entirely in your browser using JavaScript APIs like Canvas for images and text parsing for data. Nothing is sent over the network.</p>
+
+      <h3>Why is my converted JPG larger than the original PNG?</h3>
+      <p>JPG doesn't support transparency and uses different compression. Some images (especially simple graphics or screenshots) compress better as PNG. Try WebP for smaller files with good quality.</p>
+
+      <h3>What Markdown features are supported?</h3>
+      <p>Headings (#), bold (**), italic (*), links, unordered and ordered lists, inline code, fenced code blocks, blockquotes, and horizontal rules. It covers the most commonly used Markdown syntax.</p>
+
+      <h3>Can I convert GIF animations?</h3>
+      <p>The tool converts the first frame of an animated GIF. For full animation conversion, a dedicated GIF tool would be needed.</p>
+
+      <h3>What happens with special characters in CSV/JSON conversion?</h3>
+      <p>The converter properly handles quoted fields, commas inside quoted strings, and escaped quotes in CSV. JSON output is valid and UTF-8 encoded.</p>
+
+      <h3>Is there a size limit?</h3>
+      <p>There's no hard limit. Browser memory is the only constraint — most files under 50MB will convert without issues.</p>
+    </section>
+
+    <!-- RELATED TOOLS -->
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../json-formatter/index.html">JSON Formatter</a>
+      <a href="../csv-to-json/index.html">CSV to JSON Converter</a>
+      <a href="../data-converters/index.html">All Data Converters</a>
+      <a href="../../image-tools/image-converters/index.html">Image Converters</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'developer-tools',
+      title: 'File Converter',
+      breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'File Converter' }
+      ]
+    });
+  </script>
+  <script>
+    (() => {
+      // ===== TAB SWITCHING =====
+      const tabs = document.querySelectorAll('.mode-tab');
+      const panels = document.querySelectorAll('.conversion-panel');
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          panels.forEach(p => p.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById('panel-' + tab.dataset.mode).classList.add('active');
+        });
+      });
+
+      // ===== IMAGE CONVERSION =====
+      const imgDropZone = document.getElementById('imgDropZone');
+      const imgFileInput = document.getElementById('imgFileInput');
+      const imgFromFormat = document.getElementById('imgFromFormat');
+      const imgToFormat = document.getElementById('imgToFormat');
+      const imgOptions = document.getElementById('imgOptions');
+      const qualityGroup = document.getElementById('qualityGroup');
+      const qualitySlider = document.getElementById('qualitySlider');
+      const qualityValue = document.getElementById('qualityValue');
+      const imgConvertBtn = document.getElementById('imgConvertBtn');
+      const imgDownloadBtn = document.getElementById('imgDownloadBtn');
+      const imgStatus = document.getElementById('imgStatus');
+      const imgPreview = document.getElementById('imgPreview');
+      const imgOriginal = document.getElementById('imgOriginal');
+      const imgConverted = document.getElementById('imgConverted');
+      const imgOrigMeta = document.getElementById('imgOrigMeta');
+      const imgConvMeta = document.getElementById('imgConvMeta');
+
+      let loadedImage = null;
+      let loadedFile = null;
+      let convertedBlob = null;
+
+      const FORMAT_NAMES = {
+        'image/png': 'PNG',
+        'image/jpeg': 'JPG',
+        'image/webp': 'WebP',
+        'image/bmp': 'BMP',
+        'image/gif': 'GIF'
+      };
+
+      const FORMAT_EXTS = {
+        'image/png': '.png',
+        'image/jpeg': '.jpg',
+        'image/webp': '.webp',
+        'image/bmp': '.bmp'
+      };
+
+      // Drop zone
+      function setupDropZone(zone, input, onFile) {
+        zone.addEventListener('click', () => input.click());
+        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+        zone.addEventListener('drop', e => {
+          e.preventDefault();
+          zone.classList.remove('dragover');
+          if (e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]);
+        });
+        input.addEventListener('change', () => {
+          if (input.files[0]) onFile(input.files[0]);
+        });
+      }
+
+      setupDropZone(imgDropZone, imgFileInput, handleImageFile);
+
+      function handleImageFile(file) {
+        if (!file.type.startsWith('image/')) return;
+        loadedFile = file;
+
+        const url = URL.createObjectURL(file);
+        const image = new Image();
+        image.onload = () => {
+          loadedImage = image;
+          imgDropZone.querySelector('.drop-label').innerHTML = '<span class="file-name">' + escapeHtml(file.name) + '</span>';
+          imgDropZone.querySelector('.drop-hint').textContent = image.naturalWidth + ' x ' + image.naturalHeight + 'px';
+
+          imgFromFormat.innerHTML = '<option>' + (FORMAT_NAMES[file.type] || file.type) + '</option>';
+          imgConvertBtn.disabled = false;
+          updateQualityVisibility();
+          hideImgResult();
+        };
+        image.src = url;
+      }
+
+      imgToFormat.addEventListener('change', updateQualityVisibility);
+      qualitySlider.addEventListener('input', () => {
+        qualityValue.textContent = qualitySlider.value + '%';
+      });
+
+      function updateQualityVisibility() {
+        const to = imgToFormat.value;
+        const showQuality = (to === 'image/jpeg' || to === 'image/webp');
+        imgOptions.style.display = showQuality ? 'flex' : 'none';
+      }
+
+      function hideImgResult() {
+        imgPreview.classList.remove('visible');
+        imgDownloadBtn.style.display = 'none';
+        imgStatus.className = 'status-msg';
+        convertedBlob = null;
+      }
+
+      imgConvertBtn.addEventListener('click', () => {
+        if (!loadedImage) return;
+
+        const toFormat = imgToFormat.value;
+        const quality = (toFormat === 'image/jpeg' || toFormat === 'image/webp')
+          ? parseInt(qualitySlider.value) / 100
+          : undefined;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = loadedImage.naturalWidth;
+        canvas.height = loadedImage.naturalHeight;
+        const ctx = canvas.getContext('2d');
+
+        // JPG doesn't support transparency — fill white background
+        if (toFormat === 'image/jpeg') {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        ctx.drawImage(loadedImage, 0, 0);
+
+        canvas.toBlob(blob => {
+          if (!blob) {
+            imgStatus.textContent = 'Conversion failed. This format may not be supported by your browser.';
+            imgStatus.className = 'status-msg error';
+            return;
+          }
+
+          convertedBlob = blob;
+          const convUrl = URL.createObjectURL(blob);
+
+          imgOriginal.src = loadedImage.src;
+          imgOrigMeta.textContent = FORMAT_NAMES[loadedFile.type] + ' — ' + formatSize(loadedFile.size);
+          imgConverted.src = convUrl;
+          imgConvMeta.textContent = FORMAT_NAMES[toFormat] + ' — ' + formatSize(blob.size);
+
+          const ratio = ((blob.size / loadedFile.size) * 100).toFixed(0);
+          const diff = blob.size < loadedFile.size
+            ? (formatSize(loadedFile.size - blob.size) + ' smaller (' + ratio + '% of original)')
+            : (formatSize(blob.size - loadedFile.size) + ' larger (' + ratio + '% of original)');
+
+          imgStatus.textContent = 'Converted successfully. ' + diff;
+          imgStatus.className = 'status-msg success';
+          imgPreview.classList.add('visible');
+          imgDownloadBtn.style.display = 'inline-block';
+        }, toFormat, quality);
+      });
+
+      imgDownloadBtn.addEventListener('click', () => {
+        if (!convertedBlob) return;
+        const ext = FORMAT_EXTS[imgToFormat.value] || '.png';
+        const baseName = loadedFile.name.replace(/\.[^.]+$/, '');
+        const link = document.createElement('a');
+        link.download = baseName + ext;
+        link.href = URL.createObjectURL(convertedBlob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+      });
+
+      // ===== DATA CONVERSION =====
+      const dataConversionType = document.getElementById('dataConversionType');
+      const dataDropZone = document.getElementById('dataDropZone');
+      const dataFileInput = document.getElementById('dataFileInput');
+      const dataInput = document.getElementById('dataInput');
+      const dataConvertBtn = document.getElementById('dataConvertBtn');
+      const dataCopyBtn = document.getElementById('dataCopyBtn');
+      const dataDownloadBtn = document.getElementById('dataDownloadBtn');
+      const dataStatus = document.getElementById('dataStatus');
+      const dataPreview = document.getElementById('dataPreview');
+      const dataOutput = document.getElementById('dataOutput');
+
+      let dataResult = '';
+      let dataResultExt = '.txt';
+
+      setupDropZone(dataDropZone, dataFileInput, handleDataFile);
+
+      function handleDataFile(file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          dataInput.value = e.target.result;
+          dataDropZone.querySelector('.drop-label').innerHTML = 'Loaded: <span class="file-name">' + escapeHtml(file.name) + '</span>';
+        };
+        reader.readAsText(file);
+      }
+
+      dataConversionType.addEventListener('change', () => {
+        const placeholders = {
+          'csv-to-json': 'name,age,city\nAlice,30,New York\nBob,25,London',
+          'json-to-csv': '[{"name":"Alice","age":30},{"name":"Bob","age":25}]',
+          'json-prettify': '{"name":"Alice","age":30,"city":"New York"}',
+          'json-minify': '{\n  "name": "Alice",\n  "age": 30\n}',
+          'tsv-to-csv': 'name\tage\tcity\nAlice\t30\tNew York',
+          'csv-to-tsv': 'name,age,city\nAlice,30,New York',
+          'markdown-to-html': '# Hello World\n\nThis is **bold** and *italic*.\n\n- Item one\n- Item two',
+          'yaml-to-json': 'name: Alice\nage: 30\ncity: New York',
+          'base64-encode': 'Hello, World!',
+          'base64-decode': 'SGVsbG8sIFdvcmxkIQ=='
+        };
+        dataInput.placeholder = placeholders[dataConversionType.value] || 'Paste your input here...';
+        hideDataResult();
+      });
+
+      // Trigger initial placeholder
+      dataConversionType.dispatchEvent(new Event('change'));
+
+      function hideDataResult() {
+        dataPreview.classList.remove('visible');
+        dataCopyBtn.style.display = 'none';
+        dataDownloadBtn.style.display = 'none';
+        dataStatus.className = 'status-msg';
+      }
+
+      dataConvertBtn.addEventListener('click', () => {
+        const input = dataInput.value;
+        if (!input.trim()) {
+          dataStatus.textContent = 'Please enter or paste some input first.';
+          dataStatus.className = 'status-msg error';
+          return;
+        }
+
+        try {
+          const type = dataConversionType.value;
+          let result = '';
+          let ext = '.txt';
+
+          switch (type) {
+            case 'csv-to-json':
+              result = csvToJson(input);
+              ext = '.json';
+              break;
+            case 'json-to-csv':
+              result = jsonToCsv(input);
+              ext = '.csv';
+              break;
+            case 'json-prettify':
+              result = JSON.stringify(JSON.parse(input), null, 2);
+              ext = '.json';
+              break;
+            case 'json-minify':
+              result = JSON.stringify(JSON.parse(input));
+              ext = '.json';
+              break;
+            case 'tsv-to-csv':
+              result = input.split('\n').map(line => {
+                return parseDelimitedLine(line, '\t').map(escapeCsvField).join(',');
+              }).join('\n');
+              ext = '.csv';
+              break;
+            case 'csv-to-tsv':
+              result = input.split('\n').map(line => {
+                return parseCsvLine(line).join('\t');
+              }).join('\n');
+              ext = '.tsv';
+              break;
+            case 'markdown-to-html':
+              result = markdownToHtml(input);
+              ext = '.html';
+              break;
+            case 'yaml-to-json':
+              result = JSON.stringify(parseSimpleYaml(input), null, 2);
+              ext = '.json';
+              break;
+            case 'base64-encode':
+              result = btoa(unescape(encodeURIComponent(input)));
+              ext = '.txt';
+              break;
+            case 'base64-decode':
+              result = decodeURIComponent(escape(atob(input.trim())));
+              ext = '.txt';
+              break;
+            default:
+              throw new Error('Unknown conversion type');
+          }
+
+          dataResult = result;
+          dataResultExt = ext;
+          dataOutput.textContent = result;
+          dataPreview.classList.add('visible');
+          dataCopyBtn.style.display = 'inline-block';
+          dataDownloadBtn.style.display = 'inline-block';
+          dataStatus.textContent = 'Converted successfully.';
+          dataStatus.className = 'status-msg success';
+        } catch (err) {
+          dataStatus.textContent = 'Error: ' + err.message;
+          dataStatus.className = 'status-msg error';
+          hideDataResult();
+          dataStatus.className = 'status-msg error';
+          dataStatus.style.display = 'block';
+        }
+      });
+
+      dataCopyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(dataResult).then(() => {
+          dataCopyBtn.textContent = 'Copied!';
+          setTimeout(() => { dataCopyBtn.textContent = 'Copy Result'; }, 1500);
+        });
+      });
+
+      dataDownloadBtn.addEventListener('click', () => {
+        const blob = new Blob([dataResult], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.download = 'converted' + dataResultExt;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+      });
+
+      // ===== PARSERS =====
+
+      function parseCsvLine(line) {
+        const fields = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (inQuotes) {
+            if (ch === '"') {
+              if (i + 1 < line.length && line[i + 1] === '"') {
+                current += '"';
+                i++;
+              } else {
+                inQuotes = false;
+              }
+            } else {
+              current += ch;
+            }
+          } else {
+            if (ch === '"') {
+              inQuotes = true;
+            } else if (ch === ',') {
+              fields.push(current);
+              current = '';
+            } else {
+              current += ch;
+            }
+          }
+        }
+        fields.push(current);
+        return fields;
+      }
+
+      function parseDelimitedLine(line, delimiter) {
+        const fields = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (inQuotes) {
+            if (ch === '"') {
+              if (i + 1 < line.length && line[i + 1] === '"') {
+                current += '"';
+                i++;
+              } else {
+                inQuotes = false;
+              }
+            } else {
+              current += ch;
+            }
+          } else {
+            if (ch === '"') {
+              inQuotes = true;
+            } else if (ch === delimiter) {
+              fields.push(current);
+              current = '';
+            } else {
+              current += ch;
+            }
+          }
+        }
+        fields.push(current);
+        return fields;
+      }
+
+      function escapeCsvField(field) {
+        if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+          return '"' + field.replace(/"/g, '""') + '"';
+        }
+        return field;
+      }
+
+      function csvToJson(csv) {
+        const lines = csv.trim().split('\n');
+        if (lines.length < 1) throw new Error('No data found');
+        const headers = parseCsvLine(lines[0]);
+        const result = [];
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+          const values = parseCsvLine(lines[i]);
+          const obj = {};
+          headers.forEach((h, idx) => {
+            const val = values[idx] !== undefined ? values[idx] : '';
+            const num = Number(val);
+            obj[h.trim()] = val !== '' && !isNaN(num) && val.trim() === String(num) ? num : val;
+          });
+          result.push(obj);
+        }
+        return JSON.stringify(result, null, 2);
+      }
+
+      function jsonToCsv(jsonStr) {
+        const data = JSON.parse(jsonStr);
+        if (!Array.isArray(data) || data.length === 0) throw new Error('Input must be a non-empty JSON array of objects');
+        const headers = Object.keys(data[0]);
+        const lines = [headers.map(escapeCsvField).join(',')];
+        data.forEach(row => {
+          lines.push(headers.map(h => escapeCsvField(String(row[h] !== undefined ? row[h] : ''))).join(','));
+        });
+        return lines.join('\n');
+      }
+
+      function markdownToHtml(md) {
+        let html = md;
+
+        // Fenced code blocks
+        html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+          return '<pre><code>' + escapeHtml(code.trimEnd()) + '</code></pre>';
+        });
+
+        // Blockquotes
+        html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+
+        // Headings
+        html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>');
+        html = html.replace(/^##### (.+)$/gm, '<h5>$1</h5>');
+        html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+        html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+        html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+        html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+        // Horizontal rules
+        html = html.replace(/^---+$/gm, '<hr>');
+
+        // Bold and italic
+        html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+        html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+        // Inline code
+        html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+        // Links
+        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+
+        // Unordered lists
+        html = html.replace(/(^[-*] .+\n?)+/gm, match => {
+          const items = match.trim().split('\n').map(line =>
+            '<li>' + line.replace(/^[-*] /, '') + '</li>'
+          ).join('\n');
+          return '<ul>\n' + items + '\n</ul>';
+        });
+
+        // Ordered lists
+        html = html.replace(/(^\d+\. .+\n?)+/gm, match => {
+          const items = match.trim().split('\n').map(line =>
+            '<li>' + line.replace(/^\d+\. /, '') + '</li>'
+          ).join('\n');
+          return '<ol>\n' + items + '\n</ol>';
+        });
+
+        // Paragraphs — wrap remaining bare lines
+        html = html.replace(/^(?!<[a-z/])((?!^\s*$).+)$/gm, '<p>$1</p>');
+
+        // Clean up multiple blank lines
+        html = html.replace(/\n{3,}/g, '\n\n');
+
+        return html.trim();
+      }
+
+      function parseSimpleYaml(yaml) {
+        const result = {};
+        const lines = yaml.trim().split('\n');
+        let currentKey = null;
+        let currentList = null;
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith('#')) continue;
+
+          // List item
+          if (trimmed.startsWith('- ')) {
+            if (currentKey && currentList) {
+              currentList.push(parseYamlValue(trimmed.slice(2).trim()));
+            }
+            continue;
+          }
+
+          const colonIdx = trimmed.indexOf(':');
+          if (colonIdx === -1) continue;
+
+          const key = trimmed.slice(0, colonIdx).trim();
+          const rawVal = trimmed.slice(colonIdx + 1).trim();
+
+          if (rawVal === '') {
+            // Could be a list or nested object — treat as list
+            currentKey = key;
+            currentList = [];
+            result[key] = currentList;
+          } else {
+            currentKey = key;
+            currentList = null;
+            result[key] = parseYamlValue(rawVal);
+          }
+        }
+        return result;
+      }
+
+      function parseYamlValue(val) {
+        if (val === 'true') return true;
+        if (val === 'false') return false;
+        if (val === 'null' || val === '~') return null;
+        if (/^-?\d+$/.test(val)) return parseInt(val);
+        if (/^-?\d+\.\d+$/.test(val)) return parseFloat(val);
+        // Remove surrounding quotes
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          return val.slice(1, -1);
+        }
+        return val;
+      }
+
+      // ===== UTILS =====
+      function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+    })();
+  </script>
+</body>
+</html>

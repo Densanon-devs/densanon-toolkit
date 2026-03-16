@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolBox - Free Online Utilities</title>
+  <meta name="description" content="Free browser-based online tools for game developers, math students, and programmers. No sign-ups, no installs.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="sitemap" type="application/xml" href="sitemap.xml">
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h1>Your Online <span>Utility</span> Toolkit</h1>
+        <p>A collection of free, browser-based tools for developers, creators, and anyone who needs to get things done fast. No sign-ups, no installs — just open and use.</p>
+        <p class="hero-search-hint">Press <kbd>Ctrl</kbd> + <kbd>K</kbd> or <kbd>/</kbd> to search all tools</p>
+      </div>
+    </section>
+
+    <section class="container">
+      <div class="categories-grid">
+
+        <a href="categories/game-dev-tools/index.html" class="category-card">
+          <div class="card-icon">&#127918;</div>
+          <h3>Game Dev Tools</h3>
+          <p>Sprite slicers, dice calculators, card generators, name generators, and more for game developers.</p>
+          <span class="card-link">Browse tools</span>
+        </a>
+
+        <a href="categories/image-tools/index.html" class="category-card">
+          <div class="card-icon">&#127912;</div>
+          <h3>Image Tools</h3>
+          <p>Extract color palettes, generate pixel art palettes, and work with images directly in your browser.</p>
+          <span class="card-link">Browse tools</span>
+        </a>
+
+        <a href="categories/developer-tools/index.html" class="category-card">
+          <div class="card-icon">&#128187;</div>
+          <h3>Developer Tools</h3>
+          <p>JSON formatting, UUID generation, CSV conversion, and file format utilities for programmers.</p>
+          <span class="card-link">Browse tools</span>
+        </a>
+
+        <a href="categories/math-tools/index.html" class="category-card">
+          <div class="card-icon">&#128202;</div>
+          <h3>Math Tools</h3>
+          <p>Percent calculators, fraction converters, ratio simplifiers, statistics tools, and visual math utilities for students and teachers.</p>
+          <span class="card-link">Browse tools</span>
+        </a>
+
+      </div>
+    </section>
+  </main>
+
+  <script src="js/page-consistency.js"></script>
+  <script>
+    initPage({ depth: 0 });
+    const heroHint = document.querySelector('.hero-search-hint');
+    if (heroHint) heroHint.addEventListener('click', () => {
+      document.querySelector('.search-toggle').click();
+    });
+  </script>
+</body>
+</html>

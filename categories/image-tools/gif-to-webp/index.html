@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIF to WebP Converter - ToolBox</title>
+  <meta name="description" content="Convert GIF images to WebP online for free. Get superior compression, millions of colors, and modern browser support — all processed locally in your browser.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>GIF to WebP Converter</h1>
+      <p>Upgrade GIF images to WebP for better compression, richer colors, and modern format support</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../index.html">&larr; All Image Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts GIF images into WebP format directly in your browser. WebP overcomes GIF's major limitations by supporting millions of colors instead of just 256, delivering significantly better compression, and providing full alpha-channel transparency. For animated GIFs, this converter extracts the first frame and outputs it as a high-quality static WebP image.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert GIF to WebP</h2>
+      <ol>
+        <li><strong>Upload your GIF file</strong> — drag and drop or click.</li>
+        <li><strong>Verify the format</strong> — auto-detected.</li>
+        <li><strong>Adjust quality</strong> — use the slider to control compression level.</li>
+        <li><strong>Click Convert</strong> — instant in browser.</li>
+        <li><strong>Compare results</strong> — side by side with sizes.</li>
+        <li><strong>Download</strong> — save converted file.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>GIF vs WebP — Key Differences</h2>
+      <p>GIF is a legacy format limited to 256 indexed colors with LZW compression and binary (on/off) transparency. WebP is a modern format created by Google that supports 24-bit color with an 8-bit alpha channel, both lossy and lossless compression modes, and animation. WebP consistently produces smaller files than GIF — Google's own testing shows WebP lossless images are 26% smaller than equivalent PNGs, and the gap is even wider compared to GIF. While GIF has universal compatibility stretching back decades, WebP is now supported in all current browsers and is the recommended format for modern web development.</p>
+    </section>
+
+    <section>
+      <h2>When to Use WebP Instead of GIF</h2>
+      <p>WebP is the superior choice for virtually all static image use cases that currently use GIF. It offers dramatically better color reproduction, smoother transparency gradients, and smaller file sizes. Use WebP when you need a modern, web-optimized image format that eliminates the color banding and dithering artifacts inherent in GIF's 256-color limitation.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>What happens to animated GIFs?</h3>
+      <p>This converter extracts the first frame of an animated GIF and outputs it as a static WebP image. While the WebP format does support animation natively, this tool focuses on producing optimized still images from GIF sources.</p>
+      <h3>How much smaller will the WebP file be than the GIF?</h3>
+      <p>Results vary by image content, but WebP typically produces files 25-50% smaller than the equivalent GIF for static images. The savings come from WebP's more efficient compression algorithms, especially for images with gradients or complex patterns.</p>
+      <h3>Does WebP preserve transparency from my GIF?</h3>
+      <p>Yes, and it significantly improves it. GIF only supports binary transparency (fully transparent or fully opaque), while WebP supports 256 levels of transparency per pixel. This means edges and semi-transparent effects render much more smoothly in WebP.</p>
+      <h3>Is my image uploaded to a server?</h3>
+      <p>No. The conversion happens entirely in your browser using the HTML Canvas API. Your image never leaves your device.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Conversions</h2>
+      <a href="../gif-to-png/index.html">GIF to PNG</a>
+      <a href="../gif-to-jpg/index.html">GIF to JPG</a>
+      <a href="../webp-to-png/index.html">WebP to PNG</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'image-tools',
+      title: 'GIF to WebP Converter',
+      breadcrumbs: [
+        { label: 'Image Tools', href: '../index.html' },
+        { label: 'GIF to WebP Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/converter.js"></script>
+  <script>initConverter({ from: 'image/gif', to: 'image/webp', mountTo: '#converter-mount' });</script>
+</body>
+</html>

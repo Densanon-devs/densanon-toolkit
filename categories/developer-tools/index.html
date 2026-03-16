@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Developer Tools - ToolBox</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Developer Tools</h1>
+      <p>Formatting, conversion, and generation utilities for programmers.</p>
+    </div>
+
+    <div class="tools-grid">
+      <a href="file-converter/index.html" class="tool-card">
+        <h4>File Converter</h4>
+        <p>Convert between image formats (PNG, JPG, WebP, BMP) and data formats (CSV, JSON, TSV, YAML, Markdown, Base64) right in your browser.</p>
+      </a>
+      <a href="json-formatter/index.html" class="tool-card">
+        <h4>JSON Formatter</h4>
+        <p>Paste JSON to format, minify, or validate it. Syntax highlighting, error reporting, line numbers, and download support.</p>
+      </a>
+      <a href="uuid-generator/index.html" class="tool-card">
+        <h4>UUID Generator</h4>
+        <p>Generate random UUID v4 values in bulk. Toggle case and hyphens, validate existing UUIDs, copy or download results.</p>
+      </a>
+      <a href="csv-to-json/index.html" class="tool-card">
+        <h4>CSV to JSON Converter</h4>
+        <p>Convert CSV data to JSON with auto-detected delimiters, multiple output formats, and a reverse JSON-to-CSV mode.</p>
+      </a>
+    </div>
+
+    <div class="category-header" style="padding-top:40px;">
+      <h2>Data Converters</h2>
+      <p>Convert between data and text formats directly in your browser. <a href="data-converters/index.html" style="font-weight:600;">View all converters &rarr;</a></p>
+    </div>
+
+    <div class="tools-grid">
+      <a href="json-to-csv/index.html" class="tool-card">
+        <h4>JSON to CSV</h4>
+        <p>Convert JSON arrays to CSV spreadsheet format for use in Excel and Google Sheets.</p>
+      </a>
+      <a href="json-minifier/index.html" class="tool-card">
+        <h4>JSON Minifier</h4>
+        <p>Minify or prettify JSON data with one click. Remove whitespace or add formatting.</p>
+      </a>
+      <a href="tsv-to-csv/index.html" class="tool-card">
+        <h4>TSV to CSV</h4>
+        <p>Convert tab-separated values to comma-separated CSV format.</p>
+      </a>
+      <a href="csv-to-tsv/index.html" class="tool-card">
+        <h4>CSV to TSV</h4>
+        <p>Convert CSV files to tab-separated TSV for database imports.</p>
+      </a>
+      <a href="markdown-to-html/index.html" class="tool-card">
+        <h4>Markdown to HTML</h4>
+        <p>Convert Markdown text to clean HTML with support for headings, lists, code, and more.</p>
+      </a>
+      <a href="yaml-to-json/index.html" class="tool-card">
+        <h4>YAML to JSON</h4>
+        <p>Convert YAML configuration files to JSON format.</p>
+      </a>
+      <a href="base64-encoder/index.html" class="tool-card">
+        <h4>Base64 Encoder</h4>
+        <p>Encode text to Base64 for embedding in data URIs, APIs, and config files.</p>
+      </a>
+      <a href="base64-decoder/index.html" class="tool-card">
+        <h4>Base64 Decoder</h4>
+        <p>Decode Base64 strings back to readable plain text.</p>
+      </a>
+    </div>
+  </main>
+
+  <script src="../../js/page-consistency.js"></script>
+  <script>initPage({ depth: 2, activeCategory: 'developer-tools', title: 'Developer Tools', breadcrumbs: [{ label: 'Developer Tools' }] });</script>
+</body>
+</html>

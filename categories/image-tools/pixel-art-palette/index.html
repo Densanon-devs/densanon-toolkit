@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art Palette Generator - ToolBox</title>
+    <meta name="description" content="Generate retro and pixel-art-friendly color palettes from seed colors, classic presets like Game Boy, NES, PICO-8, CGA, and Commodore 64, or random color harmonies.">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        .tool-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .control-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-group label {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+
+        .mode-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .mode-tab {
+            padding: 8px 16px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .mode-tab:hover {
+            border-color: var(--color-primary);
+        }
+
+        .mode-tab.active {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: #fff;
+        }
+
+        .seed-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            padding: 16px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+        }
+
+        .seed-controls input[type="color"] {
+            width: 50px;
+            height: 40px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background: var(--color-surface);
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .seed-controls input[type="range"] {
+            width: 120px;
+            accent-color: var(--color-primary);
+        }
+
+        .preset-controls,
+        .harmony-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 16px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+        }
+
+        .preset-btn,
+        .harmony-btn {
+            padding: 8px 14px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .preset-btn:hover,
+        .harmony-btn:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        .preset-btn.active,
+        .harmony-btn.active {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: #fff;
+        }
+
+        .size-select {
+            padding: 8px 12px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        .palette-display {
+            margin: 24px 0;
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+            gap: 6px;
+        }
+
+        .swatch {
+            aspect-ratio: 1;
+            border-radius: var(--radius);
+            cursor: pointer;
+            position: relative;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .swatch:hover {
+            border-color: #fff;
+            transform: scale(1.08);
+            z-index: 2;
+        }
+
+        .swatch .hex-label {
+            font-size: 0.7rem;
+            font-family: monospace;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            padding: 4px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            text-align: center;
+            width: 100%;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+            border-radius: 0 0 8px 8px;
+        }
+
+        .swatch:hover .hex-label {
+            opacity: 1;
+        }
+
+        .copy-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--color-primary);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            pointer-events: none;
+        }
+
+        .copy-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .export-section {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .feature-item {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .feature-item h3 {
+            margin: 0 0 8px 0;
+            color: var(--color-text);
+            font-size: 1rem;
+        }
+
+        .feature-item p {
+            margin: 0;
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .content-section {
+            margin: 32px 0;
+        }
+
+        .content-section h2 {
+            margin-bottom: 16px;
+            color: var(--color-text);
+        }
+
+        .content-section h3 {
+            color: var(--color-text);
+            margin: 20px 0 8px 0;
+        }
+
+        .content-section p {
+            color: var(--color-text-muted);
+            line-height: 1.6;
+        }
+
+        .content-section ol {
+            color: var(--color-text-muted);
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+
+        .content-section ol li strong {
+            color: var(--color-text);
+        }
+
+        .related-tools {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .related-tools a {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .related-tools a:hover {
+            border-color: var(--color-primary);
+            background: rgba(108, 99, 255, 0.1);
+        }
+
+        canvas#exportCanvas {
+            display: none;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.6rem; }
+            .seed-controls { flex-direction: column; align-items: stretch; }
+            .seed-controls input[type="range"] { width: 100%; }
+            .mode-tabs { flex-wrap: wrap; }
+            .mode-tab { min-height: 44px; flex: 1; text-align: center; }
+            .preset-btn, .harmony-btn { min-height: 44px; }
+            .palette-grid { grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); }
+            .action-buttons { flex-direction: column; }
+            .btn { width: 100%; min-height: 44px; }
+            .export-section { flex-direction: column; }
+            .export-section .btn { width: 100%; }
+            .features-list { grid-template-columns: 1fr; }
+            .harmony-controls { flex-direction: column; align-items: stretch; }
+            .harmony-controls .control-group { margin-left: 0 !important; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Pixel Art Palette Generator</h1>
+            <p>Generate retro and pixel-art-friendly color palettes from seed colors, classic presets, or random harmonies</p>
+        </div>
+
+        <section class="tool-box">
+            <div class="tool-controls">
+                <div class="control-row">
+                    <div class="mode-tabs">
+                        <button class="mode-tab active" data-mode="seed">From Seed Color</button>
+                        <button class="mode-tab" data-mode="preset">Classic Presets</button>
+                        <button class="mode-tab" data-mode="harmony">Random Harmony</button>
+                    </div>
+                </div>
+
+                <div id="seedPanel" class="seed-controls">
+                    <div class="control-group">
+                        <label>Base Color</label>
+                        <input type="color" id="seedColor" value="#5a8f3f">
+                    </div>
+                    <div class="control-group">
+                        <label>Palette Size</label>
+                        <select class="size-select" id="paletteSizeSeed">
+                            <option value="4">4 Colors</option>
+                            <option value="8" selected>8 Colors</option>
+                            <option value="16">16 Colors</option>
+                            <option value="32">32 Colors</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Hue Shift</label>
+                        <input type="range" id="hueShift" min="0" max="60" value="15">
+                    </div>
+                    <div class="control-group">
+                        <label>Saturation Range</label>
+                        <input type="range" id="satRange" min="10" max="80" value="40">
+                    </div>
+                    <div class="control-group">
+                        <label>Value Range</label>
+                        <input type="range" id="valRange" min="10" max="80" value="50">
+                    </div>
+                </div>
+
+                <div id="presetPanel" class="preset-controls" style="display:none;">
+                    <button class="preset-btn active" data-preset="gameboy">Game Boy</button>
+                    <button class="preset-btn" data-preset="nes">NES</button>
+                    <button class="preset-btn" data-preset="pico8">PICO-8</button>
+                    <button class="preset-btn" data-preset="cga">CGA</button>
+                    <button class="preset-btn" data-preset="c64">Commodore 64</button>
+                    <button class="preset-btn" data-preset="sms">Sega Master System</button>
+                </div>
+
+                <div id="harmonyPanel" class="harmony-controls" style="display:none;">
+                    <button class="harmony-btn active" data-harmony="complementary">Complementary</button>
+                    <button class="harmony-btn" data-harmony="triadic">Triadic</button>
+                    <button class="harmony-btn" data-harmony="analogous">Analogous</button>
+                    <button class="harmony-btn" data-harmony="split">Split-Complementary</button>
+                    <div class="control-group" style="margin-left: 12px;">
+                        <label>Palette Size</label>
+                        <select class="size-select" id="paletteSizeHarmony">
+                            <option value="4">4 Colors</option>
+                            <option value="8" selected>8 Colors</option>
+                            <option value="16">16 Colors</option>
+                            <option value="32">32 Colors</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="generateBtn">Generate</button>
+                    <button class="btn btn-secondary" id="shuffleBtn">Shuffle</button>
+                </div>
+            </div>
+
+            <div class="palette-display">
+                <div class="palette-grid" id="paletteGrid"></div>
+            </div>
+
+            <div class="export-section">
+                <button class="btn btn-secondary" id="exportPng">Export PNG</button>
+                <button class="btn btn-secondary" id="exportGpl">Export GPL</button>
+                <button class="btn btn-secondary" id="exportHex">Export Hex List</button>
+                <button class="btn btn-secondary" id="exportJson">Export JSON</button>
+            </div>
+
+            <canvas id="exportCanvas"></canvas>
+        </section>
+
+        <div class="copy-toast" id="copyToast">Copied!</div>
+
+        <section class="content-section">
+            <h2>What Does This Tool Do?</h2>
+            <p>The Pixel Art Palette Generator helps you create color palettes specifically designed for retro gaming and pixel art. Whether you are building a platformer with a limited color set, designing sprites for a fantasy RPG, or recreating the look of classic consoles, this tool gives you curated palettes with proper highlight, midtone, and shadow ramps. Choose from historical console presets like the Game Boy, NES, PICO-8, CGA, and Commodore 64, generate cohesive palettes from a single seed color, or explore random harmonies to find unexpected combinations that still feel unified and intentional.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Features</h2>
+            <div class="features-list">
+                <div class="feature-item">
+                    <h3>Seed Color Generation</h3>
+                    <p>Pick any base color and generate a full ramp of highlights, midtones, and shadows with adjustable hue shift, saturation range, and value spread for natural-looking palettes.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Classic Console Presets</h3>
+                    <p>Instantly load authentic palettes from iconic hardware including the Game Boy, NES, PICO-8, CGA, Commodore 64, and Sega Master System for period-accurate pixel art.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Color Harmony Modes</h3>
+                    <p>Generate random palettes based on complementary, triadic, analogous, and split-complementary color theory rules to discover harmonious retro-friendly combinations.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Flexible Palette Sizes</h3>
+                    <p>Choose between 4, 8, 16, or 32 color palettes to match the constraints of your target platform or art style, from ultra-limited to comfortably expressive.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Click-to-Copy Swatches</h3>
+                    <p>Every swatch displays its hex code on hover and copies it to your clipboard with a single click, making it effortless to transfer colors into your art software.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Multiple Export Formats</h3>
+                    <p>Export your palette as a PNG image, GIMP-compatible GPL file, plain hex list, or structured JSON for seamless integration into any pixel art or game development workflow.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Select a generation mode</strong> by clicking one of the three tabs: From Seed Color for custom palettes, Classic Presets for console-accurate colors, or Random Harmony for color-theory-based generation.</li>
+                <li><strong>Configure your settings</strong> depending on the mode. For seed color, pick a base color and adjust the hue shift, saturation range, and value range sliders. For presets, select a console. For harmony, choose a harmony type.</li>
+                <li><strong>Choose your palette size</strong> from the dropdown. Use 4 colors for extreme retro constraints, 8 for a balanced set, 16 for versatile sprites, or 32 for rich scenes.</li>
+                <li><strong>Click Generate</strong> to create your palette, or use the Shuffle button to randomize within your current mode and settings for quick variations.</li>
+                <li><strong>Interact with swatches</strong> by hovering to see the hex code and clicking to copy it to your clipboard. Build your art one color at a time or grab the whole set.</li>
+                <li><strong>Export your palette</strong> in your preferred format. Use PNG for visual reference, GPL for GIMP and Aseprite, Hex List for quick text sharing, or JSON for programmatic use.</li>
+            </ol>
+        </section>
+
+        <section class="content-section">
+            <h2>FAQ</h2>
+
+            <h3>Can I use these palettes in commercial projects?</h3>
+            <p>Yes. All generated palettes, including the classic console presets, are color values that are not subject to copyright. You can freely use any palette produced by this tool in personal or commercial projects without attribution.</p>
+
+            <h3>Why should I limit my palette for pixel art?</h3>
+            <p>Limited palettes force visual cohesion. When every color in your sprite sheet comes from the same small set, the art looks unified and intentional. It also echoes the technical constraints of retro hardware, which is a big part of pixel art's charm and aesthetic identity.</p>
+
+            <h3>How does the seed color generation work?</h3>
+            <p>The tool takes your chosen base color and creates a value ramp from dark shadows to bright highlights. The hue shift slider rotates the hue slightly across the ramp (warm highlights, cool shadows is a common technique), while the saturation and value range controls determine how far the palette stretches in those dimensions.</p>
+
+            <h3>Are the console presets historically accurate?</h3>
+            <p>The presets are based on well-documented hardware palettes. The Game Boy uses its four signature green shades, PICO-8 matches its exact 16-color set, CGA reproduces the standard 16-color mode, and Commodore 64 includes all 16 system colors. The NES and SMS presets cover representative subsets of their larger hardware palettes.</p>
+
+            <h3>What is the best export format for Aseprite?</h3>
+            <p>The GPL (GIMP Palette) format works directly with Aseprite. Export your palette as a GPL file, then in Aseprite go to the palette options and load the file. The colors will appear in your palette panel ready for use.</p>
+
+            <h3>Can I combine colors from different presets or modes?</h3>
+            <p>This tool generates one palette at a time, but you can copy individual hex codes from any generation and collect them externally. A practical approach is to generate a few palettes, copy the colors you like from each, and build a custom set in your art tool of choice.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Related Tools</h2>
+            <div class="related-tools">
+                <a href="../color-palette-extractor/index.html">Color Palette Extractor</a>
+                <a href="../../game-dev-tools/sprite-slicer/index.html">Sprite Slicer</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'image-tools',
+            title: 'Pixel Art Palette Generator',
+            breadcrumbs: [
+                { label: 'Image Tools', href: '../index.html' },
+                { label: 'Pixel Art Palette Generator' }
+            ]
+        });
+    </script>
+    <script>
+        (function () {
+            // --- Preset Palette Data ---
+            const PRESETS = {
+                gameboy: [
+                    '#0f380f', '#306230', '#8bac0f', '#9bbc0f'
+                ],
+                nes: [
+                    '#7c7c7c', '#0000fc', '#0000bc', '#4428bc', '#940084', '#a80020', '#a81000', '#881400',
+                    '#503000', '#007800', '#006800', '#005800', '#004058', '#000000', '#bcbcbc', '#0078f8',
+                    '#0058f8', '#6844fc', '#d800cc', '#e40058', '#f83800', '#e45c10', '#ac7c00', '#00b800',
+                    '#00a800', '#00a844', '#008888', '#080808', '#f8f8f8', '#3cbcfc', '#6888fc', '#9878f8',
+                    '#f878f8', '#f85898', '#f87858', '#fca044', '#f8b800', '#b8f818', '#58d854', '#58f898',
+                    '#00e8d8', '#787878', '#fcfcfc', '#a4e4fc', '#b8b8f8', '#d8b8f8', '#f8b8f8', '#f8a4c0',
+                    '#f0d0b0', '#fce0a8', '#f8d878', '#d8f878', '#b8f8b8', '#b8f8d8', '#00fcfc', '#d8d8d8'
+                ],
+                pico8: [
+                    '#000000', '#1d2b53', '#7e2553', '#008751',
+                    '#ab5236', '#5f574f', '#c2c3c7', '#fff1e8',
+                    '#ff004d', '#ffa300', '#ffec27', '#00e436',
+                    '#29adff', '#83769c', '#ff77a8', '#ffccaa'
+                ],
+                cga: [
+                    '#000000', '#0000aa', '#00aa00', '#00aaaa',
+                    '#aa0000', '#aa00aa', '#aa5500', '#aaaaaa',
+                    '#555555', '#5555ff', '#55ff55', '#55ffff',
+                    '#ff5555', '#ff55ff', '#ffff55', '#ffffff'
+                ],
+                c64: [
+                    '#000000', '#ffffff', '#880000', '#aaffee',
+                    '#cc44cc', '#00cc55', '#0000aa', '#eeee77',
+                    '#dd8855', '#664400', '#ff7777', '#333333',
+                    '#777777', '#aaff66', '#0088ff', '#bbbbbb'
+                ],
+                sms: [
+                    '#000000', '#550000', '#005500', '#555500',
+                    '#000055', '#550055', '#005555', '#555555',
+                    '#0000aa', '#5500aa', '#00aa00', '#55aa00',
+                    '#00aaaa', '#55aaaa', '#aaaaaa', '#ffffff'
+                ]
+            };
+
+            let currentPalette = [];
+            let currentMode = 'seed';
+            let currentPreset = 'gameboy';
+            let currentHarmony = 'complementary';
+
+            const paletteGrid = document.getElementById('paletteGrid');
+            const copyToast = document.getElementById('copyToast');
+
+            // --- Utility: HSV <-> RGB ---
+            function hsvToRgb(h, s, v) {
+                h = ((h % 360) + 360) % 360;
+                s = Math.max(0, Math.min(1, s));
+                v = Math.max(0, Math.min(1, v));
+                const c = v * s;
+                const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+                const m = v - c;
+                let r, g, b;
+                if (h < 60) { r = c; g = x; b = 0; }
+                else if (h < 120) { r = x; g = c; b = 0; }
+                else if (h < 180) { r = 0; g = c; b = x; }
+                else if (h < 240) { r = 0; g = x; b = c; }
+                else if (h < 300) { r = x; g = 0; b = c; }
+                else { r = c; g = 0; b = x; }
+                return [
+                    Math.round((r + m) * 255),
+                    Math.round((g + m) * 255),
+                    Math.round((b + m) * 255)
+                ];
+            }
+
+            function rgbToHsv(r, g, b) {
+                r /= 255; g /= 255; b /= 255;
+                const max = Math.max(r, g, b), min = Math.min(r, g, b);
+                const d = max - min;
+                let h = 0, s = max === 0 ? 0 : d / max, v = max;
+                if (d !== 0) {
+                    if (max === r) h = ((g - b) / d + 6) % 6;
+                    else if (max === g) h = (b - r) / d + 2;
+                    else h = (r - g) / d + 4;
+                    h *= 60;
+                }
+                return [h, s, v];
+            }
+
+            function hexToRgb(hex) {
+                hex = hex.replace('#', '');
+                return [
+                    parseInt(hex.substring(0, 2), 16),
+                    parseInt(hex.substring(2, 4), 16),
+                    parseInt(hex.substring(4, 6), 16)
+                ];
+            }
+
+            function rgbToHex(r, g, b) {
+                return '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
+            }
+
+            // --- Generation: Seed Color ---
+            function generateFromSeed() {
+                const seedHex = document.getElementById('seedColor').value;
+                const size = parseInt(document.getElementById('paletteSizeSeed').value);
+                const hueShiftMax = parseInt(document.getElementById('hueShift').value);
+                const satRangeVal = parseInt(document.getElementById('satRange').value) / 100;
+                const valRangeVal = parseInt(document.getElementById('valRange').value) / 100;
+
+                const [r, g, b] = hexToRgb(seedHex);
+                const [baseH, baseS, baseV] = rgbToHsv(r, g, b);
+
+                const colors = [];
+                for (let i = 0; i < size; i++) {
+                    const t = size === 1 ? 0.5 : i / (size - 1);
+                    const hShift = (t - 0.5) * 2 * hueShiftMax;
+                    const h = baseH + hShift;
+                    const s = Math.max(0.05, Math.min(1, baseS + (t - 0.5) * satRangeVal * (t < 0.5 ? 1 : -1)));
+                    const v = Math.max(0.08, Math.min(1, baseV - valRangeVal / 2 + t * valRangeVal));
+                    const [cr, cg, cb] = hsvToRgb(h, s, v);
+                    colors.push(rgbToHex(cr, cg, cb));
+                }
+                return colors;
+            }
+
+            // --- Generation: Preset ---
+            function generateFromPreset() {
+                return [...PRESETS[currentPreset]];
+            }
+
+            // --- Generation: Harmony ---
+            function generateHarmony() {
+                const size = parseInt(document.getElementById('paletteSizeHarmony').value);
+                const baseH = Math.random() * 360;
+                const baseS = 0.5 + Math.random() * 0.4;
+                const baseV = 0.5 + Math.random() * 0.4;
+
+                let hueOffsets = [];
+                switch (currentHarmony) {
+                    case 'complementary':
+                        hueOffsets = [0, 180];
+                        break;
+                    case 'triadic':
+                        hueOffsets = [0, 120, 240];
+                        break;
+                    case 'analogous':
+                        hueOffsets = [0, 30, 60];
+                        break;
+                    case 'split':
+                        hueOffsets = [0, 150, 210];
+                        break;
+                }
+
+                const colors = [];
+                const perHue = Math.ceil(size / hueOffsets.length);
+
+                for (let hi = 0; hi < hueOffsets.length; hi++) {
+                    const h = baseH + hueOffsets[hi];
+                    for (let j = 0; j < perHue && colors.length < size; j++) {
+                        const t = perHue === 1 ? 0.5 : j / (perHue - 1);
+                        const s = Math.max(0.15, Math.min(1, baseS + (t - 0.5) * 0.4));
+                        const v = Math.max(0.15, Math.min(1, 0.2 + t * 0.7));
+                        const [cr, cg, cb] = hsvToRgb(h, s, v);
+                        colors.push(rgbToHex(cr, cg, cb));
+                    }
+                }
+                return colors;
+            }
+
+            // --- Render Palette ---
+            function renderPalette(colors) {
+                currentPalette = colors;
+                paletteGrid.innerHTML = '';
+                colors.forEach(hex => {
+                    const swatch = document.createElement('div');
+                    swatch.className = 'swatch';
+                    swatch.style.backgroundColor = hex;
+                    swatch.innerHTML = '<span class="hex-label">' + hex.toUpperCase() + '</span>';
+                    swatch.addEventListener('click', () => copyColor(hex));
+                    paletteGrid.appendChild(swatch);
+                });
+            }
+
+            // --- Copy Color ---
+            function copyColor(hex) {
+                navigator.clipboard.writeText(hex.toUpperCase()).then(() => {
+                    copyToast.textContent = 'Copied ' + hex.toUpperCase();
+                    copyToast.classList.add('show');
+                    setTimeout(() => copyToast.classList.remove('show'), 1500);
+                });
+            }
+
+            // --- Generate ---
+            function generate() {
+                let colors;
+                switch (currentMode) {
+                    case 'seed': colors = generateFromSeed(); break;
+                    case 'preset': colors = generateFromPreset(); break;
+                    case 'harmony': colors = generateHarmony(); break;
+                }
+                renderPalette(colors);
+            }
+
+            // --- Mode Tabs ---
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentMode = tab.dataset.mode;
+                    document.getElementById('seedPanel').style.display = currentMode === 'seed' ? '' : 'none';
+                    document.getElementById('presetPanel').style.display = currentMode === 'preset' ? '' : 'none';
+                    document.getElementById('harmonyPanel').style.display = currentMode === 'harmony' ? '' : 'none';
+                    generate();
+                });
+            });
+
+            // --- Preset Buttons ---
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentPreset = btn.dataset.preset;
+                    generate();
+                });
+            });
+
+            // --- Harmony Buttons ---
+            document.querySelectorAll('.harmony-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.harmony-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentHarmony = btn.dataset.harmony;
+                    generate();
+                });
+            });
+
+            // --- Generate & Shuffle ---
+            document.getElementById('generateBtn').addEventListener('click', generate);
+            document.getElementById('shuffleBtn').addEventListener('click', () => {
+                if (currentMode === 'seed') {
+                    document.getElementById('seedColor').value = rgbToHex(
+                        Math.floor(Math.random() * 256),
+                        Math.floor(Math.random() * 256),
+                        Math.floor(Math.random() * 256)
+                    );
+                }
+                generate();
+            });
+
+            // --- Export: PNG ---
+            document.getElementById('exportPng').addEventListener('click', () => {
+                if (!currentPalette.length) return;
+                const swatchSize = 64;
+                const cols = Math.min(currentPalette.length, 8);
+                const rows = Math.ceil(currentPalette.length / cols);
+                const canvas = document.getElementById('exportCanvas');
+                canvas.width = cols * swatchSize;
+                canvas.height = rows * swatchSize;
+                const ctx = canvas.getContext('2d');
+                currentPalette.forEach((hex, i) => {
+                    const x = (i % cols) * swatchSize;
+                    const y = Math.floor(i / cols) * swatchSize;
+                    ctx.fillStyle = hex;
+                    ctx.fillRect(x, y, swatchSize, swatchSize);
+                });
+                const link = document.createElement('a');
+                link.download = 'pixel-palette.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+
+            // --- Export: GPL ---
+            document.getElementById('exportGpl').addEventListener('click', () => {
+                if (!currentPalette.length) return;
+                let gpl = 'GIMP Palette\nName: Pixel Art Palette\nColumns: 8\n#\n';
+                currentPalette.forEach(hex => {
+                    const [r, g, b] = hexToRgb(hex);
+                    gpl += r + '\t' + g + '\t' + b + '\t' + hex.toUpperCase() + '\n';
+                });
+                downloadText(gpl, 'pixel-palette.gpl', 'text/plain');
+            });
+
+            // --- Export: Hex List ---
+            document.getElementById('exportHex').addEventListener('click', () => {
+                if (!currentPalette.length) return;
+                const text = currentPalette.map(h => h.toUpperCase()).join('\n');
+                downloadText(text, 'pixel-palette.txt', 'text/plain');
+            });
+
+            // --- Export: JSON ---
+            document.getElementById('exportJson').addEventListener('click', () => {
+                if (!currentPalette.length) return;
+                const json = JSON.stringify({ palette: currentPalette.map(h => h.toUpperCase()) }, null, 2);
+                downloadText(json, 'pixel-palette.json', 'application/json');
+            });
+
+            function downloadText(content, filename, mime) {
+                const blob = new Blob([content], { type: mime });
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                URL.revokeObjectURL(link.href);
+            }
+
+            // --- Init ---
+            generate();
+        })();
+    </script>
+</body>
+</html>

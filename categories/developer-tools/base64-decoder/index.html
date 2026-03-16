@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Base64 Decoder - ToolBox</title>
+  <meta name="description" content="Decode Base64 strings back to plain text instantly. Inspect JWT payloads, decode email attachments, extract data URI content, and debug encoded API responses.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/data-converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Base64 Decoder</h1>
+      <p>Decode Base64 strings back to readable plain text in your browser.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../file-converter/index.html">&larr; All Data Converters</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool decodes Base64-encoded strings back into their original plain text form. Base64 encoding is used throughout the web — in JWT tokens, data URIs, email MIME encoding, HTTP Basic Authentication headers, and configuration files that store binary data as text. When you encounter an opaque Base64 string and need to see what it contains, this decoder reveals the original content instantly. It correctly handles UTF-8 encoded text, so international characters, accented letters, and symbols are restored accurately. The decoding runs entirely in your browser with no data transmitted to any server.</p>
+    </section>
+
+    <section>
+      <h2>How to Decode Base64</h2>
+      <ol>
+        <li><strong>Paste the Base64 string</strong> — enter the encoded text into the input area. You can also drag and drop a file containing Base64 data.</li>
+        <li><strong>Verify the mode</strong> — Base64 Decode is preselected. Use the dropdown to switch to encoding mode if needed.</li>
+        <li><strong>Click Convert</strong> — the tool decodes the Base64 input and shows the original text in the result panel.</li>
+        <li><strong>Copy or download</strong> — copy the decoded text or save it as a file.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Where You Encounter Base64 Encoded Data</h2>
+      <p>Base64 strings appear in many everyday development scenarios. JSON Web Tokens (JWTs) consist of three Base64URL-encoded segments separated by dots — decoding the middle segment reveals the token's payload claims. Data URIs in HTML and CSS embed resources as Base64 after a prefix like "data:image/png;base64,". Email systems encode attachments and non-ASCII message bodies using Base64 via MIME encoding. HTTP Basic Authentication headers contain the username and password pair encoded as Base64. Source maps, certificate files (PEM format), and some API responses also use Base64 to embed binary data within text-based formats. Having a quick decoder available saves time when inspecting, debugging, or extracting this data.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>What happens if the input is not valid Base64?</h3>
+      <p>The tool will display an error message indicating that the input could not be decoded. Common causes include trailing whitespace, line breaks within the encoded string, or characters outside the Base64 alphabet (A-Z, a-z, 0-9, +, /, and = for padding). Trim your input and remove any line breaks before decoding.</p>
+      <h3>Can I decode Base64URL format (used in JWTs)?</h3>
+      <p>Standard Base64 and Base64URL differ slightly: Base64URL replaces + with - and / with _, and omits padding. For most JWT segments, standard decoding works after replacing those characters. If decoding fails, try replacing - with + and _ with / in your input, then add = padding to make the length a multiple of 4.</p>
+      <h3>Can this decode binary files like images?</h3>
+      <p>This tool decodes Base64 to text. If the original data is a binary file (such as an image or PDF), the decoded output will appear as garbled characters since it is being interpreted as UTF-8 text. For binary data, use a dedicated Base64-to-file conversion tool.</p>
+      <h3>Is my decoded data stored or logged anywhere?</h3>
+      <p>No. The decoding happens entirely in your browser using JavaScript. No data is sent to any server, stored in any database, or logged in any analytics system. Your input and output remain completely private on your device.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../base64-encoder/index.html">Base64 Encoder</a>
+      <a href="../json-formatter/index.html">JSON Formatter</a>
+      <a href="../markdown-to-html/index.html">Markdown to HTML Converter</a>
+      <a href="../file-converter/index.html">File Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'developer-tools',
+      title: 'Base64 Decoder',
+      breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'Base64 Decoder' }
+      ]
+    });
+  </script>
+  <script src="../../../js/data-converter.js"></script>
+  <script>initDataConverter({ type: 'base64-decode', mountTo: '#converter-mount' });</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIF to JPG Converter - ToolBox</title>
+  <meta name="description" content="Convert GIF images to JPG online for free. Extract the first frame from animated GIFs and save as compact JPEG — processed entirely in your browser, no upload required.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>GIF to JPG Converter</h1>
+      <p>Convert GIF images to compact JPG files with first-frame extraction for animated GIFs</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../index.html">&larr; All Image Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts GIF images into JPG (JPEG) format directly in your browser. JPG handles photographic content far better than GIF's 256-color palette, producing smoother gradients and more natural tones. For animated GIFs, the converter extracts the first frame and outputs it as a static JPG image, which is useful for creating thumbnails or preview images.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert GIF to JPG</h2>
+      <ol>
+        <li><strong>Upload your GIF file</strong> — drag and drop or click.</li>
+        <li><strong>Verify the format</strong> — auto-detected.</li>
+        <li><strong>Adjust quality</strong> — use the slider to balance file size and visual quality.</li>
+        <li><strong>Click Convert</strong> — instant in browser.</li>
+        <li><strong>Compare results</strong> — side by side with sizes.</li>
+        <li><strong>Download</strong> — save converted file.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>GIF vs JPG — Key Differences</h2>
+      <p>GIF uses a 256-color indexed palette with lossless LZW compression, making it effective for flat-color graphics and simple animations. JPG uses lossy DCT compression with full 24-bit color support (over 16 million colors), making it far superior for photographs and images with complex color gradients. GIF supports both animation and binary transparency, while JPG supports neither. JPG files are typically much smaller than GIFs when dealing with photographic content, because DCT compression is specifically designed for continuous-tone images.</p>
+    </section>
+
+    <section>
+      <h2>When to Use JPG Instead of GIF</h2>
+      <p>Choose JPG when you need a static image with realistic color reproduction and small file size, particularly for photographs or images with smooth gradients. JPG is also the right choice when you want to extract a single frame from an animated GIF for use as a thumbnail, social media preview, or email attachment where animation is not supported.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>What happens to animated GIFs when converting to JPG?</h3>
+      <p>The converter extracts the first frame of the animation and saves it as a static JPG image. All subsequent frames are discarded since JPG does not support animation.</p>
+      <h3>Will I lose transparency when converting GIF to JPG?</h3>
+      <p>Yes. JPG does not support transparency at all. Any transparent areas in your GIF will be filled with a solid background color, typically white. If you need to keep transparency, convert to PNG or WebP instead.</p>
+      <h3>Is JPG better quality than GIF for photos?</h3>
+      <p>Absolutely. GIF is limited to 256 colors, which causes visible color banding in photographs. JPG supports over 16 million colors and is specifically optimized for photographic content, producing much smoother and more accurate results.</p>
+      <h3>Is my image uploaded to a server?</h3>
+      <p>No. The conversion happens entirely in your browser using the HTML Canvas API. Your image never leaves your device.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Conversions</h2>
+      <a href="../gif-to-png/index.html">GIF to PNG</a>
+      <a href="../gif-to-webp/index.html">GIF to WebP</a>
+      <a href="../jpg-to-png/index.html">JPG to PNG</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'image-tools',
+      title: 'GIF to JPG Converter',
+      breadcrumbs: [
+        { label: 'Image Tools', href: '../index.html' },
+        { label: 'GIF to JPG Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/converter.js"></script>
+  <script>initConverter({ from: 'image/gif', to: 'image/jpeg', mountTo: '#converter-mount' });</script>
+</body>
+</html>

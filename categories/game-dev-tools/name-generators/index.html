@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fantasy Name Generators by Race - ToolBox</title>
+  <meta name="description" content="Generate fantasy character names by race — Elf, Dwarf, Human, Orc, Dragon, Demon, Celestial, and Goblin. Free name generator for D&D, RPGs, novels, and worldbuilding.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    .hub-intro {
+      max-width: 640px;
+      margin-bottom: 40px;
+    }
+    .hub-intro p {
+      color: var(--color-text-muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+    .hub-section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--color-primary);
+      margin-bottom: 16px;
+    }
+    .featured-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    .featured-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-primary);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+    .featured-card::before {
+      content: 'Popular';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(108, 99, 255, 0.15);
+      color: var(--color-primary);
+      padding: 3px 8px;
+      border-radius: 10px;
+    }
+    .featured-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 20px rgba(108, 99, 255, 0.15);
+    }
+    .featured-card h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .featured-card p {
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+      flex-grow: 1;
+    }
+    .featured-card .card-link {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+    .all-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+    .all-grid .tool-card {
+      padding: 18px;
+    }
+    .all-grid .tool-card h4 {
+      font-size: 0.98rem;
+    }
+    .all-grid .tool-card p {
+      font-size: 0.84rem;
+    }
+    .race-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin: 16px 0 24px;
+    }
+    .race-overview .race-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .race-overview .race-card h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .race-overview .race-card p {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+    .race-overview .race-card .example-names {
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: var(--color-primary);
+      font-style: italic;
+    }
+    @media (max-width: 640px) {
+      .featured-grid { grid-template-columns: 1fr; }
+      .all-grid { grid-template-columns: 1fr; }
+      .race-overview { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Fantasy Name Generators</h1>
+      <p>Generate unique character names for D&D, RPGs, novels, and worldbuilding — tailored to each fantasy race.</p>
+    </div>
+
+    <div class="hub-intro">
+      <p>Each race has its own phoneme tables with distinct linguistic flavors — flowing vowels for elves, hard gutturals for orcs, ancient sibilants for dragons. Pick a race below to generate names that sound authentic to that culture, or use the all-races generator to explore every option in one place.</p>
+    </div>
+
+    <!-- FEATURED / POPULAR -->
+    <div class="hub-section-label">Most Popular Races</div>
+    <div class="featured-grid">
+      <a href="../elf-name-generator/index.html" class="featured-card">
+        <h4>Elf Name Generator</h4>
+        <p>Elegant names with flowing vowels and soft consonants, inspired by Tolkien's Sindarin and Quenya traditions.</p>
+        <span class="card-link">Generate elf names</span>
+      </a>
+      <a href="../human-name-generator/index.html" class="featured-card">
+        <h4>Human Name Generator</h4>
+        <p>Medieval-style names blending Anglo-Saxon, Celtic, and Germanic roots for versatile fantasy characters.</p>
+        <span class="card-link">Generate human names</span>
+      </a>
+      <a href="../dwarf-name-generator/index.html" class="featured-card">
+        <h4>Dwarf Name Generator</h4>
+        <p>Sturdy, powerful names with Norse-inspired hard consonants and clan-worthy gravitas.</p>
+        <span class="card-link">Generate dwarf names</span>
+      </a>
+      <a href="../orc-name-generator/index.html" class="featured-card">
+        <h4>Orc Name Generator</h4>
+        <p>Fierce, aggressive names with guttural sounds and sharp syllables built for warriors and warlords.</p>
+        <span class="card-link">Generate orc names</span>
+      </a>
+    </div>
+
+    <!-- ALL GENERATORS -->
+    <div class="hub-section-label">All Race Generators</div>
+    <div class="all-grid">
+      <a href="../elf-name-generator/index.html" class="tool-card">
+        <h4>Elf Names</h4>
+        <p>Flowing, elegant names with elven grace.</p>
+      </a>
+      <a href="../dwarf-name-generator/index.html" class="tool-card">
+        <h4>Dwarf Names</h4>
+        <p>Strong, rugged names of stone and iron.</p>
+      </a>
+      <a href="../human-name-generator/index.html" class="tool-card">
+        <h4>Human Names</h4>
+        <p>Versatile medieval fantasy names.</p>
+      </a>
+      <a href="../orc-name-generator/index.html" class="tool-card">
+        <h4>Orc Names</h4>
+        <p>Fierce tribal names for warriors.</p>
+      </a>
+      <a href="../dragon-name-generator/index.html" class="tool-card">
+        <h4>Dragon Names</h4>
+        <p>Ancient, mythic names of power.</p>
+      </a>
+      <a href="../demon-name-generator/index.html" class="tool-card">
+        <h4>Demon Names</h4>
+        <p>Dark infernal names for fiends.</p>
+      </a>
+      <a href="../celestial-name-generator/index.html" class="tool-card">
+        <h4>Celestial Names</h4>
+        <p>Radiant angelic names of divinity.</p>
+      </a>
+      <a href="../goblin-name-generator/index.html" class="tool-card">
+        <h4>Goblin Names</h4>
+        <p>Chaotic, snappy names of mischief.</p>
+      </a>
+      <a href="../fantasy-name-generator/index.html" class="tool-card">
+        <h4>All Races</h4>
+        <p>Generate names for any race in one tool.</p>
+      </a>
+    </div>
+
+    <!-- RACE OVERVIEW -->
+    <section>
+      <h2>Race Naming Styles</h2>
+      <p>Each race draws from carefully crafted phoneme tables that capture distinct linguistic traditions. Here is what makes each race's names unique.</p>
+      <div class="race-overview">
+        <div class="race-card">
+          <h4>Elven</h4>
+          <p>Long vowel clusters, liquid consonants (l, r), and diphthongs like "ae" and "iel" create names that feel ancient and melodic.</p>
+          <div class="example-names">Caelithion, Aelwen, Thaliel</div>
+        </div>
+        <div class="race-card">
+          <h4>Dwarven</h4>
+          <p>Heavy consonant clusters, hard stops (k, g, d), and short vowels produce names that sound like hammers striking anvils.</p>
+          <div class="example-names">Thoragrim, Brundis, Khorvir</div>
+        </div>
+        <div class="race-card">
+          <h4>Human</h4>
+          <p>A balanced mix of Anglo-Saxon, Celtic, and Germanic roots gives human names a familiar but distinctly medieval quality.</p>
+          <div class="example-names">Aldric, Gwenara, Ashleyton</div>
+        </div>
+        <div class="race-card">
+          <h4>Orcish</h4>
+          <p>Explosive consonants, back vowels (u, o), and clusters like "gr", "kr", and "th" make names that sound aggressive and tribal.</p>
+          <div class="example-names">Groknak, Thrakgul, Murasha</div>
+        </div>
+        <div class="race-card">
+          <h4>Draconic</h4>
+          <p>Sibilants (s, x, z), rare consonant pairings, and mythic suffixes like "rion" and "phyr" evoke ancient power and elemental force.</p>
+          <div class="example-names">Baelrion, Fyraxes, Sharathos</div>
+        </div>
+        <div class="race-card">
+          <h4>Infernal</h4>
+          <p>Dark vowels, harsh fricatives (z, x, sh), and ominous endings like "moth" and "rath" create names that radiate malice.</p>
+          <div class="example-names">Azrulmoth, Charothzul, Nyzrath</div>
+        </div>
+        <div class="race-card">
+          <h4>Celestial</h4>
+          <p>Luminous vowels, theophoric "-iel" and "-ael" suffixes, and gentle consonants produce names that sound divine and transcendent.</p>
+          <div class="example-names">Aurielion, Celithael, Luminariel</div>
+        </div>
+        <div class="race-card">
+          <h4>Goblin</h4>
+          <p>High-frequency consonants (k, z, x), short staccato syllables, and chaotic combinations create names full of mischievous energy.</p>
+          <div class="example-names">Bixiknik, Crikazza, Fiziktok</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section>
+      <h2>How It Works</h2>
+      <ol>
+        <li><strong>Choose a race</strong> from the options above, or use the all-races generator for quick access to every option.</li>
+        <li><strong>Select gender</strong> — Male, Female, or Neutral — to influence syllable patterns and name endings.</li>
+        <li><strong>Set the count</strong> to generate 1, 5, 10, or 20 names in a single batch.</li>
+        <li><strong>Click Generate</strong> to create names using syllable-based construction with race-specific phoneme tables.</li>
+        <li><strong>Click any name</strong> to copy it to your clipboard. Use the bookmark icon to save favorites to your list.</li>
+        <li><strong>Export your list</strong> as a text file when you have collected the names you want.</li>
+      </ol>
+    </section>
+
+    <!-- FAQ -->
+    <section>
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>How are the names generated?</h3>
+      <p>Each race has its own tables of prefixes, middle syllables, and suffixes organized by gender. The generator randomly selects and combines components to create names that sound authentic to each race's linguistic tradition. No two batches are the same.</p>
+
+      <h3>Can I use these names commercially?</h3>
+      <p>Yes. All names are procedurally generated and not trademarked or copyrighted. You can use them freely in games, novels, tabletop campaigns, screenplays, or any other creative project — commercial or otherwise.</p>
+
+      <h3>Which generator should I use for D&D characters?</h3>
+      <p>Match the generator to your character's race. For half-elves, try both the Elf and Human generators and combine elements you like. For tieflings, the Demon generator works well. For aasimar, use the Celestial generator. For homebrew races, experiment with the race whose phonetic style best fits your concept.</p>
+
+      <h3>Can I generate names for multiple races at once?</h3>
+      <p>Use the <a href="../fantasy-name-generator/index.html">All Races generator</a> to switch between races without leaving the page. Each race-specific page presets the generator to that race but still allows switching via the dropdown.</p>
+
+      <h3>Do the names follow official D&D lore?</h3>
+      <p>The names are inspired by the linguistic traditions commonly associated with each race in fantasy literature and tabletop gaming, but they are original procedural creations. They are designed to feel authentic and fit naturally alongside official names without copying any specific source.</p>
+
+      <h3>Why do some names sound similar within a race?</h3>
+      <p>Names within the same race intentionally share phonetic characteristics — just like real-world names from the same culture. This linguistic consistency is a feature, not a bug. It makes the names feel like they belong to the same civilization and language family.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../fantasy-name-generator/index.html">All-Races Name Generator</a>
+      <a href="../dice-combination-sheet/index.html">Dice Combination Sheet</a>
+      <a href="../card-deck-generator/index.html">Card Deck Generator</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'game-dev-tools',
+      title: 'Fantasy Name Generators',
+      breadcrumbs: [
+        { label: 'Game Dev Tools', href: '../index.html' },
+        { label: 'Fantasy Name Generators' }
+      ]
+    });
+  </script>
+</body>
+</html>

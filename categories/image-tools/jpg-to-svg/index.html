@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JPG to SVG Converter - ToolBox</title>
+  <meta name="description" content="Convert JPG images to SVG vector graphics in your browser. Trace photographs and graphics into scalable vector paths with adjustable settings.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>JPG to SVG Converter</h1>
+      <p>Trace JPG images into scalable SVG vector graphics with adjustable detail.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../index.html">&larr; All Image Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts JPG (JPEG) raster images to SVG vector format by tracing the image into vector paths. The converter analyzes your image, reduces it to a configurable number of color layers using median-cut quantization, and generates true SVG path data. The result is a scalable vector file that can be resized without losing quality. This is particularly useful for converting logos, icons, and graphics that were saved as JPG back into a scalable vector format.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert JPG to SVG</h2>
+      <ol>
+        <li><strong>Upload your JPG file</strong> — drag and drop or click to browse.</li>
+        <li><strong>Adjust the color count</strong> — fewer colors for simpler vectors, more for finer detail.</li>
+        <li><strong>Set the detail level</strong> — Low for speed, Medium for balance, High for maximum fidelity.</li>
+        <li><strong>Click Trace to SVG</strong> — the tracing happens entirely in your browser.</li>
+        <li><strong>Compare the results</strong> — see the original alongside the traced SVG.</li>
+        <li><strong>Download</strong> — save the SVG file to your device.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>JPG vs SVG — Key Differences</h2>
+      <p>JPG is a lossy raster format that stores pixel data with compression artifacts. SVG is a vector format that stores mathematical shape descriptions. JPG files degrade when enlarged, while SVG files remain perfectly crisp at any size. JPG is best for photographs, while SVG is ideal for graphics with defined shapes. Converting JPG to SVG works best with simple graphics, logos, and illustrations rather than complex photographs.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>Will JPG compression artifacts affect the SVG output?</h3>
+      <p>JPG artifacts may introduce extra colors and noise. Using a lower color count helps the tracer smooth over these artifacts and produce cleaner vector output.</p>
+      <h3>Can I convert a photograph to SVG?</h3>
+      <p>Yes, but the result will be a stylized, posterized vector interpretation rather than a photographic reproduction. This can create interesting artistic effects.</p>
+      <h3>Is my image uploaded to a server?</h3>
+      <p>No. The entire conversion happens locally in your browser. Your images never leave your device.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Conversions</h2>
+      <a href="../svg-to-jpg/index.html">SVG to JPG Converter</a>
+      <a href="../png-to-svg/index.html">PNG to SVG Converter</a>
+      <a href="../jpg-to-png/index.html">JPG to PNG Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'image-tools',
+      title: 'JPG to SVG Converter',
+      breadcrumbs: [
+        { label: 'Image Tools', href: '../index.html' },
+        { label: 'JPG to SVG Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/converter.js"></script>
+  <script src="../../../js/svg-tracer.js"></script>
+  <script>initSvgTracer({ from: 'image/jpeg', mountTo: '#converter-mount' });</script>
+</body>
+</html>

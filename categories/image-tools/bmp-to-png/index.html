@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMP to PNG Converter - ToolBox</title>
+  <meta name="description" content="Convert BMP images to PNG for dramatically smaller file sizes with lossless compression and transparency support. Free browser-based conversion — no upload needed.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>BMP to PNG Converter</h1>
+      <p>Convert bulky BMP files to compact PNG with lossless compression and transparency support.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../index.html">&larr; All Image Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts BMP (Bitmap) images into PNG format directly in your browser. PNG uses lossless DEFLATE compression that can reduce file sizes by 70-90% compared to uncompressed BMP while preserving every single pixel perfectly. The conversion also upgrades your image to a modern format that supports alpha transparency, making it suitable for web use, graphic design, and long-term archival.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert BMP to PNG</h2>
+      <ol>
+        <li><strong>Upload your BMP file</strong> — drag and drop or click to browse.</li>
+        <li><strong>Verify the format</strong> — the source format is detected automatically.</li>
+        <li><strong>No quality adjustment needed</strong> — PNG uses lossless compression, so the output is pixel-perfect with no quality setting required.</li>
+        <li><strong>Click Convert</strong> — instant browser conversion.</li>
+        <li><strong>Compare the results</strong> — side by side with file sizes.</li>
+        <li><strong>Download</strong> — save the converted file.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>BMP vs PNG — Key Differences</h2>
+      <p>BMP stores raw, uncompressed pixel data and produces extremely large files — a simple 1920x1080 image in 24-bit BMP weighs over 6 MB. PNG applies lossless DEFLATE compression to achieve files that are typically 5 to 10 times smaller without losing a single pixel of quality. PNG also supports full alpha channel transparency, which BMP does not, making it far more versatile for graphics and web design. Both formats are lossless, but PNG is the modern standard supported by every browser, operating system, and image editor.</p>
+    </section>
+
+    <section>
+      <h2>When to Use PNG Instead of BMP</h2>
+      <p>PNG is the better choice in nearly every scenario. It produces dramatically smaller files with identical visual quality, supports transparency for overlays and compositing, and is universally accepted across all modern platforms. The only reason to keep BMP is for legacy systems that specifically require uncompressed bitmap input.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>How much smaller will my PNG be compared to the BMP?</h3>
+      <p>It depends on the image content, but PNG files are typically 70-90% smaller than equivalent BMPs. Images with large areas of uniform color compress especially well, while complex photographic images see more modest reductions around 50-70%.</p>
+      <h3>Is any quality lost when converting BMP to PNG?</h3>
+      <p>No. PNG uses lossless compression, meaning the output is a perfect pixel-for-pixel copy of the original BMP. The file is smaller, but nothing is discarded or approximated.</p>
+      <h3>Can I use the PNG on websites and in documents?</h3>
+      <p>Absolutely. PNG is one of the three core web image formats (alongside JPG and GIF) and is supported by every modern browser. It is also natively supported in Word, PowerPoint, Google Docs, and virtually all document and design tools.</p>
+      <h3>Is my image uploaded to a server?</h3>
+      <p>No. The conversion happens entirely in your browser using the HTML Canvas API. Your image never leaves your device.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Conversions</h2>
+      <a href="../png-to-bmp/index.html">PNG to BMP Converter</a>
+      <a href="../bmp-to-jpg/index.html">BMP to JPG Converter</a>
+      <a href="../bmp-to-webp/index.html">BMP to WebP Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'image-tools',
+      title: 'BMP to PNG Converter',
+      breadcrumbs: [
+        { label: 'Image Tools', href: '../index.html' },
+        { label: 'BMP to PNG Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/converter.js"></script>
+  <script>initConverter({ from: 'image/bmp', to: 'image/png', mountTo: '#converter-mount' });</script>
+</body>
+</html>

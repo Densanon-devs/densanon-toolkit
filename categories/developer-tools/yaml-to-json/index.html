@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAML to JSON Converter - ToolBox</title>
+  <meta name="description" content="Convert YAML configuration files to JSON format instantly. Transform Docker Compose, Kubernetes manifests, CI/CD configs, and other YAML files into valid JSON.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/data-converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>YAML to JSON Converter</h1>
+      <p>Convert YAML configuration and data files into structured JSON output.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../file-converter/index.html">&larr; All Data Converters</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts YAML (YAML Ain't Markup Language) into equivalent JSON. YAML is widely used for configuration files in tools like Docker Compose, Kubernetes, GitHub Actions, Ansible, and many CI/CD platforms. JSON is the standard interchange format for APIs, JavaScript applications, and data storage systems. When you need to take a YAML config and use it in a context that expects JSON — or simply want to validate the structure of your YAML by viewing it as JSON — this converter does the job in your browser. It handles key-value pairs, lists, nested structures, and automatic type detection for strings, numbers, booleans, and null values.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert YAML to JSON</h2>
+      <ol>
+        <li><strong>Paste your YAML</strong> — enter YAML content into the text area, or drag and drop a .yaml or .yml file onto the upload zone.</li>
+        <li><strong>Verify the conversion type</strong> — YAML to JSON is preselected in the dropdown.</li>
+        <li><strong>Click Convert</strong> — the tool parses the YAML structure and generates pretty-printed JSON with 2-space indentation.</li>
+        <li><strong>Copy or download</strong> — grab the JSON output via clipboard or save it as a .json file.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>YAML vs JSON — Format Comparison</h2>
+      <p>YAML and JSON can represent the same data structures, but they differ in syntax philosophy. YAML uses indentation and minimal punctuation, making it more pleasant to read and write by hand — which is why it dominates the configuration file space. JSON uses braces, brackets, and quotes for explicit structure, making it unambiguous for machine parsing and the standard choice for data interchange. YAML supports features like comments, anchors, and multi-line strings that JSON lacks. However, JSON's strict syntax means fewer parsing edge cases and broader native support across programming languages. Converting YAML to JSON is useful when you need to feed configuration data into an API, validate structure in a JSON schema tool, or work with systems that only accept JSON input.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>Does this support all YAML features?</h3>
+      <p>This converter handles the most common YAML patterns: key-value pairs, lists (using the dash prefix), nested structures, and scalar types including strings, integers, floats, booleans (true/false), and null values. Advanced YAML features like anchors, aliases, multi-document streams, and complex mapping keys are not supported. For most configuration files and simple data structures, the converter works reliably.</p>
+      <h3>Are YAML comments preserved in the JSON output?</h3>
+      <p>No. JSON does not support comments, so any lines in the YAML input beginning with the hash character are skipped during parsing. The data values themselves are fully preserved.</p>
+      <h3>How does the tool handle YAML type detection?</h3>
+      <p>Values like "true" and "false" are converted to JSON booleans. "null" and the tilde character become JSON null. Integer and floating-point patterns are converted to JSON numbers. Everything else is treated as a string. Quoted values in YAML (single or double quotes) are always treated as strings regardless of their content.</p>
+      <h3>Can I convert JSON back to YAML?</h3>
+      <p>This tool does not include a JSON-to-YAML mode, since YAML's indentation-based syntax requires opinionated formatting decisions. For the reverse direction, consider a dedicated JSON-to-YAML tool or a command-line utility like yq.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../json-minifier/index.html">JSON Minifier</a>
+      <a href="../json-to-csv/index.html">JSON to CSV Converter</a>
+      <a href="../json-formatter/index.html">JSON Formatter</a>
+      <a href="../file-converter/index.html">File Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'developer-tools',
+      title: 'YAML to JSON Converter',
+      breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'YAML to JSON Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/data-converter.js"></script>
+  <script>initDataConverter({ type: 'yaml-to-json', mountTo: '#converter-mount' });</script>
+</body>
+</html>

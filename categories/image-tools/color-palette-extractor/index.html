@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Extract dominant colors from any image with the Color Palette Extractor. Upload PNG, JPG, WebP, GIF, or BMP files and generate palettes of 4 to 16 colors. Export as CSS variables, JSON, PNG, or plain text. Free, client-side, no uploads required.">
+    <title>Color Palette Extractor - ToolBox</title>
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        .upload-area {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s, background 0.3s;
+            background: var(--color-surface);
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover,
+        .upload-area.drag-over {
+            border-color: var(--color-primary);
+            background: var(--color-surface-hover);
+        }
+
+        .upload-area svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            color: var(--color-primary);
+        }
+
+        .upload-area p {
+            color: var(--color-text-muted);
+            margin: 4px 0;
+        }
+
+        .upload-area .upload-label {
+            color: var(--color-text);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .upload-area .upload-formats {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .controls-row label {
+            color: var(--color-text);
+            font-weight: 500;
+        }
+
+        .controls-row select,
+        .controls-row button {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            color: var(--color-text);
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .controls-row select:hover,
+        .controls-row button:hover {
+            background: var(--color-surface-hover);
+        }
+
+        .btn-primary {
+            background: var(--color-primary) !important;
+            border-color: var(--color-primary) !important;
+            color: #fff !important;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover) !important;
+        }
+
+        .result-area {
+            display: none;
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .result-area.visible {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        @media (max-width: 768px) {
+            .result-area.visible {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .image-preview {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            padding: 12px;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 6px;
+        }
+
+        .palette-panel {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            padding: 16px;
+        }
+
+        .palette-panel h3 {
+            margin: 0 0 12px 0;
+            color: var(--color-text);
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .swatch {
+            background: var(--color-surface-hover);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid var(--color-border);
+            transition: transform 0.15s, box-shadow 0.15s;
+            position: relative;
+        }
+
+        .swatch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .swatch-color {
+            height: 64px;
+            width: 100%;
+        }
+
+        .swatch-info {
+            padding: 8px;
+            font-size: 0.8rem;
+        }
+
+        .swatch-hex {
+            font-weight: 700;
+            color: var(--color-text);
+            font-size: 0.9rem;
+        }
+
+        .swatch-rgb,
+        .swatch-hsl {
+            color: var(--color-text-muted);
+            margin-top: 2px;
+        }
+
+        .swatch .copied-toast {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--color-primary);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .swatch .copied-toast.show {
+            opacity: 1;
+        }
+
+        .export-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .export-row button {
+            padding: 8px 14px;
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            color: var(--color-text);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .export-row button:hover {
+            background: var(--color-surface-hover);
+        }
+
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .feature-item {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .feature-item h3 {
+            margin: 0 0 8px 0;
+            color: var(--color-text);
+            font-size: 1.05rem;
+        }
+
+        .feature-item p {
+            margin: 0;
+            color: var(--color-text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .content-section {
+            margin-top: 40px;
+        }
+
+        .content-section h2 {
+            color: var(--color-text);
+            margin-bottom: 12px;
+        }
+
+        .content-section p,
+        .content-section li {
+            color: var(--color-text-muted);
+            line-height: 1.7;
+        }
+
+        .content-section ol {
+            padding-left: 20px;
+        }
+
+        .content-section ol li {
+            margin-bottom: 10px;
+        }
+
+        .faq-item {
+            margin-bottom: 20px;
+        }
+
+        .faq-item h3 {
+            color: var(--color-text);
+            margin-bottom: 6px;
+            font-size: 1rem;
+        }
+
+        .faq-item p {
+            color: var(--color-text-muted);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .related-tools {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .related-tools a {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .related-tools a:hover {
+            background: var(--color-surface-hover);
+            border-color: var(--color-primary);
+        }
+
+        canvas#hiddenCanvas {
+            display: none;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.6rem; }
+            .controls-row { flex-direction: column; align-items: stretch; }
+            .controls-row select, .controls-row button { width: 100%; min-height: 44px; }
+            .palette-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+            .export-row button { min-height: 44px; flex: 1; }
+            .features-list { grid-template-columns: 1fr; }
+            .upload-area { padding: 32px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Image Color Palette Extractor</h1>
+            <p>Extract dominant colors from any image and export palettes in multiple formats</p>
+        </div>
+
+        <section class="tool-box">
+            <div class="upload-area" id="uploadArea">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                </svg>
+                <p class="upload-label">Drop an image here or click to upload</p>
+                <p class="upload-formats">Supports PNG, JPG, WebP, GIF, BMP</p>
+                <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" hidden>
+            </div>
+
+            <div class="controls-row">
+                <label for="paletteSize">Palette Size:</label>
+                <select id="paletteSize">
+                    <option value="4">4 Colors</option>
+                    <option value="6" selected>6 Colors</option>
+                    <option value="8">8 Colors</option>
+                    <option value="12">12 Colors</option>
+                    <option value="16">16 Colors</option>
+                </select>
+                <button class="btn-primary" id="extractBtn" disabled>Extract Palette</button>
+            </div>
+
+            <div class="result-area" id="resultArea">
+                <div class="image-preview">
+                    <img id="previewImg" src="" alt="Uploaded image preview">
+                </div>
+                <div class="palette-panel">
+                    <h3>Extracted Palette</h3>
+                    <div class="palette-grid" id="paletteGrid"></div>
+                    <div class="export-row" id="exportRow">
+                        <button onclick="exportAsPNG()">Export PNG</button>
+                        <button onclick="exportAsCSS()">Export CSS</button>
+                        <button onclick="exportAsJSON()">Export JSON</button>
+                        <button onclick="exportAsText()">Export Text</button>
+                    </div>
+                </div>
+            </div>
+
+            <canvas id="hiddenCanvas"></canvas>
+        </section>
+
+        <section class="content-section">
+            <h2>What Does This Tool Do?</h2>
+            <p>The Image Color Palette Extractor analyzes any uploaded image and identifies its most dominant colors using advanced color quantization algorithms. Whether you are designing a game UI, choosing a color scheme for pixel art, building a website theme, or seeking artistic inspiration, this tool breaks down complex images into their essential color building blocks. All processing happens entirely in your browser using the HTML5 Canvas API, so your images are never uploaded to any server. Simply drag and drop an image, choose how many colors you want in your palette, and the tool will deliver accurate hex, RGB, and HSL values for each dominant color. You can then export the results in a variety of developer-friendly formats including CSS custom properties, JSON arrays, PNG swatches, or a plain text list.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Features</h2>
+            <div class="features-list">
+                <div class="feature-item">
+                    <h3>Multi-Format Image Support</h3>
+                    <p>Upload images in PNG, JPG, WebP, GIF, or BMP format. The tool handles a wide range of image types so you can extract palettes from screenshots, concept art, photographs, sprites, and more without conversion.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Adjustable Palette Size</h3>
+                    <p>Choose exactly how many colors you need: 4 for a minimalist scheme, 6 or 8 for balanced palettes, or up to 16 for detailed color breakdowns. Tailor the output to your specific project requirements.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Color Quantization Algorithm</h3>
+                    <p>Uses a median cut quantization approach to group similar pixels and identify truly dominant colors rather than random sampling. This produces accurate, visually representative palettes every time.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Complete Color Information</h3>
+                    <p>Every extracted color displays its hex code, RGB values, and HSL values simultaneously. No need to convert between formats manually. Click any swatch to instantly copy its hex code to your clipboard.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Multiple Export Formats</h3>
+                    <p>Export your palette as a PNG image for sharing, CSS custom properties for web development, a JSON array for programmatic use, or a simple text list. Each format is production-ready and immediately usable.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>100% Client-Side Processing</h3>
+                    <p>All image analysis runs locally in your browser using the Canvas API. Your images never leave your device, ensuring complete privacy. No server uploads, no accounts, no data collection whatsoever.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Upload Your Image:</strong> Click the upload area or drag and drop an image file onto it. The tool accepts PNG, JPG, WebP, GIF, and BMP formats. There is no file size limit beyond your browser's memory capacity.</li>
+                <li><strong>Select Palette Size:</strong> Use the dropdown menu to choose how many colors you want extracted. Options range from 4 to 16 colors. A smaller palette captures only the most dominant hues, while a larger one reveals more subtle color variations.</li>
+                <li><strong>Extract the Palette:</strong> Click the "Extract Palette" button to begin analysis. The tool will sample the image pixels, run the quantization algorithm, and display the results in just a moment.</li>
+                <li><strong>Review the Results:</strong> The original image appears on the left and the extracted color swatches on the right. Each swatch shows a color preview block along with its hex, RGB, and HSL values for quick reference.</li>
+                <li><strong>Copy Individual Colors:</strong> Click any color swatch to copy its hex code to your clipboard. A brief "Copied!" confirmation will appear on the swatch. Paste the value directly into your code editor or design tool.</li>
+                <li><strong>Export the Full Palette:</strong> Use the export buttons below the palette to download the entire color set. Choose PNG for a visual reference image, CSS for custom properties, JSON for data, or Text for a plain list of values.</li>
+            </ol>
+        </section>
+
+        <section class="content-section">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-item">
+                <h3>What image formats are supported?</h3>
+                <p>The Color Palette Extractor supports PNG, JPG/JPEG, WebP, GIF, and BMP image formats. These cover the vast majority of image files you will encounter. If your image is in a different format such as TIFF or SVG, convert it to PNG or JPG first using any standard image converter before uploading.</p>
+            </div>
+            <div class="faq-item">
+                <h3>How does the color extraction algorithm work?</h3>
+                <p>The tool uses a median cut color quantization algorithm. It samples pixels from the image, builds a three-dimensional color space (red, green, blue), and recursively splits the largest color volume along its longest axis. This process groups similar colors together and identifies the most visually dominant clusters, producing a representative palette.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Is my image uploaded to a server?</h3>
+                <p>No. All processing happens entirely in your web browser using the HTML5 Canvas API and JavaScript. Your image data never leaves your device. There are no server uploads, no external API calls, and no data stored anywhere. This makes the tool safe to use with proprietary or sensitive artwork.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Which palette size should I choose?</h3>
+                <p>It depends on your use case. For a simple color scheme or minimal pixel art, 4 colors is ideal. For UI themes and general design work, 6 or 8 colors provide a well-rounded palette. Choose 12 or 16 colors when you need to capture gradients, subtle tonal shifts, or the full range of a complex photograph or illustration.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Can I use the extracted colors commercially?</h3>
+                <p>Absolutely. Colors themselves are not subject to copyright. Once you extract a palette, you are free to use those color values in any personal, commercial, or open-source project. The tool simply identifies the hex, RGB, and HSL values present in your image. What you do with those values is entirely up to you.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Why do the extracted colors not match exactly what I see?</h3>
+                <p>The quantization algorithm groups similar pixels into clusters and returns the average color of each cluster. This means individual pixel-level colors may be slightly adjusted to represent the dominant trend of a region. For most design purposes this produces better, more usable palettes than exact pixel picking would. If you need a specific pixel's exact color, consider using a dedicated color picker tool instead.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Related Tools</h2>
+            <div class="related-tools">
+                <a href="../../game-dev-tools/sprite-slicer/index.html">Sprite Slicer</a>
+                <a href="../pixel-art-palette/index.html">Pixel Art Palette</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'image-tools',
+            title: 'Color Palette Extractor',
+            breadcrumbs: [
+                { label: 'Image Tools', href: '../index.html' },
+                { label: 'Color Palette Extractor' }
+            ]
+        });
+    </script>
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const extractBtn = document.getElementById('extractBtn');
+        const paletteSizeSelect = document.getElementById('paletteSize');
+        const resultArea = document.getElementById('resultArea');
+        const previewImg = document.getElementById('previewImg');
+        const paletteGrid = document.getElementById('paletteGrid');
+        const hiddenCanvas = document.getElementById('hiddenCanvas');
+        const ctx = hiddenCanvas.getContext('2d', { willReadFrequently: true });
+
+        let currentImage = null;
+        let currentPalette = [];
+
+        // Upload area events
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                loadImage(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) loadImage(file);
+        });
+
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    currentImage = img;
+                    previewImg.src = e.target.result;
+                    extractBtn.disabled = false;
+                    uploadArea.querySelector('.upload-label').textContent = file.name;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        extractBtn.addEventListener('click', () => {
+            if (!currentImage) return;
+            const count = parseInt(paletteSizeSelect.value);
+            extractPalette(currentImage, count);
+        });
+
+        function extractPalette(img, colorCount) {
+            const maxDim = 200;
+            let w = img.width;
+            let h = img.height;
+            if (w > maxDim || h > maxDim) {
+                const scale = maxDim / Math.max(w, h);
+                w = Math.round(w * scale);
+                h = Math.round(h * scale);
+            }
+            hiddenCanvas.width = w;
+            hiddenCanvas.height = h;
+            ctx.drawImage(img, 0, 0, w, h);
+
+            const imageData = ctx.getImageData(0, 0, w, h);
+            const pixels = [];
+            for (let i = 0; i < imageData.data.length; i += 4) {
+                const a = imageData.data[i + 3];
+                if (a < 128) continue;
+                pixels.push([imageData.data[i], imageData.data[i + 1], imageData.data[i + 2]]);
+            }
+
+            currentPalette = medianCut(pixels, colorCount);
+            currentPalette.sort((a, b) => {
+                const la = 0.299 * a[0] + 0.587 * a[1] + 0.114 * a[2];
+                const lb = 0.299 * b[0] + 0.587 * b[1] + 0.114 * b[2];
+                return lb - la;
+            });
+
+            renderPalette();
+            resultArea.classList.add('visible');
+        }
+
+        function medianCut(pixels, targetCount) {
+            if (pixels.length === 0) return [[0, 0, 0]];
+
+            let buckets = [pixels];
+
+            while (buckets.length < targetCount) {
+                let longestIdx = 0;
+                let longestRange = -1;
+
+                for (let i = 0; i < buckets.length; i++) {
+                    const b = buckets[i];
+                    if (b.length < 2) continue;
+                    const range = getColorRange(b);
+                    const maxRange = Math.max(range.rRange, range.gRange, range.bRange);
+                    if (maxRange > longestRange) {
+                        longestRange = maxRange;
+                        longestIdx = i;
+                    }
+                }
+
+                if (longestRange <= 0) break;
+
+                const bucket = buckets[longestIdx];
+                const range = getColorRange(bucket);
+                let channel = 0;
+                if (range.gRange >= range.rRange && range.gRange >= range.bRange) channel = 1;
+                else if (range.bRange >= range.rRange && range.bRange >= range.gRange) channel = 2;
+
+                bucket.sort((a, b) => a[channel] - b[channel]);
+                const mid = Math.floor(bucket.length / 2);
+                buckets.splice(longestIdx, 1, bucket.slice(0, mid), bucket.slice(mid));
+            }
+
+            return buckets.map(bucket => {
+                const avg = [0, 0, 0];
+                for (const p of bucket) {
+                    avg[0] += p[0];
+                    avg[1] += p[1];
+                    avg[2] += p[2];
+                }
+                return [
+                    Math.round(avg[0] / bucket.length),
+                    Math.round(avg[1] / bucket.length),
+                    Math.round(avg[2] / bucket.length)
+                ];
+            });
+        }
+
+        function getColorRange(pixels) {
+            let rMin = 255, rMax = 0, gMin = 255, gMax = 0, bMin = 255, bMax = 0;
+            for (const p of pixels) {
+                if (p[0] < rMin) rMin = p[0];
+                if (p[0] > rMax) rMax = p[0];
+                if (p[1] < gMin) gMin = p[1];
+                if (p[1] > gMax) gMax = p[1];
+                if (p[2] < bMin) bMin = p[2];
+                if (p[2] > bMax) bMax = p[2];
+            }
+            return {
+                rRange: rMax - rMin,
+                gRange: gMax - gMin,
+                bRange: bMax - bMin
+            };
+        }
+
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+        }
+
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                    case g: h = ((b - r) / d + 2) / 6; break;
+                    case b: h = ((r - g) / d + 4) / 6; break;
+                }
+            }
+            return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+        }
+
+        function renderPalette() {
+            paletteGrid.innerHTML = '';
+            currentPalette.forEach(color => {
+                const [r, g, b] = color;
+                const hex = rgbToHex(r, g, b);
+                const [h, s, l] = rgbToHsl(r, g, b);
+
+                const swatch = document.createElement('div');
+                swatch.className = 'swatch';
+                swatch.innerHTML = `
+                    <div class="swatch-color" style="background:${hex}"></div>
+                    <div class="swatch-info">
+                        <div class="swatch-hex">${hex.toUpperCase()}</div>
+                        <div class="swatch-rgb">rgb(${r}, ${g}, ${b})</div>
+                        <div class="swatch-hsl">hsl(${h}, ${s}%, ${l}%)</div>
+                    </div>
+                    <div class="copied-toast">Copied!</div>
+                `;
+                swatch.addEventListener('click', () => {
+                    navigator.clipboard.writeText(hex.toUpperCase()).then(() => {
+                        const toast = swatch.querySelector('.copied-toast');
+                        toast.classList.add('show');
+                        setTimeout(() => toast.classList.remove('show'), 1000);
+                    });
+                });
+                paletteGrid.appendChild(swatch);
+            });
+        }
+
+        function exportAsPNG() {
+            if (currentPalette.length === 0) return;
+            const swatchW = 80;
+            const swatchH = 100;
+            const cols = Math.min(currentPalette.length, 8);
+            const rows = Math.ceil(currentPalette.length / cols);
+            const c = document.createElement('canvas');
+            c.width = cols * swatchW;
+            c.height = rows * swatchH;
+            const cx = c.getContext('2d');
+            cx.fillStyle = '#0f1117';
+            cx.fillRect(0, 0, c.width, c.height);
+
+            currentPalette.forEach((color, i) => {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                const x = col * swatchW;
+                const y = row * swatchH;
+                const hex = rgbToHex(color[0], color[1], color[2]).toUpperCase();
+                cx.fillStyle = hex;
+                cx.fillRect(x + 4, y + 4, swatchW - 8, swatchH - 28);
+                cx.fillStyle = '#e4e4e7';
+                cx.font = '11px monospace';
+                cx.textAlign = 'center';
+                cx.fillText(hex, x + swatchW / 2, y + swatchH - 8);
+            });
+
+            const link = document.createElement('a');
+            link.download = 'palette.png';
+            link.href = c.toDataURL('image/png');
+            link.click();
+        }
+
+        function exportAsCSS() {
+            if (currentPalette.length === 0) return;
+            let css = ':root {\n';
+            currentPalette.forEach((color, i) => {
+                const hex = rgbToHex(color[0], color[1], color[2]);
+                css += `  --palette-color-${i + 1}: ${hex};\n`;
+            });
+            css += '}\n';
+            downloadText(css, 'palette.css', 'text/css');
+        }
+
+        function exportAsJSON() {
+            if (currentPalette.length === 0) return;
+            const data = currentPalette.map(c => {
+                const hex = rgbToHex(c[0], c[1], c[2]);
+                const [h, s, l] = rgbToHsl(c[0], c[1], c[2]);
+                return { hex: hex.toUpperCase(), rgb: { r: c[0], g: c[1], b: c[2] }, hsl: { h, s, l } };
+            });
+            downloadText(JSON.stringify(data, null, 2), 'palette.json', 'application/json');
+        }
+
+        function exportAsText() {
+            if (currentPalette.length === 0) return;
+            let text = 'Color Palette\n=============\n\n';
+            currentPalette.forEach((c, i) => {
+                const hex = rgbToHex(c[0], c[1], c[2]).toUpperCase();
+                const [h, s, l] = rgbToHsl(c[0], c[1], c[2]);
+                text += `Color ${i + 1}: ${hex}  |  rgb(${c[0]}, ${c[1]}, ${c[2]})  |  hsl(${h}, ${s}%, ${l}%)\n`;
+            });
+            downloadText(text, 'palette.txt', 'text/plain');
+        }
+
+        function downloadText(content, filename, mime) {
+            const blob = new Blob([content], { type: mime });
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+    </script>
+</body>
+</html>

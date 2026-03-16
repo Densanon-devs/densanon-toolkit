@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sprite Slicer - ToolBox</title>
+  <meta name="description" content="Upload a sprite sheet and slice it into individual frames by rows and columns. Drag slice lines to fine-tune uneven sprites.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    .upload-area {
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius);
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover,
+    .upload-area.dragover {
+      border-color: var(--color-primary);
+      background: rgba(108, 99, 255, 0.05);
+    }
+
+    .upload-area p {
+      color: var(--color-text-muted);
+      margin-bottom: 8px;
+    }
+
+    .upload-area .formats {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      opacity: 0.6;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+    }
+
+    .control-group input[type="number"] {
+      width: 90px;
+      padding: 8px 12px;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      color: var(--color-text);
+      font-size: 0.95rem;
+    }
+
+    .control-group input[type="number"]:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+
+    .presets {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .preset-btn {
+      padding: 8px 14px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      color: var(--color-text-muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--color-primary);
+      color: var(--color-text);
+    }
+
+    .preset-btn.active {
+      border-color: var(--color-primary);
+      background: rgba(108, 99, 255, 0.12);
+      color: var(--color-primary);
+    }
+
+    /* Canvas preview */
+    .preview-wrapper {
+      position: relative;
+      display: none;
+      margin-top: 20px;
+      overflow: auto;
+      max-height: 600px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      background: repeating-conic-gradient(#1a1d27 0% 25%, #15171f 0% 50%) 0 0 / 20px 20px;
+    }
+
+    .preview-wrapper canvas {
+      display: block;
+      cursor: default;
+    }
+
+    .line-override-info {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: rgba(108, 99, 255, 0.08);
+      border: 1px solid rgba(108, 99, 255, 0.2);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+    }
+
+    .line-override-info.visible {
+      display: block;
+    }
+
+    /* Export */
+    .export-section {
+      display: none;
+      margin-top: 24px;
+    }
+
+    .export-section.visible {
+      display: block;
+    }
+
+    .export-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .slice-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .slice-thumb {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 4px;
+      text-align: center;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .slice-thumb img {
+      max-width: 100%;
+      max-height: 100%;
+      image-rendering: pixelated;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .toggle-row label {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .switch {
+      position: relative;
+      width: 42px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .switch .slider {
+      position: absolute;
+      inset: 0;
+      background: var(--color-border);
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .switch .slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      background: var(--color-text);
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .switch input:checked + .slider {
+      background: var(--color-primary);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(18px);
+    }
+
+    /* Feature highlights */
+    .features-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .feature-item {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .feature-item h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--color-text);
+    }
+
+    .feature-item p {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    .key-label {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-family: monospace;
+      color: var(--color-text-muted);
+    }
+
+    /* Use-case tags */
+    .use-cases {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .use-case-tag {
+      padding: 5px 12px;
+      background: rgba(108, 99, 255, 0.08);
+      border: 1px solid rgba(108, 99, 255, 0.15);
+      border-radius: 20px;
+      font-size: 0.82rem;
+      color: var(--color-primary);
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 1.6rem; }
+      .controls-row { flex-direction: column; align-items: stretch; }
+      .control-group input[type="number"] { width: 100%; }
+      .preview-wrapper { max-width: 100%; overflow-x: auto; }
+      .preview-wrapper canvas { max-width: 100%; height: auto; }
+      .export-row { flex-direction: column; }
+      .export-row button, #exportAllBtn, #exportSheetBtn { width: 100%; min-height: 44px; }
+      .preset-btn { min-height: 44px; }
+      .features-list { grid-template-columns: 1fr; }
+      .slice-preview-grid { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Sprite Slicer</h1>
+      <p>Upload a sprite sheet and slice it into individual frames. Drag slice lines to fine-tune alignment.</p>
+    </div>
+
+    <!-- TOOL SECTION -->
+    <section class="tool-box">
+      <div class="upload-area" id="uploadArea">
+        <p>Drop an image here or click to upload</p>
+        <span class="formats">PNG, JPG, GIF, BMP, WebP</span>
+        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/gif,image/bmp,image/webp" hidden>
+      </div>
+
+      <div id="imageInfo" style="display:none; margin-bottom:16px; font-size:0.9rem; color:var(--color-text-muted);"></div>
+
+      <div class="controls-row">
+        <div class="control-group">
+          <label for="colsInput">Columns</label>
+          <input type="number" id="colsInput" value="4" min="1" max="100">
+        </div>
+        <div class="control-group">
+          <label for="rowsInput">Rows</label>
+          <input type="number" id="rowsInput" value="1" min="1" max="100">
+        </div>
+        <div class="control-group">
+          <label>Presets</label>
+          <div class="presets">
+            <button class="preset-btn" data-cols="2" data-rows="1">2x1</button>
+            <button class="preset-btn active" data-cols="4" data-rows="1">4x1</button>
+            <button class="preset-btn" data-cols="4" data-rows="4">4x4</button>
+            <button class="preset-btn" data-cols="8" data-rows="8">8x8</button>
+            <button class="preset-btn" data-cols="16" data-rows="16">16x16</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <span class="switch">
+          <input type="checkbox" id="overrideToggle">
+          <label class="slider" for="overrideToggle"></label>
+        </span>
+        <label for="overrideToggle">Enable line override (drag slice lines to adjust)</label>
+      </div>
+
+      <div class="line-override-info" id="overrideInfo">
+        Click and drag any slice line to reposition it. Right-click a line to reset it. Changes are reflected in the export.
+      </div>
+
+      <div class="preview-wrapper" id="previewWrapper">
+        <canvas id="previewCanvas"></canvas>
+      </div>
+    </section>
+
+    <!-- EXPORT -->
+    <section class="export-section" id="exportSection">
+      <h2>Sliced Frames</h2>
+      <div class="export-row">
+        <button id="exportAllBtn" style="padding:10px 20px; background:var(--color-primary); color:#fff; border:none; border-radius:6px; font-size:0.95rem; font-weight:600; cursor:pointer;">Download All as ZIP</button>
+        <button id="exportSheetBtn" style="padding:10px 20px; background:transparent; border:1px solid var(--color-border); border-radius:6px; font-size:0.95rem; font-weight:600; color:var(--color-text-muted); cursor:pointer;">Download Individual Frames</button>
+      </div>
+      <div class="slice-preview-grid" id="sliceGrid"></div>
+    </section>
+
+    <!-- WHAT IT DOES -->
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>
+        Sprite Slicer breaks a sprite sheet image into individual frames based on a grid you define.
+        You set the number of columns and rows, and the tool divides the image evenly, showing you
+        exactly where each cut will land with a live preview overlay. If your sprite sheet has
+        inconsistent spacing — padding between frames, offset rows, or mixed frame sizes — you can
+        switch on line override mode and drag any individual slice line to the exact pixel you need.
+        Once you're happy with the grid, export every frame as a separate PNG file.
+      </p>
+      <div class="use-cases">
+        <span class="use-case-tag">Animation frames</span>
+        <span class="use-case-tag">Tileset tiles</span>
+        <span class="use-case-tag">Icon sheets</span>
+        <span class="use-case-tag">Texture atlases</span>
+        <span class="use-case-tag">Character sprites</span>
+      </div>
+    </section>
+
+    <!-- KEY FEATURES -->
+    <section>
+      <h2>Features</h2>
+      <div class="features-list">
+        <div class="feature-item">
+          <h4>Live Preview</h4>
+          <p>See slice lines drawn directly over your image as you adjust columns and rows. The preview updates instantly so you always know where each frame boundary sits.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Quick Presets</h4>
+          <p>Common grid layouts like 2x1, 4x1, 4x4, 8x8, and 16x16 are one click away. You can also type any custom column and row count.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Line Override</h4>
+          <p>Toggle override mode to click and drag any slice line to a new position. Ideal for sheets where frames aren't perfectly uniform. Right-click a line to snap it back to its default.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Frame Thumbnails</h4>
+          <p>Every sliced frame is rendered as a thumbnail below the preview so you can visually verify each frame before exporting.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Batch Export</h4>
+          <p>Download all frames at once as a ZIP archive, or save them one-by-one as individual PNG files. Frames are numbered sequentially (frame_000, frame_001, etc.).</p>
+        </div>
+        <div class="feature-item">
+          <h4>Browser-Only</h4>
+          <p>Everything runs locally in your browser. Your images are never uploaded to a server — no account, no installs, no waiting.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW TO USE -->
+    <section>
+      <h2>How to Use</h2>
+      <ol>
+        <li><strong>Upload your sprite sheet</strong> — Click the upload area or drag and drop an image file onto it. Supports PNG, JPG, GIF, BMP, and WebP.</li>
+        <li><strong>Set your grid</strong> — Enter the number of columns and rows that match your sheet's layout, or click a preset button. The preview will immediately show colored slice lines over your image (purple for columns, green for rows).</li>
+        <li><strong>Check alignment</strong> — Look at the slice lines on the preview. If they line up with your sprite boundaries, you're ready to export.</li>
+        <li><strong>Fine-tune if needed</strong> — If any line is off, flip the "Enable line override" toggle. You can then click and drag any line to reposition it pixel-by-pixel. Right-click a line to reset it to its evenly-spaced default.</li>
+        <li><strong>Review the thumbnails</strong> — Scroll down to the frame grid and verify each extracted frame looks correct. Hover a thumbnail to see its dimensions.</li>
+        <li><strong>Export</strong> — Click "Download All as ZIP" to get every frame in one archive, or "Download Individual Frames" to save each PNG separately.</li>
+      </ol>
+    </section>
+
+    <!-- FAQ -->
+    <section>
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>What image formats can I upload?</h3>
+      <p>PNG, JPG, GIF, BMP, and WebP. If your sprite sheet has transparency (like a PNG with an alpha channel), that transparency is preserved in the exported frames.</p>
+
+      <h3>What if my frames aren't all the same size?</h3>
+      <p>Enable line override mode using the toggle above the preview. Once active, you can drag any column or row divider to a custom position. This lets you handle sheets with mixed frame sizes, padding, or offset rows. Right-click any adjusted line to snap it back to its evenly-spaced default.</p>
+
+      <h3>What format are the exported frames?</h3>
+      <p>All frames export as PNG regardless of the input format. This ensures transparency is preserved and there's no quality loss from compression.</p>
+
+      <h3>Is there a file size limit?</h3>
+      <p>There's no hard limit since everything runs in your browser. Very large images (10,000px+) may slow down the preview, but slicing and export will still work.</p>
+
+      <h3>Is my image uploaded anywhere?</h3>
+      <p>No. All processing happens entirely in your browser using the HTML Canvas API. Your image data never leaves your machine.</p>
+
+      <h3>How are the frames numbered?</h3>
+      <p>Frames are numbered left-to-right, top-to-bottom starting from frame_000. For example, a 4x2 grid produces frame_000 through frame_007, reading across each row.</p>
+    </section>
+
+    <!-- RELATED TOOLS -->
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../dice-combination-sheet/index.html">Dice Combination Sheet</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'game-dev-tools',
+      title: 'Sprite Slicer',
+      breadcrumbs: [
+        { label: 'Game Dev Tools', href: '../index.html' },
+        { label: 'Sprite Slicer' }
+      ]
+    });
+  </script>
+  <script>
+    (() => {
+      // State
+      let img = null;
+      let cols = 4;
+      let rows = 1;
+      let overrideEnabled = false;
+      let colLines = [];  // x positions (between slices)
+      let rowLines = [];  // y positions
+      let dragging = null; // { type: 'col'|'row', index }
+      let scale = 1;
+
+      // Elements
+      const uploadArea = document.getElementById('uploadArea');
+      const fileInput = document.getElementById('fileInput');
+      const imageInfo = document.getElementById('imageInfo');
+      const colsInput = document.getElementById('colsInput');
+      const rowsInput = document.getElementById('rowsInput');
+      const overrideToggle = document.getElementById('overrideToggle');
+      const overrideInfo = document.getElementById('overrideInfo');
+      const previewWrapper = document.getElementById('previewWrapper');
+      const canvas = document.getElementById('previewCanvas');
+      const ctx = canvas.getContext('2d');
+      const exportSection = document.getElementById('exportSection');
+      const sliceGrid = document.getElementById('sliceGrid');
+      const exportAllBtn = document.getElementById('exportAllBtn');
+      const exportSheetBtn = document.getElementById('exportSheetBtn');
+
+      // Upload handling
+      uploadArea.addEventListener('click', () => fileInput.click());
+      uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+      uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+      uploadArea.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) loadImage(file);
+      });
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files[0]) loadImage(fileInput.files[0]);
+      });
+
+      function loadImage(file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const newImg = new Image();
+          newImg.onload = () => {
+            img = newImg;
+            imageInfo.style.display = 'block';
+            imageInfo.textContent = `${file.name} — ${img.naturalWidth} x ${img.naturalHeight}px`;
+            uploadArea.querySelector('p').textContent = file.name;
+            resetLines();
+            render();
+          };
+          newImg.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // Preset buttons
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          colsInput.value = btn.dataset.cols;
+          rowsInput.value = btn.dataset.rows;
+          cols = parseInt(btn.dataset.cols);
+          rows = parseInt(btn.dataset.rows);
+          resetLines();
+          render();
+        });
+      });
+
+      colsInput.addEventListener('input', () => {
+        cols = Math.max(1, parseInt(colsInput.value) || 1);
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        resetLines();
+        render();
+      });
+
+      rowsInput.addEventListener('input', () => {
+        rows = Math.max(1, parseInt(rowsInput.value) || 1);
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        resetLines();
+        render();
+      });
+
+      overrideToggle.addEventListener('change', () => {
+        overrideEnabled = overrideToggle.checked;
+        overrideInfo.classList.toggle('visible', overrideEnabled);
+        canvas.style.cursor = overrideEnabled ? 'grab' : 'default';
+        render();
+      });
+
+      function resetLines() {
+        if (!img) return;
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+        colLines = [];
+        rowLines = [];
+        for (let i = 1; i < cols; i++) colLines.push(Math.round(w * i / cols));
+        for (let i = 1; i < rows; i++) rowLines.push(Math.round(h * i / rows));
+      }
+
+      function getSlicePositions(lines, total) {
+        const positions = [0, ...lines, total];
+        positions.sort((a, b) => a - b);
+        return positions;
+      }
+
+      // Render
+      function render() {
+        if (!img) return;
+
+        const maxW = previewWrapper.clientWidth || 800;
+        scale = Math.min(1, maxW / img.naturalWidth);
+        const displayW = Math.round(img.naturalWidth * scale);
+        const displayH = Math.round(img.naturalHeight * scale);
+
+        canvas.width = displayW;
+        canvas.height = displayH;
+
+        // Draw image
+        ctx.clearRect(0, 0, displayW, displayH);
+        ctx.drawImage(img, 0, 0, displayW, displayH);
+
+        // Draw slice lines
+        ctx.save();
+
+        // Column lines
+        for (let i = 0; i < colLines.length; i++) {
+          const x = Math.round(colLines[i] * scale);
+          ctx.strokeStyle = 'rgba(108, 99, 255, 0.8)';
+          ctx.lineWidth = overrideEnabled ? 2 : 1;
+          ctx.setLineDash(overrideEnabled ? [] : [6, 4]);
+          ctx.beginPath();
+          ctx.moveTo(x + 0.5, 0);
+          ctx.lineTo(x + 0.5, displayH);
+          ctx.stroke();
+
+          if (overrideEnabled) {
+            // Draw grab handle
+            ctx.fillStyle = 'rgba(108, 99, 255, 0.9)';
+            ctx.fillRect(x - 4, displayH / 2 - 14, 9, 28);
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(x - 1, displayH / 2 - 8, 3, 4);
+            ctx.fillRect(x - 1, displayH / 2 + 2, 3, 4);
+          }
+        }
+
+        // Row lines
+        for (let i = 0; i < rowLines.length; i++) {
+          const y = Math.round(rowLines[i] * scale);
+          ctx.strokeStyle = 'rgba(52, 211, 153, 0.8)';
+          ctx.lineWidth = overrideEnabled ? 2 : 1;
+          ctx.setLineDash(overrideEnabled ? [] : [6, 4]);
+          ctx.beginPath();
+          ctx.moveTo(0, y + 0.5);
+          ctx.lineTo(displayW, y + 0.5);
+          ctx.stroke();
+
+          if (overrideEnabled) {
+            ctx.fillStyle = 'rgba(52, 211, 153, 0.9)';
+            ctx.fillRect(displayW / 2 - 14, y - 4, 28, 9);
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(displayW / 2 - 8, y - 1, 4, 3);
+            ctx.fillRect(displayW / 2 + 2, y - 1, 4, 3);
+          }
+        }
+
+        ctx.restore();
+
+        previewWrapper.style.display = 'block';
+        exportSection.classList.add('visible');
+        renderSlicePreviews();
+      }
+
+      // Dragging
+      const GRAB_DIST = 8;
+
+      canvas.addEventListener('mousedown', e => {
+        if (!overrideEnabled || !img) return;
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+
+        // Check column lines
+        for (let i = 0; i < colLines.length; i++) {
+          const lx = colLines[i] * scale;
+          if (Math.abs(mx - lx) < GRAB_DIST) {
+            dragging = { type: 'col', index: i };
+            canvas.style.cursor = 'col-resize';
+            e.preventDefault();
+            return;
+          }
+        }
+
+        // Check row lines
+        for (let i = 0; i < rowLines.length; i++) {
+          const ly = rowLines[i] * scale;
+          if (Math.abs(my - ly) < GRAB_DIST) {
+            dragging = { type: 'row', index: i };
+            canvas.style.cursor = 'row-resize';
+            e.preventDefault();
+            return;
+          }
+        }
+      });
+
+      canvas.addEventListener('mousemove', e => {
+        if (!img) return;
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+
+        if (dragging) {
+          if (dragging.type === 'col') {
+            const newX = Math.round(Math.max(1, Math.min(img.naturalWidth - 1, mx / scale)));
+            colLines[dragging.index] = newX;
+          } else {
+            const newY = Math.round(Math.max(1, Math.min(img.naturalHeight - 1, my / scale)));
+            rowLines[dragging.index] = newY;
+          }
+          render();
+          return;
+        }
+
+        if (!overrideEnabled) return;
+
+        // Hover cursor
+        let onLine = false;
+        for (let i = 0; i < colLines.length; i++) {
+          if (Math.abs(mx - colLines[i] * scale) < GRAB_DIST) { canvas.style.cursor = 'col-resize'; onLine = true; break; }
+        }
+        if (!onLine) {
+          for (let i = 0; i < rowLines.length; i++) {
+            if (Math.abs(my - rowLines[i] * scale) < GRAB_DIST) { canvas.style.cursor = 'row-resize'; onLine = true; break; }
+          }
+        }
+        if (!onLine) canvas.style.cursor = 'grab';
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (dragging) {
+          dragging = null;
+          canvas.style.cursor = overrideEnabled ? 'grab' : 'default';
+        }
+      });
+
+      // Right-click to reset a line
+      canvas.addEventListener('contextmenu', e => {
+        if (!overrideEnabled || !img) return;
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+
+        for (let i = 0; i < colLines.length; i++) {
+          if (Math.abs(mx - colLines[i] * scale) < GRAB_DIST) {
+            colLines[i] = Math.round(img.naturalWidth * (i + 1) / cols);
+            render();
+            return;
+          }
+        }
+        for (let i = 0; i < rowLines.length; i++) {
+          if (Math.abs(my - rowLines[i] * scale) < GRAB_DIST) {
+            rowLines[i] = Math.round(img.naturalHeight * (i + 1) / rows);
+            render();
+            return;
+          }
+        }
+      });
+
+      // Slice previews
+      function getSlices() {
+        if (!img) return [];
+        const xs = getSlicePositions(colLines, img.naturalWidth);
+        const ys = getSlicePositions(rowLines, img.naturalHeight);
+        const slices = [];
+        for (let r = 0; r < ys.length - 1; r++) {
+          for (let c = 0; c < xs.length - 1; c++) {
+            slices.push({
+              x: xs[c],
+              y: ys[r],
+              w: xs[c + 1] - xs[c],
+              h: ys[r + 1] - ys[r],
+              row: r,
+              col: c
+            });
+          }
+        }
+        return slices;
+      }
+
+      function sliceToCanvas(slice) {
+        const c = document.createElement('canvas');
+        c.width = slice.w;
+        c.height = slice.h;
+        const sctx = c.getContext('2d');
+        sctx.drawImage(img, slice.x, slice.y, slice.w, slice.h, 0, 0, slice.w, slice.h);
+        return c;
+      }
+
+      function renderSlicePreviews() {
+        const slices = getSlices();
+        sliceGrid.innerHTML = '';
+        slices.forEach((slice, i) => {
+          const c = sliceToCanvas(slice);
+          const div = document.createElement('div');
+          div.className = 'slice-thumb';
+          div.title = `Frame ${i} (${slice.w}x${slice.h})`;
+          const imgEl = document.createElement('img');
+          imgEl.src = c.toDataURL('image/png');
+          div.appendChild(imgEl);
+          sliceGrid.appendChild(div);
+        });
+      }
+
+      // Export
+      exportSheetBtn.addEventListener('click', () => {
+        const slices = getSlices();
+        slices.forEach((slice, i) => {
+          const c = sliceToCanvas(slice);
+          const link = document.createElement('a');
+          link.download = `frame_${String(i).padStart(3, '0')}.png`;
+          link.href = c.toDataURL('image/png');
+          link.click();
+        });
+      });
+
+      exportAllBtn.addEventListener('click', async () => {
+        const slices = getSlices();
+        if (slices.length === 0) return;
+
+        // Dynamic import JSZip from CDN
+        if (!window.JSZip) {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+          document.head.appendChild(script);
+          await new Promise((resolve, reject) => {
+            script.onload = resolve;
+            script.onerror = reject;
+          });
+        }
+
+        const zip = new JSZip();
+        slices.forEach((slice, i) => {
+          const c = sliceToCanvas(slice);
+          const data = c.toDataURL('image/png').split(',')[1];
+          zip.file(`frame_${String(i).padStart(3, '0')}.png`, data, { base64: true });
+        });
+
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const link = document.createElement('a');
+        link.download = 'sprites.zip';
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+      });
+
+      // Handle window resize
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => { if (img) render(); }, 150);
+      });
+    })();
+  </script>
+</body>
+</html>

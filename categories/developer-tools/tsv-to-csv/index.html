@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TSV to CSV Converter - ToolBox</title>
+  <meta name="description" content="Convert tab-separated values (TSV) to comma-separated values (CSV) instantly. Transform data exported from spreadsheets and databases into universal CSV format.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/data-converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>TSV to CSV Converter</h1>
+      <p>Convert tab-separated data to comma-separated format for universal compatibility.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../file-converter/index.html">&larr; All Data Converters</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts tab-separated values (TSV) into comma-separated values (CSV). TSV is a common export format from spreadsheet applications, database tools, and clipboard data copied from tables. While TSV works well for simple data, CSV is the more universally accepted format for imports, data analysis tools, and programming libraries. The converter handles quoted fields correctly — if a field in your TSV data contains commas, it will be properly quoted in the CSV output so that the structure is preserved. The entire conversion runs in your browser with no server upload required.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert TSV to CSV</h2>
+      <ol>
+        <li><strong>Paste your TSV data</strong> — copy tab-separated text from a spreadsheet, database export, or text file and paste it into the input area. You can also drag and drop a .tsv file.</li>
+        <li><strong>Verify the conversion type</strong> — TSV to CSV is preselected. The dropdown lets you switch to other conversions if needed.</li>
+        <li><strong>Click Convert</strong> — each tab character is replaced with a comma, and fields containing commas or quotes are properly escaped.</li>
+        <li><strong>Copy or download</strong> — use Copy Result for the clipboard or Download Result to save a .csv file.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>TSV vs CSV — Key Differences</h2>
+      <p>Both TSV and CSV are plain-text tabular formats, but they differ in their delimiter character. TSV uses tab characters to separate fields, which means fields can contain commas without any special escaping. CSV uses commas as delimiters, requiring fields that contain commas, quotes, or newlines to be enclosed in double quotes. TSV is common when copying data from spreadsheets (most spreadsheet applications put tab-separated data on the clipboard) and when exporting from databases. CSV has broader support across import tools, programming language libraries, and data processing platforms. Converting from TSV to CSV is often necessary when a system only accepts CSV imports or when you need to standardize on a single delimiter format across your workflow.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>What happens to fields that contain commas in the TSV data?</h3>
+      <p>Fields containing commas are automatically wrapped in double quotes in the CSV output. This ensures that the comma within the field is not mistaken for a delimiter. For example, a TSV field "New York, NY" becomes the CSV field "New York, NY" (with enclosing quotes).</p>
+      <h3>Does this tool handle quoted fields in TSV input?</h3>
+      <p>Yes. The parser recognizes double-quoted fields in the TSV input and preserves their content, including escaped quotes represented as two consecutive double-quote characters.</p>
+      <h3>Can I convert data copied directly from a spreadsheet?</h3>
+      <p>Yes. When you copy cells from Excel, Google Sheets, or other spreadsheet applications, the clipboard typically contains tab-separated text. Paste it directly into the input area and convert.</p>
+      <h3>Is there a size limit for the input data?</h3>
+      <p>There is no hard limit. Since the conversion runs in your browser, the practical limit depends on your device's available memory. Files up to several megabytes convert without issues on modern hardware.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../csv-to-tsv/index.html">CSV to TSV Converter</a>
+      <a href="../csv-to-json/index.html">CSV to JSON Converter</a>
+      <a href="../json-to-csv/index.html">JSON to CSV Converter</a>
+      <a href="../file-converter/index.html">File Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'developer-tools',
+      title: 'TSV to CSV Converter',
+      breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'TSV to CSV Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/data-converter.js"></script>
+  <script>initDataConverter({ type: 'tsv-to-csv', mountTo: '#converter-mount' });</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMP to SVG Converter - ToolBox</title>
+  <meta name="description" content="Convert BMP bitmap images to SVG vector graphics in your browser. Trace uncompressed raster images into scalable vector paths.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>BMP to SVG Converter</h1>
+      <p>Trace BMP bitmap images into scalable SVG vector graphics.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../index.html">&larr; All Image Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts BMP (Bitmap) raster images to SVG vector format by tracing the image into vector paths. BMP files store raw pixel data without compression, making them large but lossless. This converter analyzes your BMP, reduces it to a configurable number of colors, and generates true SVG paths. Since BMP files have no compression artifacts, they often produce the cleanest vector traces of any raster input format.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert BMP to SVG</h2>
+      <ol>
+        <li><strong>Upload your BMP file</strong> — drag and drop or click to browse.</li>
+        <li><strong>Adjust the color count</strong> — fewer colors for cleaner vectors, more for detail.</li>
+        <li><strong>Set the detail level</strong> — Low for speed, Medium for balance, High for fidelity.</li>
+        <li><strong>Click Trace to SVG</strong> — the tracing happens entirely in your browser.</li>
+        <li><strong>Compare the results</strong> — see the original alongside the traced SVG.</li>
+        <li><strong>Download</strong> — save the SVG file to your device.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>BMP vs SVG — Key Differences</h2>
+      <p>BMP stores every pixel without compression, resulting in large files with no quality loss. SVG describes shapes mathematically, producing compact files that scale to any size. A BMP logo might be several megabytes while the same graphic as SVG could be a few kilobytes. Converting BMP to SVG dramatically reduces file size while making the image resolution-independent.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>Does the lack of compression in BMP help with tracing?</h3>
+      <p>Yes. BMP files have no compression artifacts, so the tracer receives the cleanest possible pixel data. This typically produces smoother, more accurate vector output compared to tracing compressed formats like JPG.</p>
+      <h3>Is my image uploaded to a server?</h3>
+      <p>No. The entire conversion happens locally in your browser. Your images never leave your device.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Conversions</h2>
+      <a href="../svg-to-bmp/index.html">SVG to BMP Converter</a>
+      <a href="../png-to-svg/index.html">PNG to SVG Converter</a>
+      <a href="../bmp-to-png/index.html">BMP to PNG Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'image-tools',
+      title: 'BMP to SVG Converter',
+      breadcrumbs: [
+        { label: 'Image Tools', href: '../index.html' },
+        { label: 'BMP to SVG Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/converter.js"></script>
+  <script src="../../../js/svg-tracer.js"></script>
+  <script>initSvgTracer({ from: 'image/bmp', mountTo: '#converter-mount' });</script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Format Converter - ToolBox</title>
+  <meta name="description" content="Convert between data formats online — JSON, CSV, TSV, YAML, Markdown, and Base64. Free browser-based converters for developers. No uploads, no installs.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    .hub-intro {
+      max-width: 640px;
+      margin-bottom: 40px;
+    }
+    .hub-intro p {
+      color: var(--color-text-muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+    .hub-section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--color-primary);
+      margin-bottom: 16px;
+    }
+    .featured-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    .featured-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-primary);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+    .featured-card::before {
+      content: 'Popular';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(108, 99, 255, 0.15);
+      color: var(--color-primary);
+      padding: 3px 8px;
+      border-radius: 10px;
+    }
+    .featured-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 20px rgba(108, 99, 255, 0.15);
+    }
+    .featured-card h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .featured-card p {
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+      flex-grow: 1;
+    }
+    .featured-card .card-link {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+    .all-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+    .all-grid .tool-card {
+      padding: 18px;
+    }
+    .all-grid .tool-card h4 {
+      font-size: 0.98rem;
+    }
+    .all-grid .tool-card p {
+      font-size: 0.84rem;
+    }
+    .format-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin: 16px 0 24px;
+    }
+    .format-overview .fmt-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .format-overview .fmt-card h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .format-overview .fmt-card p {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+    .format-overview .fmt-card code {
+      padding: 2px 6px;
+      background: var(--color-bg);
+      border-radius: 4px;
+      font-size: 0.82rem;
+      color: var(--color-primary);
+    }
+    @media (max-width: 640px) {
+      .featured-grid { grid-template-columns: 1fr; }
+      .all-grid { grid-template-columns: 1fr; }
+      .format-overview { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Data Format Converter</h1>
+      <p>Convert between JSON, CSV, TSV, YAML, Markdown, and Base64 directly in your browser.</p>
+    </div>
+
+    <div class="hub-intro">
+      <p>Paste your data, pick a conversion, and get instant results. Every transformation runs client-side — your data never leaves your device. Copy the result to your clipboard or download it as a file.</p>
+    </div>
+
+    <!-- FEATURED / POPULAR -->
+    <div class="hub-section-label">Most Searched Conversions</div>
+    <div class="featured-grid">
+      <a href="../json-to-csv/index.html" class="featured-card">
+        <h4>JSON to CSV</h4>
+        <p>Convert JSON arrays into CSV spreadsheets for Excel, Google Sheets, and database imports.</p>
+        <span class="card-link">Convert now</span>
+      </a>
+      <a href="../csv-to-json/index.html" class="featured-card">
+        <h4>CSV to JSON</h4>
+        <p>Transform CSV data into structured JSON with auto-detected delimiters and multiple output formats.</p>
+        <span class="card-link">Convert now</span>
+      </a>
+      <a href="../markdown-to-html/index.html" class="featured-card">
+        <h4>Markdown to HTML</h4>
+        <p>Convert Markdown text into clean HTML with support for headings, lists, code blocks, and more.</p>
+        <span class="card-link">Convert now</span>
+      </a>
+      <a href="../base64-encoder/index.html" class="featured-card">
+        <h4>Base64 Encoder</h4>
+        <p>Encode text to Base64 for data URIs, API payloads, config files, and embedded content.</p>
+        <span class="card-link">Convert now</span>
+      </a>
+    </div>
+
+    <!-- ALL CONVERTERS -->
+    <div class="hub-section-label">All Data Conversions</div>
+    <div class="all-grid">
+      <a href="../json-to-csv/index.html" class="tool-card">
+        <h4>JSON to CSV</h4>
+        <p>Convert JSON arrays to CSV spreadsheet format.</p>
+      </a>
+      <a href="../csv-to-json/index.html" class="tool-card">
+        <h4>CSV to JSON</h4>
+        <p>Parse CSV into structured JSON with delimiter detection.</p>
+      </a>
+      <a href="../json-minifier/index.html" class="tool-card">
+        <h4>JSON Minifier</h4>
+        <p>Minify or prettify JSON data with one click.</p>
+      </a>
+      <a href="../tsv-to-csv/index.html" class="tool-card">
+        <h4>TSV to CSV</h4>
+        <p>Convert tab-separated values to comma-separated CSV.</p>
+      </a>
+      <a href="../csv-to-tsv/index.html" class="tool-card">
+        <h4>CSV to TSV</h4>
+        <p>Convert CSV to tab-separated values for database import.</p>
+      </a>
+      <a href="../markdown-to-html/index.html" class="tool-card">
+        <h4>Markdown to HTML</h4>
+        <p>Convert Markdown to clean, valid HTML markup.</p>
+      </a>
+      <a href="../yaml-to-json/index.html" class="tool-card">
+        <h4>YAML to JSON</h4>
+        <p>Convert YAML config files to JSON format.</p>
+      </a>
+      <a href="../base64-encoder/index.html" class="tool-card">
+        <h4>Base64 Encoder</h4>
+        <p>Encode any text to Base64 for embedding.</p>
+      </a>
+      <a href="../base64-decoder/index.html" class="tool-card">
+        <h4>Base64 Decoder</h4>
+        <p>Decode Base64 strings back to readable text.</p>
+      </a>
+    </div>
+
+    <!-- FORMAT OVERVIEW -->
+    <section>
+      <h2>Supported Formats</h2>
+      <div class="format-overview">
+        <div class="fmt-card">
+          <h4>JSON</h4>
+          <p>JavaScript Object Notation — the standard data interchange format for APIs and web applications. Supports objects, arrays, strings, numbers, booleans, and null.</p>
+        </div>
+        <div class="fmt-card">
+          <h4>CSV</h4>
+          <p>Comma-Separated Values — the universal spreadsheet format. Compatible with Excel, Google Sheets, database imports, and virtually every data tool.</p>
+        </div>
+        <div class="fmt-card">
+          <h4>TSV</h4>
+          <p>Tab-Separated Values — like CSV but uses tabs instead of commas. Preferred for data that contains commas, and common in bioinformatics and database exports.</p>
+        </div>
+        <div class="fmt-card">
+          <h4>YAML</h4>
+          <p>YAML Ain't Markup Language — a human-readable format popular for configuration files in Docker, Kubernetes, GitHub Actions, and many DevOps tools.</p>
+        </div>
+        <div class="fmt-card">
+          <h4>Markdown</h4>
+          <p>Lightweight markup language used for documentation, README files, blog posts, and technical writing. Converts to clean HTML for web publishing.</p>
+        </div>
+        <div class="fmt-card">
+          <h4>Base64</h4>
+          <p>Binary-to-text encoding scheme that represents data in ASCII. Used for embedding images in CSS, passing data through URLs, and API authentication headers.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section>
+      <h2>How It Works</h2>
+      <ol>
+        <li><strong>Choose a conversion</strong> from the options above, or go directly to the converter you need.</li>
+        <li><strong>Paste your data</strong> into the text area, or drag and drop a file to load its contents automatically.</li>
+        <li><strong>Click Convert</strong> to run the transformation instantly in your browser.</li>
+        <li><strong>Review the result</strong> in the formatted output panel below the input.</li>
+        <li><strong>Copy or download</strong> the converted data using the buttons that appear after conversion.</li>
+      </ol>
+    </section>
+
+    <!-- FAQ -->
+    <section>
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>Is my data sent to a server?</h3>
+      <p>No. Every conversion runs entirely in your browser using JavaScript. Your data never leaves your device — there are no server uploads, no cloud processing, and no data stored anywhere.</p>
+
+      <h3>Can I convert files or just pasted text?</h3>
+      <p>Both. You can paste text directly into the input area, or drag and drop a file onto the drop zone to load its contents. The file is read locally by your browser — it is not uploaded.</p>
+
+      <h3>What happens with special characters?</h3>
+      <p>All converters handle UTF-8 encoding properly. CSV conversion correctly handles quoted fields, embedded commas, and escaped quotes. JSON output is valid and preserves Unicode characters.</p>
+
+      <h3>Is there a size limit?</h3>
+      <p>There is no hard limit. Since processing happens in your browser, the practical constraint is your device's available memory. Most data under 10MB converts instantly; larger datasets may take a moment.</p>
+
+      <h3>Can I change the conversion type after loading data?</h3>
+      <p>Yes. Each converter includes a dropdown that lets you switch to any other conversion type without losing your input. The tool is preset to the conversion matching the page you're on, but you can change it freely.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../json-formatter/index.html">JSON Formatter</a>
+      <a href="../uuid-generator/index.html">UUID Generator</a>
+      <a href="../file-converter/index.html">File Converter (All Formats)</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'developer-tools',
+      title: 'Data Format Converter',
+      breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'Data Format Converter' }
+      ]
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JPG to PNG Converter - ToolBox</title>
+  <meta name="description" content="Convert JPG images to lossless PNG format. Gain transparency support and prevent further quality loss from re-encoding. Free browser-based converter.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>JPG to PNG Converter</h1>
+      <p>Convert your JPG images to lossless PNG format with transparency support.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../index.html">&larr; All Image Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts JPG (JPEG) images to PNG format, a lossless image format that supports alpha transparency. Converting from JPG to PNG is useful when you need to use an image in a workflow that requires lossless encoding or transparency, such as graphic design, layered compositions, or overlays on colored backgrounds. While the conversion cannot recover detail already lost during JPG compression, it ensures no further quality degradation occurs during subsequent edits or saves.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert JPG to PNG</h2>
+      <ol>
+        <li><strong>Upload your JPG file</strong> — drag and drop or click to browse.</li>
+        <li><strong>Verify the format</strong> — the source format is detected automatically.</li>
+        <li><strong>Adjust quality</strong> — No quality settings needed for lossless PNG.</li>
+        <li><strong>Click Convert</strong> — the conversion happens instantly in your browser.</li>
+        <li><strong>Compare the results</strong> — see original vs converted side by side with file sizes.</li>
+        <li><strong>Download</strong> — save the converted file to your device.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>JPG vs PNG — Key Differences</h2>
+      <p>JPG uses lossy compression that discards visual information to achieve small file sizes, making it efficient for photographs but prone to artifacts around sharp edges and text. PNG uses lossless compression that preserves every pixel exactly, resulting in larger files but perfect quality with no generation loss on re-saves. JPG does not support transparency, while PNG offers a full 8-bit alpha channel allowing smooth semi-transparent effects. For photographs, JPG files are typically 3 to 10 times smaller than equivalent PNGs, but for graphics with flat colors and sharp lines, PNG can be surprisingly efficient.</p>
+    </section>
+
+    <section>
+      <h2>When to Use PNG Instead of JPG</h2>
+      <p>PNG is the right choice when you need transparency for overlays, logos, or UI elements, or when you plan to edit the image multiple times and want to avoid cumulative quality loss from repeated JPG compression. It is also preferred for screenshots, technical diagrams, and images containing text, where JPG compression artifacts would be clearly visible. If you are preparing assets for graphic design software like Photoshop, Figma, or Canva, PNG is generally the expected input format.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>Will converting JPG to PNG improve the image quality?</h3>
+      <p>No. Converting from JPG to PNG preserves the image exactly as it is, but it cannot restore detail that was already lost during JPG compression. The benefit is that the PNG version will not lose any further quality if you re-save or re-edit it, since PNG uses lossless compression.</p>
+      <h3>Why is the PNG file larger than the original JPG?</h3>
+      <p>PNG uses lossless compression, which stores every pixel without discarding any data. This results in larger files compared to JPG, which achieves smaller sizes by selectively removing visual information. The trade-off is that PNG maintains perfect fidelity while JPG introduces compression artifacts.</p>
+      <h3>Can I add a transparent background after converting to PNG?</h3>
+      <p>The conversion itself produces a PNG with a solid background matching the original JPG. To add transparency, you would need to remove the background using a separate image editing tool. However, once in PNG format, the file supports transparency for any future edits.</p>
+      <h3>Is my image uploaded to a server?</h3>
+      <p>No. The conversion happens entirely in your browser using the HTML Canvas API. Your image never leaves your device.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Conversions</h2>
+      <a href="../png-to-jpg/index.html">PNG to JPG Converter</a>
+      <a href="../jpg-to-webp/index.html">JPG to WebP Converter</a>
+      <a href="../jpg-to-bmp/index.html">JPG to BMP Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'image-tools',
+      title: 'JPG to PNG Converter',
+      breadcrumbs: [
+        { label: 'Image Tools', href: '../index.html' },
+        { label: 'JPG to PNG Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/converter.js"></script>
+  <script>initConverter({ from: 'image/jpeg', to: 'image/png', mountTo: '#converter-mount' });</script>
+</body>
+</html>

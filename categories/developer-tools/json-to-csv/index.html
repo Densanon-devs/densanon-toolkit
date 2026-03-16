@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON to CSV Converter - ToolBox</title>
+  <meta name="description" content="Convert JSON arrays to CSV format instantly in your browser. Transform structured JSON data into comma-separated values for spreadsheets, databases, and data analysis tools.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/data-converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>JSON to CSV Converter</h1>
+      <p>Transform JSON arrays into clean CSV data ready for spreadsheets and databases.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../file-converter/index.html">&larr; All Data Converters</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts JSON arrays of objects into comma-separated values (CSV) directly in your browser. JSON is the standard data format for APIs and web applications, but when you need to open that data in Excel, Google Sheets, or import it into a relational database, CSV is often the required format. Paste your JSON array and get a properly formatted CSV file with headers derived from object keys and values escaped according to RFC 4180 rules. No data is sent to any server — the entire conversion runs locally in your browser.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert JSON to CSV</h2>
+      <ol>
+        <li><strong>Paste your JSON data</strong> — enter a JSON array of objects into the text area, or drag and drop a .json file.</li>
+        <li><strong>Verify the conversion type</strong> — JSON to CSV is preselected, but you can switch to another format if needed.</li>
+        <li><strong>Click Convert</strong> — the tool parses your JSON and generates CSV output with proper headers and escaped fields.</li>
+        <li><strong>Copy or download</strong> — use the Copy Result button to grab the CSV text, or Download Result to save it as a .csv file.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>JSON vs CSV — When to Use Each</h2>
+      <p>JSON excels at representing nested, hierarchical data with mixed types and is the lingua franca of web APIs. CSV, on the other hand, represents flat, tabular data — rows and columns — making it universally compatible with spreadsheet software, SQL import tools, and legacy systems. If your data is a flat list of records with consistent fields, CSV is more compact and easier for non-technical users to work with. Converting from JSON to CSV is the natural step when you need to move API data into a reporting workflow, share datasets with colleagues who use Excel, or prepare bulk imports for databases that accept CSV uploads.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>What JSON structure does this tool expect?</h3>
+      <p>The input must be a JSON array of objects, where each object represents a row. The keys of the first object become the CSV column headers. For example: [{"name":"Alice","age":30},{"name":"Bob","age":25}]. Nested objects or arrays within values will be converted to their string representation.</p>
+      <h3>How are special characters handled in CSV output?</h3>
+      <p>Fields containing commas, double quotes, or newlines are automatically wrapped in double quotes following the RFC 4180 standard. Any double quotes within a field value are escaped by doubling them.</p>
+      <h3>What happens if objects have different keys?</h3>
+      <p>The headers are derived from the keys of the first object in the array. If subsequent objects have additional keys, those values will not appear in the output. If objects are missing keys present in the first object, those cells will be empty in the CSV.</p>
+      <h3>Is my data sent to a server?</h3>
+      <p>No. All processing happens entirely in your browser using JavaScript. Your JSON data never leaves your device, making this tool safe for proprietary or sensitive information.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../csv-to-json/index.html">CSV to JSON Converter</a>
+      <a href="../json-minifier/index.html">JSON Minifier</a>
+      <a href="../csv-to-tsv/index.html">CSV to TSV Converter</a>
+      <a href="../json-formatter/index.html">JSON Formatter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'developer-tools',
+      title: 'JSON to CSV Converter',
+      breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'JSON to CSV Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/data-converter.js"></script>
+  <script>initDataConverter({ type: 'json-to-csv', mountTo: '#converter-mount' });</script>
+</body>
+</html>

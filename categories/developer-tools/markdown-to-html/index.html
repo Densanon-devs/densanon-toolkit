@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown to HTML Converter - ToolBox</title>
+  <meta name="description" content="Convert Markdown text to clean HTML markup instantly. Supports headings, bold, italic, links, lists, code blocks, and blockquotes. Free browser-based tool.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/data-converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Markdown to HTML Converter</h1>
+      <p>Turn Markdown syntax into ready-to-use HTML markup for web pages and emails.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../file-converter/index.html">&larr; All Data Converters</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts Markdown-formatted text into HTML markup. Markdown is a lightweight writing syntax used in README files, documentation platforms, static site generators, and note-taking applications. When you need the actual HTML output — for embedding in a web page, sending as an HTML email, or pasting into a CMS that accepts raw HTML — this converter handles the translation. It supports headings (h1 through h6), bold and italic text, inline code, fenced code blocks, links, unordered and ordered lists, blockquotes, and horizontal rules. The conversion runs entirely in your browser with no external dependencies or server requests.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert Markdown to HTML</h2>
+      <ol>
+        <li><strong>Enter your Markdown</strong> — type or paste Markdown-formatted text into the input area. You can also drag and drop a .md file.</li>
+        <li><strong>Verify the conversion type</strong> — Markdown to HTML is preselected in the dropdown.</li>
+        <li><strong>Click Convert</strong> — the tool parses the Markdown syntax and generates corresponding HTML elements.</li>
+        <li><strong>Review the output</strong> — the HTML appears in the result panel. Verify that headings, lists, and formatting match your expectations.</li>
+        <li><strong>Copy or download</strong> — copy the HTML to your clipboard or download it as an .html file.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Supported Markdown Syntax</h2>
+      <p>The converter handles the core Markdown elements that cover the vast majority of common writing needs. Headings from level 1 through 6 are created with the corresponding number of hash characters. Bold text uses double asterisks, italic uses single asterisks, and combining them produces bold-italic. Inline code is wrapped in backticks, and fenced code blocks use triple backticks. Links follow the standard bracket-parenthesis format. Unordered lists can use hyphens or asterisks, and ordered lists use numbers followed by periods. Blockquotes are prefixed with the greater-than sign, and horizontal rules use three or more hyphens on a line by themselves. Paragraphs are automatically wrapped in p tags.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>Does the converter support GitHub Flavored Markdown extensions?</h3>
+      <p>This tool focuses on standard Markdown elements. Features specific to GitHub Flavored Markdown, such as task lists, tables, and strikethrough text, are not currently supported. The core syntax — headings, emphasis, links, code blocks, lists, and blockquotes — covers the needs of most conversion tasks.</p>
+      <h3>Are HTML entities in the Markdown input escaped?</h3>
+      <p>Yes. Characters like angle brackets and ampersands inside code blocks are escaped to their HTML entity equivalents so that the output renders correctly in a browser without interpreting those characters as HTML tags.</p>
+      <h3>Can I use the output directly in a web page?</h3>
+      <p>Yes. The generated HTML is clean and semantic, using standard tags like h1, p, ul, ol, strong, em, a, pre, code, and blockquote. You can paste it directly into any HTML document or CMS editor that accepts raw HTML.</p>
+      <h3>Is the conversion lossless?</h3>
+      <p>The conversion preserves all textual content and structural meaning from the Markdown source. However, since Markdown is more restrictive than HTML, you cannot round-trip from HTML back to the exact same Markdown — the process is inherently one-directional.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../yaml-to-json/index.html">YAML to JSON Converter</a>
+      <a href="../json-minifier/index.html">JSON Minifier</a>
+      <a href="../base64-encoder/index.html">Base64 Encoder</a>
+      <a href="../file-converter/index.html">File Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'developer-tools',
+      title: 'Markdown to HTML Converter',
+      breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'Markdown to HTML Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/data-converter.js"></script>
+  <script>initDataConverter({ type: 'markdown-to-html', mountTo: '#converter-mount' });</script>
+</body>
+</html>

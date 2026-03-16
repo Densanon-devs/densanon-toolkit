@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mean Calculator - ToolBox</title>
+  <meta name="description" content="Calculate the mean (average) of any list of numbers instantly. Also shows median, mode, range, and a bar chart. Free browser-based statistics calculator.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/statistics-calculator.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Mean Calculator</h1>
+      <p>Calculate the arithmetic mean (average) of any set of numbers instantly.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="calculator-mount"></div>
+      <div style="margin-top:16px;font-size:0.88rem;">
+        <a href="../mean-median-mode/index.html" style="color:var(--color-primary);font-weight:600;">&larr; All Statistics Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Is the Mean?</h2>
+      <p>The mean, commonly called the average, is the most widely used measure of central tendency in statistics. It is calculated by adding all the values in a dataset and dividing by the number of values. For example, the mean of {4, 8, 12} is (4 + 8 + 12) / 3 = 8. The mean takes every data point into account, which makes it useful for understanding the overall level of a dataset, but also means it can be pulled toward extreme values (outliers). This tool calculates the mean in real time as you type, and also shows the median, mode, and other statistics for complete analysis.</p>
+    </section>
+
+    <section>
+      <h2>How to Calculate the Mean</h2>
+      <ol>
+        <li><strong>Enter your numbers</strong> in the text area above, separated by commas or spaces.</li>
+        <li><strong>Read the mean</strong> in the highlighted blue card — it updates instantly as you type.</li>
+        <li><strong>Review supporting stats</strong> including median, mode, range, sum, count, min, and max.</li>
+        <li><strong>Check the bar chart</strong> to see how individual values relate to the mean (shown as a dashed blue line).</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>The Mean Formula</h2>
+      <p>The arithmetic mean is calculated as:</p>
+      <p style="font-size:1.1rem;color:var(--color-accent-blue);font-weight:600;margin:16px 0;">Mean = Sum of all values / Number of values</p>
+      <p>For a dataset with values x1, x2, ..., xn, the formula is x&#772; = (x1 + x2 + ... + xn) / n. This is also called the sample mean. The mean is sensitive to every value in the dataset — changing even one number will shift the result. This property makes it a complete summary of the data, but it also means outliers have a disproportionate effect. When your data has extreme values, the median may be a more representative measure of center.</p>
+    </section>
+
+    <section>
+      <h2>When to Use the Mean vs Other Measures</h2>
+      <p>The mean is the best choice when your data is roughly symmetric without extreme outliers. It works well for test scores, temperature readings, and measurements where values cluster around a central point. Use the <a href="../median-calculator/index.html">median</a> instead when your data is skewed (like household incomes, where a few very high values pull the average up). Use the <a href="../mode-calculator/index.html">mode</a> when you need to find the most common value, especially with categorical data like survey responses.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>What is the difference between mean and average?</h3>
+      <p>In everyday language, "average" and "mean" are used interchangeably, and both refer to the arithmetic mean. Technically, "average" can refer to other measures of central tendency (like median or mode), but when someone says "the average," they almost always mean the arithmetic mean.</p>
+
+      <h3>Does the mean work with negative numbers?</h3>
+      <p>Yes. The mean handles negative numbers, decimals, and zero without issue. For example, the mean of {-5, 0, 10} is (-5 + 0 + 10) / 3 = 1.667. Enter negative numbers with a minus sign.</p>
+
+      <h3>Why is my mean different from the median?</h3>
+      <p>The mean and median only match when data is perfectly symmetric. If your data is skewed — for instance, most values are low but one is very high — the mean gets pulled toward the outlier while the median stays near the center of the data. A large gap between mean and median is a sign that your data is skewed.</p>
+
+      <h3>Is there a limit to how many numbers I can enter?</h3>
+      <p>There is no hard limit. The calculation works instantly for hundreds of values. The bar chart is most readable with up to about 50 values; beyond that, the statistics are still correct but individual bars become very narrow.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Calculators</h2>
+      <a href="../median-calculator/index.html">Median Calculator</a>
+      <a href="../mode-calculator/index.html">Mode Calculator</a>
+      <a href="../mean-median-mode/index.html">Mean / Median / Mode (All)</a>
+      <a href="../percent-calculator/index.html">Percent Calculator</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'math-tools',
+      title: 'Mean Calculator',
+      breadcrumbs: [
+        { label: 'Math Tools', href: '../index.html' },
+        { label: 'Mean Calculator' }
+      ]
+    });
+  </script>
+  <script src="../../../js/statistics-calculator.js"></script>
+  <script>initStatisticsCalculator({ focus: 'mean', mountTo: '#calculator-mount' });</script>
+</body>
+</html>

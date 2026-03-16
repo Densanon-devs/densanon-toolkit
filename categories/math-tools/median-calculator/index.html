@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Median Calculator - ToolBox</title>
+  <meta name="description" content="Find the median of any list of numbers. Handles odd and even counts, shows sorted values, and highlights the middle value. Free online statistics tool.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/statistics-calculator.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Median Calculator</h1>
+      <p>Find the middle value of any dataset — the median is robust against outliers.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="calculator-mount"></div>
+      <div style="margin-top:16px;font-size:0.88rem;">
+        <a href="../mean-median-mode/index.html" style="color:var(--color-primary);font-weight:600;">&larr; All Statistics Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Is the Median?</h2>
+      <p>The median is the middle value of a dataset when the values are sorted in order. If there is an odd number of values, the median is the single middle value. If there is an even number, the median is the average of the two middle values. Unlike the mean, the median is not affected by extreme outliers, which makes it the preferred measure of center for skewed distributions. For example, in housing prices where a few luxury homes can inflate the average, the median price gives a much more accurate picture of what a typical home costs.</p>
+    </section>
+
+    <section>
+      <h2>How to Find the Median</h2>
+      <ol>
+        <li><strong>Enter your numbers</strong> in the text area, separated by commas or spaces.</li>
+        <li><strong>Read the median</strong> in the highlighted purple card — it updates as you type.</li>
+        <li><strong>Check the sorted list</strong> where the median value(s) are highlighted in purple so you can see exactly which position they occupy.</li>
+        <li><strong>Compare with the mean</strong> to gauge whether your data is symmetric or skewed.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>How the Median Is Calculated</h2>
+      <p>To find the median manually:</p>
+      <ol>
+        <li><strong>Sort the values</strong> from smallest to largest.</li>
+        <li><strong>If the count is odd</strong>, the median is the value at position (n + 1) / 2. For {3, 5, 7, 9, 11}, the median is 7 (the 3rd value out of 5).</li>
+        <li><strong>If the count is even</strong>, the median is the average of the values at positions n/2 and n/2 + 1. For {3, 5, 7, 9}, the median is (5 + 7) / 2 = 6.</li>
+      </ol>
+      <p>This tool handles both cases automatically and highlights exactly which values in the sorted list are used to calculate the median.</p>
+    </section>
+
+    <section>
+      <h2>Median vs Mean — When to Use Which</h2>
+      <p>The mean and median give the same result when data is perfectly symmetric. They diverge when data is skewed. Use the median when your data has outliers or is skewed — income data, home prices, response times, and any distribution with a long tail. Use the <a href="../mean-calculator/index.html">mean</a> when data is roughly symmetric and you want a measure that accounts for every value. For categorical data, neither works — use the <a href="../mode-calculator/index.html">mode</a> instead.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>What happens when there are two middle values?</h3>
+      <p>When the dataset has an even number of values, the median is the average of the two middle values after sorting. For example, in {2, 4, 6, 8}, the two middle values are 4 and 6, so the median is (4 + 6) / 2 = 5. Both values are highlighted in the sorted list.</p>
+
+      <h3>Can the median be a value not in the dataset?</h3>
+      <p>Yes. When the count is even and the two middle values differ, the median is their average, which may not appear in the original data. For {1, 3, 5, 7}, the median is 4, which is not in the dataset.</p>
+
+      <h3>Why is the median better for income data?</h3>
+      <p>Income distributions are heavily right-skewed — most people earn moderate amounts, but a small number earn extremely high salaries. These outliers pull the mean upward, making it seem like the typical person earns more than they actually do. The median, being the middle value, is not affected by these extremes and better represents the typical income.</p>
+
+      <h3>Does the median work with decimal numbers?</h3>
+      <p>Yes. The median calculation works with any numbers — integers, decimals, and negative values. The sorting and position-finding process is the same regardless of the number type.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Calculators</h2>
+      <a href="../mean-calculator/index.html">Mean Calculator</a>
+      <a href="../mode-calculator/index.html">Mode Calculator</a>
+      <a href="../mean-median-mode/index.html">Mean / Median / Mode (All)</a>
+      <a href="../fraction-visualizer/index.html">Fraction Visualizer</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'math-tools',
+      title: 'Median Calculator',
+      breadcrumbs: [
+        { label: 'Math Tools', href: '../index.html' },
+        { label: 'Median Calculator' }
+      ]
+    });
+  </script>
+  <script src="../../../js/statistics-calculator.js"></script>
+  <script>initStatisticsCalculator({ focus: 'median', mountTo: '#calculator-mount' });</script>
+</body>
+</html>

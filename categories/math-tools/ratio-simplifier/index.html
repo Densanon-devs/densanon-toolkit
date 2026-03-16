@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ratio Simplifier - ToolBox</title>
+    <meta name="description" content="Simplify ratios to their lowest terms, scale ratios to a target value, and generate equivalent ratios. Supports 2-part and 3-part ratios.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        .input-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .input-panel h3 {
+            margin: 0 0 16px 0;
+            font-size: 1rem;
+            color: var(--color-text);
+        }
+
+        .ratio-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .ratio-row input[type="number"] {
+            width: 90px;
+            padding: 10px 12px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            font-size: 1.2rem;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .ratio-row input[type="number"]:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .ratio-colon {
+            font-size: 1.8rem;
+            color: var(--color-text-muted);
+            font-weight: 700;
+            user-select: none;
+        }
+
+        .parts-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .parts-toggle input[type="checkbox"] {
+            accent-color: var(--color-primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .parts-toggle label {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            cursor: pointer;
+        }
+
+        .scale-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding-top: 16px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .scale-row label {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            white-space: nowrap;
+        }
+
+        .scale-row select {
+            padding: 8px 12px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .scale-row input[type="number"] {
+            width: 90px;
+            padding: 8px 12px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .scale-row input[type="number"]:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .result-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-card .label {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .result-card .value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--color-accent-green);
+        }
+
+        .equivalent-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 24px;
+        }
+
+        .equivalent-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.95rem;
+            color: var(--color-text-muted);
+        }
+
+        .equivalent-list {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .equiv-ratio {
+            background: var(--color-bg);
+            padding: 6px 14px;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            color: var(--color-accent-blue);
+            font-weight: 600;
+        }
+
+        .equiv-equals {
+            color: var(--color-text-muted);
+            font-size: 1.1rem;
+        }
+
+        .error-message {
+            color: var(--color-accent-orange);
+            font-size: 0.9rem;
+            padding: 10px;
+            background: rgba(251, 146, 60, 0.1);
+            border-radius: var(--radius);
+            display: none;
+            margin-top: 12px;
+        }
+
+        .how-to ol {
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+
+        .how-to ol li {
+            margin-bottom: 8px;
+            color: var(--color-text-muted);
+        }
+
+        .how-to ol li strong {
+            color: var(--color-text);
+        }
+
+        .explanation-box {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin: 16px 0;
+        }
+
+        .explanation-box h3 {
+            margin: 0 0 8px 0;
+            color: var(--color-text);
+            font-size: 1rem;
+        }
+
+        .explanation-box p {
+            margin: 0;
+            color: var(--color-text-muted);
+            line-height: 1.6;
+        }
+
+        .faq-section h3 {
+            color: var(--color-text);
+            margin: 20px 0 8px 0;
+            font-size: 1rem;
+        }
+
+        .faq-section p {
+            color: var(--color-text-muted);
+            line-height: 1.6;
+            margin: 0 0 16px 0;
+        }
+
+        .related-tools {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            color: var(--color-text-muted);
+            margin-top: 20px;
+        }
+
+        .related-tools a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+
+        .related-tools a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.6rem; }
+            .ratio-row { justify-content: center; }
+            .ratio-row input[type="number"] { width: 70px; }
+            .scale-row { flex-direction: column; align-items: stretch; }
+            .scale-row input[type="number"] { width: 100%; }
+            .results-grid { grid-template-columns: repeat(2, 1fr); }
+            .equivalent-list { overflow-x: auto; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Ratio Simplifier</h1>
+            <p>Simplify ratios to lowest terms, scale to a target, and find equivalent ratios</p>
+        </div>
+
+        <section class="tool-box">
+            <div class="input-panel">
+                <h3>Enter Your Ratio</h3>
+                <div class="ratio-row">
+                    <input type="number" id="ratioA" value="12" min="0" step="any" placeholder="A">
+                    <span class="ratio-colon">:</span>
+                    <input type="number" id="ratioB" value="18" min="0" step="any" placeholder="B">
+                    <span class="ratio-colon" id="colonC" style="display:none;">:</span>
+                    <input type="number" id="ratioC" value="24" min="0" step="any" placeholder="C" style="display:none;">
+                </div>
+                <div class="parts-toggle">
+                    <input type="checkbox" id="threePartToggle">
+                    <label for="threePartToggle">Use 3-part ratio (A : B : C)</label>
+                </div>
+                <div class="scale-row">
+                    <label>Scale so that</label>
+                    <select id="scaleWhich">
+                        <option value="0">1st term</option>
+                        <option value="1">2nd term</option>
+                    </select>
+                    <label>equals</label>
+                    <input type="number" id="scaleTarget" value="" min="0" step="any" placeholder="e.g. 10">
+                </div>
+                <div class="error-message" id="errorMsg"></div>
+            </div>
+
+            <div class="results-grid" id="resultsGrid">
+                <div class="result-card">
+                    <div class="label">Original Ratio</div>
+                    <div class="value" id="originalRatio">12 : 18</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Simplified Ratio</div>
+                    <div class="value" id="simplifiedRatio">2 : 3</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">GCD Used</div>
+                    <div class="value" id="gcdValue">6</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Scaled Ratio</div>
+                    <div class="value" id="scaledRatio">—</div>
+                </div>
+            </div>
+
+            <div class="equivalent-section">
+                <h4>Equivalent Ratios</h4>
+                <div class="equivalent-list" id="equivList"></div>
+            </div>
+        </section>
+
+        <section class="tool-box">
+            <h2>What Does This Tool Do?</h2>
+            <p>The Ratio Simplifier reduces any ratio to its simplest form by dividing all terms by their greatest common divisor. It supports both two-part ratios (like 12:18) and three-part ratios (like 6:9:12). Beyond simplification, you can scale a ratio so that a specific term equals a target value, and browse a list of equivalent ratios. This tool is useful for cooking recipe adjustments, map scales, mixing proportions, and any situation where you need to work with proportional relationships.</p>
+        </section>
+
+        <section class="tool-box how-to">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Enter your ratio</strong> by typing values into the A and B input fields.</li>
+                <li><strong>Enable 3-part mode</strong> by checking the checkbox if you need to simplify a ratio like A:B:C.</li>
+                <li><strong>View the simplified ratio</strong> and GCD in the results cards below. The equivalent ratios list shows other ratios with the same proportion.</li>
+                <li><strong>Scale your ratio</strong> by selecting which term to target and entering the desired value. For example, scale 2:3 so the first term equals 10 to get 10:15.</li>
+            </ol>
+        </section>
+
+        <section class="tool-box">
+            <h2>Ratio vs. Fraction</h2>
+            <div class="explanation-box">
+                <h3>How Are Ratios Different from Fractions?</h3>
+                <p>A fraction represents a part of a whole (like 3/4 of a pizza), while a ratio compares two or more quantities to each other (like 3 cups flour to 2 cups sugar). The fraction 3/4 means 3 out of 4 equal parts. The ratio 3:2 means for every 3 of one thing, there are 2 of another. A two-part ratio A:B can be expressed as the fraction A/B, but they carry different meaning. Ratios can also have three or more parts (like 1:2:3), which fractions cannot directly represent.</p>
+            </div>
+            <div class="explanation-box">
+                <h3>When to Use Ratios</h3>
+                <p>Use ratios when comparing quantities: mixing paint colors (red to blue = 3:1), recipe scaling (flour to sugar to butter = 4:2:1), map distances (1 cm : 50 km), or odds in probability (3:2 in favor). Ratios maintain the proportional relationship between values regardless of the actual amounts.</p>
+            </div>
+        </section>
+
+        <section class="tool-box faq-section">
+            <h2>FAQ</h2>
+            <h3>How does simplification work for 3-part ratios?</h3>
+            <p>The tool finds the greatest common divisor of all three terms and divides each term by it. For example, 6:9:12 has a GCD of 3, so it simplifies to 2:3:4.</p>
+
+            <h3>Can I enter decimal values in the ratio?</h3>
+            <p>Yes. If you enter 1.5:2.5, the tool first multiplies all terms by the smallest factor needed to make them whole numbers (giving 3:5), then simplifies if possible.</p>
+
+            <h3>What does scaling a ratio mean?</h3>
+            <p>Scaling adjusts all terms proportionally so that one specific term equals your target value. If the simplified ratio is 2:3 and you want the first term to equal 10, the tool multiplies both terms by 5 to get 10:15.</p>
+
+            <h3>What if I enter zero for one of the terms?</h3>
+            <p>A ratio with a zero term is valid (like 0:5 simplifies to 0:1). However, you cannot scale a ratio by a term that is zero, since that would require division by zero.</p>
+
+            <h3>How many equivalent ratios are shown?</h3>
+            <p>The tool displays the first six equivalent ratios by multiplying the simplified ratio by 1 through 6, giving you a quick reference of proportional values.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>Related Tools</h2>
+            <div class="related-tools">
+                <p>
+                    <a href="../fraction-visualizer/index.html">Fraction Visualizer</a> &mdash; See fractions as visual diagrams.
+                    &nbsp;&bull;&nbsp;
+                    <a href="../percent-calculator/index.html">Percent Calculator</a> &mdash; Calculate percentages quickly.
+                    &nbsp;&bull;&nbsp;
+                    <a href="../mean-median-mode/index.html">Mean / Median / Mode Calculator</a> &mdash; Analyze a set of numbers.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'math-tools',
+            title: 'Ratio Simplifier',
+            breadcrumbs: [
+                { label: 'Math Tools', href: '../index.html' },
+                { label: 'Ratio Simplifier' }
+            ]
+        });
+    </script>
+    <script src="ratio-simplifier.js"></script>
+</body>
+</html>

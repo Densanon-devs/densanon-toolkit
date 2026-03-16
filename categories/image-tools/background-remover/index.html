@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Background Remover - ToolBox</title>
+  <meta name="description" content="Automatically remove backgrounds from images in your browser using AI. Get a transparent PNG cutout in seconds. No uploads to any server, completely private.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    .bgr-app {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Upload zone */
+    .bgr-drop-zone {
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius);
+      padding: 48px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .bgr-drop-zone:hover,
+    .bgr-drop-zone.dragover {
+      border-color: var(--color-primary);
+      background: rgba(108, 99, 255, 0.05);
+    }
+
+    .bgr-drop-zone.has-file {
+      padding: 20px;
+    }
+
+    .bgr-drop-zone .drop-label {
+      color: var(--color-text-muted);
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .bgr-drop-zone .drop-hint {
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      opacity: 0.5;
+    }
+
+    .bgr-drop-zone .file-name {
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    /* Progress */
+    .bgr-progress {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      padding: 24px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      text-align: center;
+    }
+
+    .bgr-progress.visible {
+      display: flex;
+    }
+
+    .bgr-progress-label {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+    }
+
+    .bgr-progress-bar-wrap {
+      width: 100%;
+      height: 6px;
+      background: var(--color-bg);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .bgr-progress-bar {
+      height: 100%;
+      background: var(--color-primary);
+      border-radius: 3px;
+      transition: width 0.3s;
+      width: 0%;
+    }
+
+    .bgr-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--color-border);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: bgr-spin 0.8s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes bgr-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Preview */
+    .bgr-preview {
+      display: none;
+      gap: 16px;
+    }
+
+    .bgr-preview.visible {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .bgr-pane {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .bgr-pane-label {
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-surface);
+    }
+
+    .bgr-pane-img {
+      background: repeating-conic-gradient(#1a1d27 0% 25%, #15171f 0% 50%) 0 0 / 16px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      max-height: 500px;
+      overflow: auto;
+      padding: 8px;
+    }
+
+    .bgr-pane-img img {
+      max-width: 100%;
+      max-height: 480px;
+      display: block;
+    }
+
+    .bgr-pane-meta {
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+      border-top: 1px solid var(--color-border);
+      background: var(--color-surface);
+    }
+
+    /* Actions */
+    .bgr-actions {
+      display: none;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .bgr-actions.visible {
+      display: flex;
+    }
+
+    .bgr-btn-primary {
+      padding: 12px 28px;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .bgr-btn-primary:hover {
+      background: var(--color-primary-hover);
+    }
+
+    .bgr-btn-secondary {
+      padding: 12px 28px;
+      background: transparent;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      color: var(--color-text-muted);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .bgr-btn-secondary:hover {
+      border-color: var(--color-primary);
+      color: var(--color-text);
+    }
+
+    /* Error */
+    .bgr-error {
+      display: none;
+      padding: 14px 18px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 6px;
+      color: #ef4444;
+      font-size: 0.9rem;
+    }
+
+    .bgr-error.visible {
+      display: block;
+    }
+
+    /* Touch-up tools */
+    .bgr-touchup-bar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      flex-wrap: wrap;
+    }
+
+    .bgr-touchup-bar.visible {
+      display: flex;
+    }
+
+    .bgr-touchup-bar label {
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      white-space: nowrap;
+    }
+
+    .bgr-touchup-bar input[type="range"] {
+      width: 80px;
+      accent-color: var(--color-primary);
+    }
+
+    .bgr-touchup-btn {
+      padding: 6px 14px;
+      border-radius: 5px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--color-border);
+      background: transparent;
+      color: var(--color-text-muted);
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+
+    .bgr-touchup-btn:hover {
+      border-color: var(--color-primary);
+      color: var(--color-text);
+    }
+
+    .bgr-touchup-btn.active {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+    }
+
+    .bgr-touchup-sep {
+      width: 1px;
+      height: 24px;
+      background: var(--color-border);
+      flex-shrink: 0;
+    }
+
+    .bgr-touchup-bar .undo-btn {
+      margin-left: auto;
+    }
+
+    .bgr-canvas-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .bgr-result-canvas,
+    .bgr-overlay-canvas {
+      max-width: 100%;
+      max-height: 480px;
+      display: none;
+    }
+
+    .bgr-result-canvas.visible,
+    .bgr-overlay-canvas.visible {
+      display: block;
+    }
+
+    .bgr-overlay-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      cursor: crosshair;
+    }
+
+    .bgr-brush-preview {
+      position: fixed;
+      pointer-events: none;
+      border: 2px solid rgba(255,255,255,0.7);
+      border-radius: 50%;
+      display: none;
+      z-index: 9999;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+    }
+
+    .bgr-touchup-hint {
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+      opacity: 0.7;
+      width: 100%;
+      padding-top: 4px;
+    }
+
+    /* First-use note */
+    .bgr-note {
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      padding: 10px 14px;
+      background: rgba(108, 99, 255, 0.06);
+      border: 1px solid rgba(108, 99, 255, 0.15);
+      border-radius: 6px;
+    }
+
+    /* Features */
+    .features-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .feature-item {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .feature-item h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--color-text);
+    }
+
+    .feature-item p {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 1.6rem; }
+      .bgr-preview.visible { grid-template-columns: 1fr; }
+      .bgr-actions.visible { flex-direction: column; }
+      .bgr-btn-primary, .bgr-btn-secondary { width: 100%; min-height: 44px; }
+      .features-list { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Background Remover</h1>
+      <p>Automatically remove backgrounds from images using AI. Get a transparent PNG cutout in seconds.</p>
+    </div>
+
+    <section class="tool-box">
+      <div class="bgr-app">
+        <div class="bgr-drop-zone" id="bgrDropZone">
+          <p class="drop-label">Drop an image here or click to upload</p>
+          <span class="drop-hint">PNG, JPG, WebP, BMP, GIF</span>
+          <input type="file" id="bgrFileInput" accept="image/png,image/jpeg,image/webp,image/bmp,image/gif" hidden>
+        </div>
+
+        <p class="bgr-note">The AI model (~30 MB) downloads on first use and is cached by your browser for future visits. Processing happens entirely on your device.</p>
+
+        <div class="bgr-progress" id="bgrProgress">
+          <div class="bgr-spinner"></div>
+          <div class="bgr-progress-label" id="bgrProgressLabel">Preparing...</div>
+          <div class="bgr-progress-bar-wrap">
+            <div class="bgr-progress-bar" id="bgrProgressBar"></div>
+          </div>
+        </div>
+
+        <div class="bgr-error" id="bgrError"></div>
+
+        <div class="bgr-preview" id="bgrPreview">
+          <div class="bgr-pane">
+            <div class="bgr-pane-label">Original</div>
+            <div class="bgr-pane-img">
+              <img id="bgrOrigImg" alt="Original image">
+            </div>
+            <div class="bgr-pane-meta" id="bgrOrigMeta"></div>
+          </div>
+          <div class="bgr-pane">
+            <div class="bgr-pane-label">Background Removed</div>
+            <div class="bgr-pane-img" id="bgrResultPane">
+              <img id="bgrResultImg" alt="Result with background removed">
+              <div class="bgr-canvas-wrap" id="bgrCanvasWrap">
+                <canvas id="bgrCanvas" class="bgr-result-canvas"></canvas>
+                <canvas id="bgrOverlay" class="bgr-overlay-canvas"></canvas>
+              </div>
+            </div>
+            <div class="bgr-pane-meta" id="bgrResultMeta"></div>
+          </div>
+        </div>
+
+        <div class="bgr-touchup-bar" id="bgrTouchup">
+          <button class="bgr-touchup-btn active" id="bgrMarkBtn" title="Mark leftover background areas">Mark</button>
+          <button class="bgr-touchup-btn" id="bgrCleanBtn" title="Auto-remove marked areas">Clean Up</button>
+          <label>Brush: <input type="range" id="bgrBrushSize" min="4" max="100" value="30"></label>
+          <label id="bgrBrushSizeLabel">30px</label>
+          <label>Tolerance: <input type="range" id="bgrTolerance" min="5" max="80" value="35"></label>
+          <label id="bgrToleranceLabel">35</label>
+          <div class="bgr-touchup-sep"></div>
+          <button class="bgr-touchup-btn" id="bgrEraserBtn" title="Manual eraser for fine detail">Eraser</button>
+          <button class="bgr-touchup-btn" id="bgrRestoreBtn" title="Restore accidentally erased areas">Restore</button>
+          <button class="bgr-touchup-btn undo-btn" id="bgrUndoBtn" title="Undo">Undo</button>
+          <p class="bgr-touchup-hint" id="bgrTouchupHint">Paint over leftover background, then click "Clean Up" to auto-remove it.</p>
+        </div>
+        <div id="bgrBrushPreview" class="bgr-brush-preview"></div>
+
+        <div class="bgr-actions" id="bgrActions">
+          <button class="bgr-btn-primary" id="bgrDownloadBtn">Download Transparent PNG</button>
+          <button class="bgr-btn-secondary" id="bgrNewBtn">Remove Another</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- What Does This Tool Do? -->
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>The Background Remover uses an AI segmentation model to automatically detect the subject of your image and remove everything else. Upload any photo — a portrait, product shot, logo, or object — and the tool isolates the main subject and produces a transparent PNG cutout. Unlike manual color-picking tools, this uses machine learning to understand the actual content of the image, handling complex edges like hair, fur, and semi-transparent objects. The entire process runs in your browser with no server uploads.</p>
+    </section>
+
+    <!-- Features -->
+    <section>
+      <h2>Features</h2>
+      <div class="features-list">
+        <div class="feature-item">
+          <h4>Fully Automatic</h4>
+          <p>No manual selection or color picking needed. Upload your image and the AI automatically detects and isolates the subject from the background.</p>
+        </div>
+        <div class="feature-item">
+          <h4>AI-Powered Segmentation</h4>
+          <p>Uses a trained neural network to understand image content, handling complex edges like hair, fur, translucent objects, and irregular shapes.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Completely Private</h4>
+          <p>The AI model runs entirely in your browser. Your images are never uploaded to any server. No accounts, no cloud processing, no data collection.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Works on Any Subject</h4>
+          <p>People, products, animals, objects, logos, food, furniture — the model handles a wide range of subjects and background types.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Transparent PNG Output</h4>
+          <p>Results are exported as PNG with a full alpha channel, ready for use in designs, presentations, e-commerce listings, or compositing.</p>
+        </div>
+        <div class="feature-item">
+          <h4>Fast After First Load</h4>
+          <p>The AI model downloads once and is cached by your browser. Subsequent uses process images in seconds without re-downloading.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How to Use -->
+    <section>
+      <h2>How to Use</h2>
+      <ol>
+        <li><strong>Upload your image</strong> — Drag and drop or click to browse. Supports PNG, JPG, WebP, BMP, and GIF.</li>
+        <li><strong>Wait for processing</strong> — The AI model analyzes your image and separates the subject from the background. The first use downloads the model (~30 MB), which is then cached.</li>
+        <li><strong>Review the result</strong> — See the original and result side by side. The checkerboard pattern shows where the background has been removed.</li>
+        <li><strong>Download</strong> — Click "Download Transparent PNG" to save your cutout image. The file preserves the original resolution.</li>
+      </ol>
+    </section>
+
+    <!-- FAQ -->
+    <section>
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>Is my image uploaded to a server?</h3>
+      <p>No. The AI model runs entirely in your browser using WebAssembly. Your images never leave your device. This is fundamentally different from cloud-based tools that send your images to remote servers for processing.</p>
+
+      <h3>Why does the first use take longer?</h3>
+      <p>On the first visit, the tool downloads the AI model weights (~30 MB). Your browser caches these files, so subsequent visits load much faster. The actual image processing typically takes 2-10 seconds depending on image size and device performance.</p>
+
+      <h3>What types of images work best?</h3>
+      <p>The tool works well with portraits, product photos, animals, objects, and any image where there is a clear subject. It handles complex edges like hair and fur well. Very busy images with no clear subject-background distinction may produce less accurate results.</p>
+
+      <h3>Can I process multiple images?</h3>
+      <p>Yes. After downloading your result, click "Remove Another" to process a new image. Since the model is already cached, subsequent images process quickly.</p>
+
+      <h3>What resolution is the output?</h3>
+      <p>The output preserves the original image resolution. A 4000x3000 photo will produce a 4000x3000 transparent PNG.</p>
+
+      <h3>Does it work on mobile devices?</h3>
+      <p>Yes, though processing may be slower on mobile devices due to limited computational resources. The tool works in all modern mobile browsers.</p>
+    </section>
+
+    <!-- Related Tools -->
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../color-palette-extractor/index.html">Color Palette Extractor</a>
+      <a href="../png-to-webp/index.html">PNG to WebP Converter</a>
+      <a href="../png-to-svg/index.html">PNG to SVG Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'image-tools',
+      title: 'Background Remover',
+      breadcrumbs: [
+        { label: 'Image Tools', href: '../index.html' },
+        { label: 'Background Remover' }
+      ]
+    });
+  </script>
+  <script type="importmap">
+    { "imports": { "onnxruntime-web": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.bundle.min.mjs" } }
+  </script>
+  <script type="module">
+    const dropZone = document.getElementById('bgrDropZone');
+    const fileInput = document.getElementById('bgrFileInput');
+    const progress = document.getElementById('bgrProgress');
+    const progressLabel = document.getElementById('bgrProgressLabel');
+    const progressBar = document.getElementById('bgrProgressBar');
+    const errorEl = document.getElementById('bgrError');
+    const preview = document.getElementById('bgrPreview');
+    const origImg = document.getElementById('bgrOrigImg');
+    const resultImg = document.getElementById('bgrResultImg');
+    const origMeta = document.getElementById('bgrOrigMeta');
+    const resultMeta = document.getElementById('bgrResultMeta');
+    const actions = document.getElementById('bgrActions');
+    const downloadBtn = document.getElementById('bgrDownloadBtn');
+    const newBtn = document.getElementById('bgrNewBtn');
+    const touchupBar = document.getElementById('bgrTouchup');
+    const canvas = document.getElementById('bgrCanvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const overlay = document.getElementById('bgrOverlay');
+    const oCtx = overlay.getContext('2d');
+    const markBtn = document.getElementById('bgrMarkBtn');
+    const cleanBtn = document.getElementById('bgrCleanBtn');
+    const eraserBtn = document.getElementById('bgrEraserBtn');
+    const restoreBtn = document.getElementById('bgrRestoreBtn');
+    const brushSizeInput = document.getElementById('bgrBrushSize');
+    const brushSizeLabel = document.getElementById('bgrBrushSizeLabel');
+    const toleranceInput = document.getElementById('bgrTolerance');
+    const toleranceLabel = document.getElementById('bgrToleranceLabel');
+    const undoBtn = document.getElementById('bgrUndoBtn');
+    const brushPreview = document.getElementById('bgrBrushPreview');
+    const touchupHint = document.getElementById('bgrTouchupHint');
+
+    let resultBlobUrl = null;
+    let loadedFileName = 'image';
+    let removeBackground = null;
+    let aiResultImg = null;
+    let originalImgData = null;  // pixel data from the original uploaded image
+    let touchupMode = 'mark';    // 'mark', 'erase', 'restore'
+    let brushSize = 30;
+    let painting = false;
+    let undoStack = [];
+    const MAX_UNDO = 30;
+
+    const MODE_HINTS = {
+      mark: 'Paint over leftover background, then click "Clean Up" to auto-remove it.',
+      erase: 'Manually erase pixels. Use for fine detail after Clean Up.',
+      restore: 'Paint to restore accidentally removed areas.'
+    };
+
+    // Upload handling
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+
+    async function handleFile(file) {
+      if (!file.type.startsWith('image/')) return;
+
+      loadedFileName = file.name.replace(/\.[^.]+$/, '');
+
+      // Show file info
+      dropZone.querySelector('.drop-label').innerHTML = '<span class="file-name">' + escHtml(file.name) + '</span>';
+      dropZone.classList.add('has-file');
+
+      // Reset state
+      preview.classList.remove('visible');
+      actions.classList.remove('visible');
+      touchupBar.classList.remove('visible');
+      errorEl.classList.remove('visible');
+      if (resultBlobUrl) URL.revokeObjectURL(resultBlobUrl);
+
+      // Load original image pixel data for color reference
+      const origUrl = URL.createObjectURL(file);
+      origImg.src = origUrl;
+      await new Promise(r => { origImg.onload = r; });
+
+      const tmpC = document.createElement('canvas');
+      tmpC.width = origImg.naturalWidth;
+      tmpC.height = origImg.naturalHeight;
+      const tmpCtx = tmpC.getContext('2d');
+      tmpCtx.drawImage(origImg, 0, 0);
+      originalImgData = tmpCtx.getImageData(0, 0, tmpC.width, tmpC.height);
+
+      // Show progress
+      progress.classList.add('visible');
+      progressLabel.textContent = 'Loading AI model...';
+      progressBar.style.width = '0%';
+
+      try {
+        // Lazy-load the library on first use
+        if (!removeBackground) {
+          progressLabel.textContent = 'Downloading AI model (first use only)...';
+          const module = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/index.mjs');
+          removeBackground = module.removeBackground || module.default;
+          progressBar.style.width = '30%';
+        }
+
+        progressLabel.textContent = 'Removing background...';
+        progressBar.style.width = '40%';
+
+        // Process the image
+        const resultBlob = await removeBackground(file, {
+          progress: (key, current, total) => {
+            if (total > 0) {
+              const pct = Math.round(40 + (current / total) * 55);
+              progressBar.style.width = pct + '%';
+              if (key === 'compute:inference') {
+                progressLabel.textContent = 'Analyzing image...';
+              } else if (key.startsWith('fetch:')) {
+                progressLabel.textContent = 'Downloading model data...';
+              }
+            }
+          },
+          output: { format: 'image/png', quality: 1 }
+        });
+
+        progressBar.style.width = '100%';
+        progressLabel.textContent = 'Done!';
+
+        // Load AI result onto canvas
+        resultBlobUrl = URL.createObjectURL(resultBlob);
+        aiResultImg = new Image();
+        aiResultImg.src = resultBlobUrl;
+        await new Promise(r => { aiResultImg.onload = r; });
+
+        const w = aiResultImg.naturalWidth, h = aiResultImg.naturalHeight;
+        canvas.width = w; canvas.height = h;
+        overlay.width = w; overlay.height = h;
+        ctx.clearRect(0, 0, w, h);
+        ctx.drawImage(aiResultImg, 0, 0);
+        oCtx.clearRect(0, 0, w, h);
+        undoStack = [];
+
+        // Hide static img, show canvases
+        resultImg.style.display = 'none';
+        canvas.classList.add('visible');
+        overlay.classList.add('visible');
+        setMode('mark');
+
+        // Meta info
+        const origSize = formatSize(file.size);
+        const resultSize = formatSize(resultBlob.size);
+        origMeta.textContent = origSize + ' \u2014 ' + origImg.naturalWidth + '\u00d7' + origImg.naturalHeight + 'px';
+        resultMeta.textContent = resultSize + ' \u2014 PNG with transparency';
+
+        setTimeout(() => {
+          progress.classList.remove('visible');
+          preview.classList.add('visible');
+          touchupBar.classList.add('visible');
+          actions.classList.add('visible');
+        }, 400);
+
+      } catch (err) {
+        progress.classList.remove('visible');
+        errorEl.textContent = 'Processing failed: ' + (err.message || 'Unknown error. Please try a different image or refresh the page.');
+        errorEl.classList.add('visible');
+        console.error('Background removal error:', err);
+      }
+    }
+
+    // Download from canvas
+    downloadBtn.addEventListener('click', () => {
+      canvas.toBlob(blob => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = loadedFileName + '_no_bg.png';
+        link.href = url;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }, 'image/png');
+    });
+
+    // New image
+    newBtn.addEventListener('click', () => {
+      preview.classList.remove('visible');
+      actions.classList.remove('visible');
+      touchupBar.classList.remove('visible');
+      errorEl.classList.remove('visible');
+      canvas.classList.remove('visible');
+      overlay.classList.remove('visible');
+      resultImg.style.display = '';
+      aiResultImg = null;
+      originalImgData = null;
+      undoStack = [];
+      dropZone.querySelector('.drop-label').textContent = 'Drop an image here or click to upload';
+      dropZone.querySelector('.drop-hint').textContent = 'PNG, JPG, WebP, BMP, GIF';
+      dropZone.classList.remove('has-file');
+      fileInput.value = '';
+    });
+
+    // Helpers
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+    function escHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    /* ── Mode switching ── */
+    function setMode(mode) {
+      touchupMode = mode;
+      markBtn.classList.toggle('active', mode === 'mark');
+      eraserBtn.classList.toggle('active', mode === 'erase');
+      restoreBtn.classList.toggle('active', mode === 'restore');
+      touchupHint.textContent = MODE_HINTS[mode];
+      overlay.style.pointerEvents = (mode === 'mark') ? 'auto' : 'none';
+      overlay.style.cursor = (mode === 'mark') ? 'crosshair' : 'default';
+      canvas.style.cursor = (mode !== 'mark') ? 'crosshair' : 'default';
+    }
+    markBtn.addEventListener('click', () => setMode('mark'));
+    eraserBtn.addEventListener('click', () => setMode('erase'));
+    restoreBtn.addEventListener('click', () => setMode('restore'));
+
+    brushSizeInput.addEventListener('input', () => {
+      brushSize = parseInt(brushSizeInput.value);
+      brushSizeLabel.textContent = brushSize + 'px';
+    });
+    toleranceInput.addEventListener('input', () => {
+      toleranceLabel.textContent = toleranceInput.value;
+    });
+
+    undoBtn.addEventListener('click', () => {
+      if (!undoStack.length) return;
+      const state = undoStack.pop();
+      ctx.putImageData(state, 0, 0);
+    });
+
+    function saveUndo() {
+      if (undoStack.length >= MAX_UNDO) undoStack.shift();
+      undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    }
+
+    /* ── Pointer helpers ── */
+    function getPos(e, targetCanvas) {
+      const rect = targetCanvas.getBoundingClientRect();
+      const scaleX = targetCanvas.width / rect.width;
+      const scaleY = targetCanvas.height / rect.height;
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      const cy = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: (cx - rect.left) * scaleX, y: (cy - rect.top) * scaleY, radius: brushSize * scaleX / 2 };
+    }
+
+    function strokeLine(context, from, to, compositeOp, color) {
+      const dist = Math.hypot(to.x - from.x, to.y - from.y);
+      const steps = Math.max(1, Math.floor(dist / (from.radius * 0.3)));
+      context.save();
+      if (compositeOp) context.globalCompositeOperation = compositeOp;
+      if (color) { context.fillStyle = color; }
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const x = from.x + (to.x - from.x) * t;
+        const y = from.y + (to.y - from.y) * t;
+        context.beginPath();
+        context.arc(x, y, from.radius, 0, Math.PI * 2);
+        context.fill();
+      }
+      context.restore();
+    }
+
+    function restoreAt(context, img, from, to) {
+      const dist = Math.hypot(to.x - from.x, to.y - from.y);
+      const steps = Math.max(1, Math.floor(dist / (from.radius * 0.3)));
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const x = from.x + (to.x - from.x) * t;
+        const y = from.y + (to.y - from.y) * t;
+        context.save();
+        context.beginPath();
+        context.arc(x, y, from.radius, 0, Math.PI * 2);
+        context.clip();
+        context.drawImage(img, 0, 0);
+        context.restore();
+      }
+    }
+
+    let lastPos = null;
+
+    /* ── Mark mode: paint on overlay ── */
+    overlay.addEventListener('pointerdown', e => {
+      if (touchupMode !== 'mark' || !aiResultImg) return;
+      e.preventDefault();
+      painting = true;
+      lastPos = getPos(e, overlay);
+      strokeLine(oCtx, lastPos, lastPos, 'source-over', 'rgba(255, 60, 60, 0.45)');
+    });
+    overlay.addEventListener('pointermove', e => {
+      updateBrushPreviewPos(e);
+      if (!painting || touchupMode !== 'mark') return;
+      e.preventDefault();
+      const pos = getPos(e, overlay);
+      strokeLine(oCtx, lastPos, pos, 'source-over', 'rgba(255, 60, 60, 0.45)');
+      lastPos = pos;
+    });
+
+    /* ── Erase / Restore mode: paint on result canvas ── */
+    canvas.addEventListener('pointerdown', e => {
+      if (touchupMode === 'mark' || !aiResultImg) return;
+      e.preventDefault();
+      painting = true;
+      saveUndo();
+      lastPos = getPos(e, canvas);
+      if (touchupMode === 'erase') {
+        strokeLine(ctx, lastPos, lastPos, 'destination-out', 'rgba(0,0,0,1)');
+      } else {
+        restoreAt(ctx, aiResultImg, lastPos, lastPos);
+      }
+    });
+    canvas.addEventListener('pointermove', e => {
+      updateBrushPreviewPos(e);
+      if (!painting || touchupMode === 'mark') return;
+      e.preventDefault();
+      const pos = getPos(e, canvas);
+      if (touchupMode === 'erase') {
+        strokeLine(ctx, lastPos, pos, 'destination-out', 'rgba(0,0,0,1)');
+      } else {
+        restoreAt(ctx, aiResultImg, lastPos, pos);
+      }
+      lastPos = pos;
+    });
+
+    window.addEventListener('pointerup', () => { painting = false; lastPos = null; });
+
+    /* ── Clean Up: smart removal in marked areas ── */
+    cleanBtn.addEventListener('click', () => {
+      if (!aiResultImg || !originalImgData) return;
+
+      const w = canvas.width, h = canvas.height;
+      const tolerance = parseInt(toleranceInput.value);
+
+      // Read the overlay mask — any pixel with red > 0 is marked
+      const maskData = oCtx.getImageData(0, 0, w, h).data;
+
+      // Collect background color samples from original image within the marked region
+      const colorCounts = {};
+      const origD = originalImgData.data;
+      let markedCount = 0;
+
+      for (let i = 0; i < maskData.length; i += 4) {
+        if (maskData[i] < 50) continue; // not marked
+        markedCount++;
+        // Quantize original color to 4-bit per channel for clustering
+        const r = origD[i] >> 4;
+        const g = origD[i + 1] >> 4;
+        const b = origD[i + 2] >> 4;
+        const key = (r << 8) | (g << 4) | b;
+        colorCounts[key] = (colorCounts[key] || 0) + 1;
+      }
+
+      if (markedCount === 0) return;
+
+      // Find dominant background colors (top clusters covering 85% of marked area)
+      const sorted = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]);
+      const bgColors = [];
+      let accumulated = 0;
+      const threshold = markedCount * 0.85;
+      for (const [key, count] of sorted) {
+        const k = parseInt(key);
+        bgColors.push({
+          r: ((k >> 8) & 0xf) * 17,
+          g: ((k >> 4) & 0xf) * 17,
+          b: (k & 0xf) * 17
+        });
+        accumulated += count;
+        if (accumulated >= threshold) break;
+        if (bgColors.length >= 8) break; // cap at 8 clusters
+      }
+
+      if (bgColors.length === 0) return;
+
+      // Save undo state then process
+      saveUndo();
+
+      const resultData = ctx.getImageData(0, 0, w, h);
+      const rD = resultData.data;
+      const tolSq = tolerance * tolerance;
+
+      for (let i = 0; i < maskData.length; i += 4) {
+        if (maskData[i] < 50) continue; // not marked
+        if (rD[i + 3] === 0) continue;  // already transparent
+
+        const pr = rD[i], pg = rD[i + 1], pb = rD[i + 2];
+
+        // Check if this pixel's color is close to any detected background color
+        let isBg = false;
+        for (const bg of bgColors) {
+          const dr = pr - bg.r, dg = pg - bg.g, db = pb - bg.b;
+          if (dr * dr + dg * dg + db * db <= tolSq * 3) {
+            isBg = true;
+            break;
+          }
+        }
+
+        if (isBg) {
+          // Calculate soft edge: pixels at the boundary of the marked area get partial transparency
+          // Use distance from the mark center (mark alpha intensity) as a feather guide
+          const markAlpha = maskData[i + 3] / 255;
+          rD[i + 3] = Math.round(rD[i + 3] * (1 - markAlpha));
+        }
+      }
+
+      ctx.putImageData(resultData, 0, 0);
+
+      // Clear the overlay
+      oCtx.clearRect(0, 0, w, h);
+    });
+
+    // Prevent touch scrolling on canvases
+    overlay.addEventListener('touchstart', e => { if (aiResultImg && touchupMode === 'mark') e.preventDefault(); }, { passive: false });
+    overlay.addEventListener('touchmove', e => { if (painting) e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('touchstart', e => { if (aiResultImg && touchupMode !== 'mark') e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (painting) e.preventDefault(); }, { passive: false });
+
+    // Brush cursor preview
+    function updateBrushPreviewPos(e) {
+      if (!touchupBar.classList.contains('visible')) { brushPreview.style.display = 'none'; return; }
+      const target = (touchupMode === 'mark') ? overlay : canvas;
+      const rect = target.getBoundingClientRect();
+      const cx = e.clientX, cy = e.clientY;
+      if (cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom) {
+        brushPreview.style.display = 'block';
+        brushPreview.style.width = brushSize + 'px';
+        brushPreview.style.height = brushSize + 'px';
+        brushPreview.style.left = (cx - brushSize / 2) + 'px';
+        brushPreview.style.top = (cy - brushSize / 2) + 'px';
+      } else {
+        brushPreview.style.display = 'none';
+      }
+    }
+    document.addEventListener('mousemove', updateBrushPreviewPos);
+    overlay.addEventListener('mouseleave', () => { brushPreview.style.display = 'none'; });
+    canvas.addEventListener('mouseleave', () => { brushPreview.style.display = 'none'; });
+  </script>
+</body>
+</html>

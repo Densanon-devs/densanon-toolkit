@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraction to Decimal Converter - ToolBox</title>
+    <meta name="description" content="Convert any fraction to a decimal and percentage. See if the decimal terminates or repeats, with the repeating pattern highlighted.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        .input-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .input-row label {
+            font-size: 1rem;
+            color: var(--color-text);
+            white-space: nowrap;
+        }
+
+        .input-row input[type="number"] {
+            width: 90px;
+            padding: 10px 12px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            font-size: 1.2rem;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .input-row input[type="number"]:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .fraction-divider {
+            font-size: 2rem;
+            color: var(--color-text-muted);
+            font-weight: 700;
+            user-select: none;
+        }
+
+        .mixed-label {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .result-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-card .label {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .result-card .value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--color-accent-green);
+            word-break: break-all;
+        }
+
+        .repeating-highlight {
+            text-decoration: overline;
+            color: var(--color-accent-blue);
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .type-badge.terminating {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--color-accent-green);
+        }
+
+        .type-badge.repeating {
+            background: rgba(96, 165, 250, 0.15);
+            color: var(--color-accent-blue);
+        }
+
+        .error-message {
+            color: var(--color-accent-orange);
+            font-size: 0.9rem;
+            padding: 10px;
+            background: rgba(251, 146, 60, 0.1);
+            border-radius: var(--radius);
+            display: none;
+            margin-top: 12px;
+        }
+
+        .ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+
+        .ref-table th, .ref-table td {
+            padding: 10px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .ref-table th {
+            color: var(--color-text);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ref-table td {
+            color: var(--color-text-muted);
+        }
+
+        .how-to ol {
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+
+        .how-to ol li {
+            margin-bottom: 8px;
+            color: var(--color-text-muted);
+        }
+
+        .how-to ol li strong {
+            color: var(--color-text);
+        }
+
+        .faq-section h3 {
+            color: var(--color-text);
+            margin: 20px 0 8px 0;
+            font-size: 1rem;
+        }
+
+        .faq-section p {
+            color: var(--color-text-muted);
+            line-height: 1.6;
+            margin: 0 0 16px 0;
+        }
+
+        .related-tools {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            color: var(--color-text-muted);
+            margin-top: 20px;
+        }
+
+        .related-tools a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+
+        .related-tools a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.6rem; }
+            .input-row { flex-direction: column; align-items: stretch; }
+            .input-row input[type="number"] { width: 100%; }
+            .results-grid { grid-template-columns: repeat(2, 1fr); }
+            .ref-table { font-size: 0.85rem; }
+            .ref-table th, .ref-table td { padding: 8px 10px; }
+            .fraction-divider { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Fraction to Decimal Converter</h1>
+            <p>Convert any fraction or mixed number to its decimal and percentage equivalent</p>
+        </div>
+
+        <section class="tool-box">
+            <div class="input-panel">
+                <div class="input-row">
+                    <label class="mixed-label">Whole (optional):</label>
+                    <input type="number" id="wholeInput" value="" min="0" placeholder="0">
+                    <label>Numerator:</label>
+                    <input type="number" id="numInput" value="1" min="0" placeholder="Num">
+                    <span class="fraction-divider">/</span>
+                    <input type="number" id="denInput" value="3" min="1" placeholder="Den">
+                </div>
+                <div class="error-message" id="errorMsg"></div>
+            </div>
+
+            <div class="results-grid" id="resultsGrid">
+                <div class="result-card">
+                    <div class="label">Decimal Value</div>
+                    <div class="value" id="decimalValue">0.333...</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Percentage</div>
+                    <div class="value" id="percentValue">33.333...%</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Decimal Type</div>
+                    <div class="value" id="decimalType"><span class="type-badge repeating">Repeating</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Repeating Pattern</div>
+                    <div class="value" id="repeatingPattern">0.<span class="repeating-highlight">3</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="tool-box">
+            <h2>What Does This Tool Do?</h2>
+            <p>The Fraction to Decimal Converter takes any fraction and instantly shows its decimal equivalent, percentage value, and whether the decimal terminates or repeats. For repeating decimals, the repeating digit pattern is clearly highlighted so you can see exactly which digits cycle. The tool supports mixed number input, allowing you to enter a whole number alongside the fraction. It is ideal for homework help, quick reference, and building intuition about the relationship between fractions and decimals.</p>
+        </section>
+
+        <section class="tool-box how-to">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Enter the numerator and denominator</strong> of your fraction in the input fields.</li>
+                <li><strong>Optionally enter a whole number</strong> to convert a mixed number like 2 3/4.</li>
+                <li><strong>View the results</strong> that update instantly: the decimal value, percentage, whether it terminates or repeats, and the repeating pattern if applicable.</li>
+                <li><strong>Check the repeating pattern</strong> card for repeating decimals. The overlined digits show exactly which digits repeat infinitely.</li>
+            </ol>
+        </section>
+
+        <section class="tool-box">
+            <h2>Common Fractions Reference</h2>
+            <table class="ref-table">
+                <thead>
+                    <tr>
+                        <th>Fraction</th>
+                        <th>Decimal</th>
+                        <th>Percentage</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1/2</td><td>0.5</td><td>50%</td><td>Terminating</td></tr>
+                    <tr><td>1/3</td><td>0.333...</td><td>33.333...%</td><td>Repeating</td></tr>
+                    <tr><td>1/4</td><td>0.25</td><td>25%</td><td>Terminating</td></tr>
+                    <tr><td>1/5</td><td>0.2</td><td>20%</td><td>Terminating</td></tr>
+                    <tr><td>1/6</td><td>0.1666...</td><td>16.666...%</td><td>Repeating</td></tr>
+                    <tr><td>1/7</td><td>0.142857...</td><td>14.2857...%</td><td>Repeating</td></tr>
+                    <tr><td>1/8</td><td>0.125</td><td>12.5%</td><td>Terminating</td></tr>
+                    <tr><td>1/9</td><td>0.111...</td><td>11.111...%</td><td>Repeating</td></tr>
+                    <tr><td>1/10</td><td>0.1</td><td>10%</td><td>Terminating</td></tr>
+                    <tr><td>2/3</td><td>0.666...</td><td>66.666...%</td><td>Repeating</td></tr>
+                    <tr><td>3/4</td><td>0.75</td><td>75%</td><td>Terminating</td></tr>
+                    <tr><td>7/8</td><td>0.875</td><td>87.5%</td><td>Terminating</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="tool-box faq-section">
+            <h2>FAQ</h2>
+            <h3>How does the tool determine if a decimal repeats?</h3>
+            <p>It uses long division to track remainders. If a remainder appears a second time, the digits between the two occurrences form the repeating cycle. A fraction in lowest terms terminates only when the denominator has no prime factors other than 2 and 5.</p>
+
+            <h3>What does the overline on the digits mean?</h3>
+            <p>The overline indicates the repeating block. For example, 0.<span style="text-decoration:overline">142857</span> means the digits 142857 repeat forever: 0.142857142857142857...</p>
+
+            <h3>Can I enter improper fractions like 7/4?</h3>
+            <p>Yes. The tool accepts any positive numerator and denominator. An improper fraction like 7/4 will display as 1.75, which is the same as the mixed number 1 3/4.</p>
+
+            <h3>What happens if I enter 0 as the denominator?</h3>
+            <p>Division by zero is undefined in mathematics. The tool will display an error message asking you to enter a denominator greater than zero.</p>
+
+            <h3>How long can the repeating cycle be?</h3>
+            <p>The maximum cycle length for a fraction 1/n is n-1 digits. For example, 1/7 has a 6-digit cycle (142857). The tool computes up to 2000 digits to find the pattern, which covers virtually all practical cases.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>Related Tools</h2>
+            <div class="related-tools">
+                <p>
+                    <a href="../decimal-to-fraction/index.html">Decimal to Fraction Converter</a> &mdash; Convert decimals back to fractions.
+                    &nbsp;&bull;&nbsp;
+                    <a href="../fraction-visualizer/index.html">Fraction Visualizer</a> &mdash; See fractions as visual diagrams.
+                    &nbsp;&bull;&nbsp;
+                    <a href="../percent-calculator/index.html">Percent Calculator</a> &mdash; Calculate percentages quickly.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'math-tools',
+            title: 'Fraction to Decimal Converter',
+            breadcrumbs: [
+                { label: 'Math Tools', href: '../index.html' },
+                { label: 'Fraction to Decimal Converter' }
+            ]
+        });
+    </script>
+    <script src="fraction-to-decimal.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mode Calculator - ToolBox</title>
+  <meta name="description" content="Find the mode (most frequent value) in any list of numbers. Handles no mode, single mode, and multimodal datasets. Free online statistics calculator.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/statistics-calculator.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Mode Calculator</h1>
+      <p>Find the most frequently occurring value in any dataset.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="calculator-mount"></div>
+      <div style="margin-top:16px;font-size:0.88rem;">
+        <a href="../mean-median-mode/index.html" style="color:var(--color-primary);font-weight:600;">&larr; All Statistics Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Is the Mode?</h2>
+      <p>The mode is the value that appears most frequently in a dataset. It is the only measure of central tendency that can be used with categorical (non-numeric) data, though this calculator focuses on numeric datasets. A dataset can have no mode (all values appear equally often), one mode (unimodal), two modes (bimodal), or more than two modes (multimodal). For example, in {3, 5, 5, 7, 9}, the mode is 5 because it appears twice while all other values appear once. Mode values are highlighted in orange in the sorted list and the bar chart.</p>
+    </section>
+
+    <section>
+      <h2>How to Find the Mode</h2>
+      <ol>
+        <li><strong>Enter your numbers</strong> in the text area, separated by commas or spaces.</li>
+        <li><strong>Read the mode</strong> in the highlighted orange card — it shows the value(s) and their frequency.</li>
+        <li><strong>Check the sorted list</strong> where mode values are highlighted in orange so you can see them in context.</li>
+        <li><strong>View the bar chart</strong> where mode values are drawn in orange to stand out from the rest.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Types of Mode Results</h2>
+      <p>There are three possible outcomes when calculating the mode:</p>
+      <ul style="color:var(--color-text-muted);font-size:0.95rem;padding-left:20px;line-height:1.8;">
+        <li><strong>No mode</strong> — all values appear the same number of times. Example: {1, 2, 3, 4, 5}. Every value is unique, so there is no mode.</li>
+        <li><strong>Unimodal</strong> — one value appears more than any other. Example: {2, 4, 4, 6, 8}. The mode is 4.</li>
+        <li><strong>Multimodal</strong> — two or more values tie for the highest frequency. Example: {1, 1, 3, 5, 5}. Both 1 and 5 are modes (bimodal).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>When to Use Mode vs Mean and Median</h2>
+      <p>The mode is most useful when you want to know what value occurs most often rather than what value is at the center. It shines in scenarios like: finding the most popular shoe size in a store, the most common test score, or the most frequent response in a survey. Unlike the <a href="../mean-calculator/index.html">mean</a> and <a href="../median-calculator/index.html">median</a>, the mode does not require numeric data — you can find the mode of colors, names, or categories. However, for continuous numeric data with many unique values, the mode may not be very informative since no value repeats.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>What does "No mode" mean?</h3>
+      <p>The tool reports "No mode" when every value in your dataset appears the same number of times. This happens when all values are unique (each appears once) or when all values appear equally often. This is a valid statistical result — not every dataset has a mode.</p>
+
+      <h3>Can a dataset have more than one mode?</h3>
+      <p>Yes. When two or more values tie for the highest frequency, they are all modes. A dataset with two modes is called bimodal, and one with more is called multimodal. The calculator displays all mode values together with their frequency count.</p>
+
+      <h3>How is the mode different from the most common value?</h3>
+      <p>They are the same thing. The mode is the statistical term for the most common (most frequently occurring) value in a dataset.</p>
+
+      <h3>Does the order of numbers matter for finding the mode?</h3>
+      <p>No. The mode only depends on how often each value appears, not on the order. You can enter numbers in any order and the result will be the same. The tool sorts the values for the display, but this does not affect the mode calculation.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Calculators</h2>
+      <a href="../mean-calculator/index.html">Mean Calculator</a>
+      <a href="../median-calculator/index.html">Median Calculator</a>
+      <a href="../mean-median-mode/index.html">Mean / Median / Mode (All)</a>
+      <a href="../ratio-simplifier/index.html">Ratio Simplifier</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'math-tools',
+      title: 'Mode Calculator',
+      breadcrumbs: [
+        { label: 'Math Tools', href: '../index.html' },
+        { label: 'Mode Calculator' }
+      ]
+    });
+  </script>
+  <script src="../../../js/statistics-calculator.js"></script>
+  <script>initStatisticsCalculator({ focus: 'mode', mountTo: '#calculator-mount' });</script>
+</body>
+</html>

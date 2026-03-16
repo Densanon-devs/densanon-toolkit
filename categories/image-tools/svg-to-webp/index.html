@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG to WebP Converter - ToolBox</title>
+  <meta name="description" content="Convert SVG vector graphics to WebP images instantly in your browser. Get modern compression with transparency support from vector sources.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>SVG to WebP Converter</h1>
+      <p>Convert SVG vector graphics to WebP for modern compression with transparency.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../index.html">&larr; All Image Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts SVG (Scalable Vector Graphics) files to WebP format directly in your browser. WebP is a modern image format developed by Google that provides superior compression for both lossy and lossless images while supporting transparency. Converting SVG to WebP gives you a compact raster image that works well on the web, combining the small file sizes of JPG with the transparency support of PNG.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert SVG to WebP</h2>
+      <ol>
+        <li><strong>Upload your SVG file</strong> — drag and drop or click to browse.</li>
+        <li><strong>Verify the format</strong> — the source format is detected automatically.</li>
+        <li><strong>Adjust quality</strong> — use the slider to balance file size and image quality.</li>
+        <li><strong>Click Convert</strong> — the conversion happens instantly in your browser.</li>
+        <li><strong>Compare the results</strong> — see original vs converted side by side with file sizes.</li>
+        <li><strong>Download</strong> — save the converted WebP to your device.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>SVG vs WebP — Key Differences</h2>
+      <p>SVG is a vector format that describes shapes mathematically, making it resolution-independent. WebP is a raster format with advanced compression that produces smaller files than PNG or JPG at equivalent quality. SVG is ideal for simple graphics, icons, and logos. WebP is the optimal choice for web images where you need both small file sizes and transparency support. Converting SVG to WebP is useful for web optimization when the platform does not support inline SVG.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>Does WebP support the transparency from my SVG?</h3>
+      <p>Yes. WebP supports alpha transparency, so transparent areas in your SVG are preserved in the converted WebP file.</p>
+      <h3>Is WebP supported in all browsers?</h3>
+      <p>WebP is supported in all modern browsers including Chrome, Firefox, Safari, and Edge. Some very old browsers do not support it.</p>
+      <h3>Is my file uploaded to a server?</h3>
+      <p>No. The entire conversion happens locally in your browser. Your files never leave your device.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Conversions</h2>
+      <a href="../svg-to-png/index.html">SVG to PNG Converter</a>
+      <a href="../svg-to-jpg/index.html">SVG to JPG Converter</a>
+      <a href="../webp-to-svg/index.html">WebP to SVG Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'image-tools',
+      title: 'SVG to WebP Converter',
+      breadcrumbs: [
+        { label: 'Image Tools', href: '../index.html' },
+        { label: 'SVG to WebP Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/converter.js"></script>
+  <script>initConverter({ from: 'image/svg+xml', to: 'image/webp', mountTo: '#converter-mount' });</script>
+</body>
+</html>

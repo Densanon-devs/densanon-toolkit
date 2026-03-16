@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dwarf Name Generator - ToolBox</title>
+    <meta name="description" content="Generate sturdy dwarven names for D&D characters, tabletop RPGs, and fantasy writing. Guttural, Norse-inspired names forged in the tradition of mountain kingdoms.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <link rel="stylesheet" href="../../../css/name-generator.css">
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Dwarf Name Generator</h1>
+            <p>Forge strong, stone-hewn dwarven names worthy of the mountain halls</p>
+        </div>
+
+        <section class="tool-box">
+            <div id="generator-mount"></div>
+        </section>
+
+        <section class="tool-box">
+            <h2>About Dwarf Names</h2>
+            <p>Dwarven names are built from the bedrock of Old Norse, Germanic, and Anglo-Saxon linguistic traditions. They favor hard consonant clusters, guttural vowels, and compact syllable structures that evoke the sound of hammer on anvil. In most fantasy settings, dwarves value their names as markers of clan lineage, and a dwarf's full name includes references to their parent, their clan, and often their hold or mountain home.</p>
+            <p>The phonetic signature of dwarven naming relies heavily on plosives and fricatives: "k," "g," "th," "r," and "d" dominate, while softer sounds are rare. Male names tend to be blunt and punchy, often ending in "-din," "-dur," "-grim," or "-gar." Female dwarven names, while still carrying the weight of stone, incorporate slightly softer endings like "-dis," "-hild," "-run," and "-lin," drawing from the Valkyrie naming tradition of Norse mythology.</p>
+            <p>This generator produces names that would feel at home in the mines of Moria, the holds of the Warhammer world, or any classic fantasy setting where dwarves are master craftsmen, fierce warriors, and stubborn defenders of ancestral tradition.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Select Dwarf as the Race:</strong> The generator starts preset to Dwarf, giving you immediate access to the dwarven phoneme tables.</li>
+                <li><strong>Choose Gender:</strong> Male dwarven names use heavier endings like "-dur" and "-grim." Female names draw from Norse feminine traditions with endings like "-dis" and "-hild." Neutral names work well for clan names or surnames.</li>
+                <li><strong>Set the Count:</strong> Dwarven names are short and punchy, so generating batches of 10 or 20 lets you quickly scan for the one that strikes like a warhammer.</li>
+                <li><strong>Generate and Browse:</strong> Click Generate Names, then click any result to copy it. Bookmark your favorites with the star icon.</li>
+                <li><strong>Export Your List:</strong> Download your saved names as a text file for your campaign notes or character roster.</li>
+            </ol>
+        </section>
+
+        <section class="tool-box">
+            <h2>Dwarven Naming Conventions</h2>
+            <p>Dwarven names rarely exceed three syllables. Brevity is a cultural value, reflecting the dwarven preference for directness and efficiency. A name like "Thoradin" carries as much weight as any five-syllable elven construction, and dwarves take pride in that economy. The first syllable typically carries the strongest stress, hitting hard with a voiced consonant before settling into a vowel-consonant pattern.</p>
+            <p>Clan names in most settings follow the "descriptor + noun" compound pattern common in Norse kennings. Names like "Ironforge," "Stonefist," "Deepdelve," and "Brightaxe" are built by combining a material or quality with a tool, weapon, or geological feature. You can simulate this by generating two separate names and combining elements from each.</p>
+            <p>In D&D specifically, dwarven names carry ancestral weight. A dwarf introduces themselves with their given name, their parent's name (often with "son of" or "daughter of"), and their clan name. Using this generator to create all three components gives you a complete dwarven identity that sounds cohesive because all the names draw from the same phonetic tradition.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>Frequently Asked Questions</h2>
+
+            <h3>Do these names work for both Hill Dwarves and Mountain Dwarves?</h3>
+            <p>Yes. The phoneme tables capture the core dwarven linguistic tradition shared by most subraces. In settings where Hill Dwarves use slightly softer names, try the neutral gender option for a less aggressive sound. Mountain Dwarf names tend to be the hardest and most guttural, which the male option reproduces well.</p>
+
+            <h3>How do I create a dwarven clan name?</h3>
+            <p>Generate a batch of neutral dwarven names and use them as the first element of a compound clan name. Pair the generated word with a second element like "-forge," "-hammer," "-stone," "-delve," or "-axe." For example, "Thorun" could become "Thorunforge" or "Clan Thorun."</p>
+
+            <h3>Why do dwarven names sound Norse?</h3>
+            <p>Tolkien drew heavily from Old Norse mythology when creating dwarven culture, and most fantasy settings since have followed that tradition. The names of his original thirteen dwarves, including Thorin, Balin, and Gimli, come directly from the Dvergatal, the catalogue of dwarves in the Poetic Edda. This generator honors that lineage while producing original names.</p>
+
+            <h3>Can I use these for a Duergar character?</h3>
+            <p>Duergar, or gray dwarves, share the same linguistic roots as surface dwarves in most settings. The generated names work well, though you might gravitate toward harsher-sounding results. Names with more "k," "g," and "z" sounds tend to feel appropriately grim for Underdark-dwelling dwarves.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>More Name Generators</h2>
+            <div class="related-tools">
+                <a href="../orc-name-generator/index.html">Orc Names</a>
+                <a href="../human-name-generator/index.html">Human Names</a>
+                <a href="../goblin-name-generator/index.html">Goblin Names</a>
+                <a href="../elf-name-generator/index.html">Elf Names</a>
+                <a href="../fantasy-name-generator/index.html">All Races</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'game-dev-tools',
+            title: 'Dwarf Name Generator',
+            breadcrumbs: [
+                { label: 'Game Dev Tools', href: '../index.html' },
+                { label: 'Dwarf Name Generator' }
+            ]
+        });
+    </script>
+    <script src="../../../js/name-generator.js"></script>
+    <script>initNameGenerator({ race: 'dwarf', mountTo: '#generator-mount' });</script>
+</body>
+</html>

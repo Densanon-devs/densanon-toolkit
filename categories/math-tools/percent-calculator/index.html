@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Percent Calculator - ToolBox</title>
+    <meta name="description" content="Calculate percentages instantly. Find what percent of a number is, what percentage one number is of another, or the percentage change between two values.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        .mode-buttons {
+            display: flex;
+            gap: 4px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+
+        .mode-btn {
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            border-radius: calc(var(--radius) - 2px);
+            color: var(--color-text-muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            flex: 1;
+            text-align: center;
+        }
+
+        .mode-btn.active {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        .mode-btn:hover:not(.active) {
+            color: var(--color-text);
+            background: var(--color-border);
+        }
+
+        .calc-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .calc-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .calc-row label {
+            font-size: 1rem;
+            color: var(--color-text);
+            white-space: nowrap;
+        }
+
+        .calc-row input[type="number"] {
+            width: 120px;
+            padding: 10px 12px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            font-size: 1.1rem;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .calc-row input[type="number"]:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .result-box {
+            background: var(--color-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-accent-green);
+            margin-bottom: 8px;
+        }
+
+        .result-formula {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            font-family: monospace;
+        }
+
+        .formula-ref {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .formula-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .formula-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 1rem;
+            color: var(--color-text);
+        }
+
+        .formula-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            line-height: 1.5;
+        }
+
+        .formula-card code {
+            background: var(--color-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--color-accent-blue);
+        }
+
+        .how-to ol {
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+
+        .how-to ol li {
+            margin-bottom: 8px;
+            color: var(--color-text-muted);
+        }
+
+        .how-to ol li strong {
+            color: var(--color-text);
+        }
+
+        .faq-section h3 {
+            color: var(--color-text);
+            margin: 20px 0 8px 0;
+            font-size: 1rem;
+        }
+
+        .faq-section p {
+            color: var(--color-text-muted);
+            line-height: 1.6;
+            margin: 0 0 16px 0;
+        }
+
+        .related-tools {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            color: var(--color-text-muted);
+            margin-top: 20px;
+        }
+
+        .related-tools a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+
+        .related-tools a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.6rem; }
+            .mode-btn { min-height: 44px; font-size: 0.8rem; padding: 8px 8px; }
+            .calc-row { flex-direction: column; align-items: stretch; }
+            .calc-row input[type="number"] { width: 100%; }
+            .result-value { font-size: 1.5rem; }
+            .formula-ref { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Percent Calculator</h1>
+            <p>Calculate percentages, find ratios, and determine percentage changes instantly</p>
+        </div>
+
+        <section class="tool-box">
+            <div class="mode-buttons">
+                <button class="mode-btn active" data-mode="whatIs">What is X% of Y?</button>
+                <button class="mode-btn" data-mode="whatPercent">X is what % of Y?</button>
+                <button class="mode-btn" data-mode="percentChange">% Change from X to Y</button>
+            </div>
+
+            <div class="calc-panel" id="panelWhatIs">
+                <div class="calc-row">
+                    <label>What is</label>
+                    <input type="number" id="wiPercent" value="25" step="any" placeholder="X">
+                    <label>% of</label>
+                    <input type="number" id="wiOf" value="200" step="any" placeholder="Y">
+                    <label>?</label>
+                </div>
+                <div class="result-box">
+                    <div class="result-value" id="wiResult">50</div>
+                    <div class="result-formula" id="wiFormula">25% x 200 = 0.25 x 200 = 50</div>
+                </div>
+            </div>
+
+            <div class="calc-panel" id="panelWhatPercent" style="display:none;">
+                <div class="calc-row">
+                    <input type="number" id="wpX" value="50" step="any" placeholder="X">
+                    <label>is what % of</label>
+                    <input type="number" id="wpY" value="200" step="any" placeholder="Y">
+                    <label>?</label>
+                </div>
+                <div class="result-box">
+                    <div class="result-value" id="wpResult">25%</div>
+                    <div class="result-formula" id="wpFormula">(50 / 200) x 100 = 25%</div>
+                </div>
+            </div>
+
+            <div class="calc-panel" id="panelPercentChange" style="display:none;">
+                <div class="calc-row">
+                    <label>From</label>
+                    <input type="number" id="pcFrom" value="80" step="any" placeholder="X">
+                    <label>to</label>
+                    <input type="number" id="pcTo" value="100" step="any" placeholder="Y">
+                </div>
+                <div class="result-box">
+                    <div class="result-value" id="pcResult">+25%</div>
+                    <div class="result-formula" id="pcFormula">((100 - 80) / |80|) x 100 = 25%</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="tool-box">
+            <h2>What Does This Tool Do?</h2>
+            <p>The Percent Calculator handles the three most common percentage calculations in one convenient tool. Switch between modes to find what a given percentage of a number equals, determine what percentage one number is of another, or calculate the percentage change between two values. Results update in real time as you type, and the formula is displayed alongside the answer so you can understand the math behind it. Whether you are calculating discounts, tips, grade percentages, or growth rates, this tool gives you instant and accurate results.</p>
+        </section>
+
+        <section class="tool-box how-to">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Choose a calculation mode</strong> by clicking one of the three tabs: "What is X% of Y?", "X is what % of Y?", or "% Change from X to Y".</li>
+                <li><strong>Enter your numbers</strong> in the input fields. Results update automatically as you type.</li>
+                <li><strong>Read the result</strong> displayed prominently below the inputs, along with the formula showing how the answer was derived.</li>
+                <li><strong>Switch modes</strong> at any time to perform a different type of percentage calculation without losing your previously entered values.</li>
+            </ol>
+        </section>
+
+        <section class="tool-box">
+            <h2>Common Percentage Formulas</h2>
+            <div class="formula-ref">
+                <div class="formula-card">
+                    <h3>Percentage of a Number</h3>
+                    <p>To find X% of Y, convert the percentage to a decimal and multiply:<br><code>Result = (X / 100) x Y</code></p>
+                </div>
+                <div class="formula-card">
+                    <h3>What Percentage Is X of Y?</h3>
+                    <p>Divide the part by the whole and multiply by 100:<br><code>Percent = (X / Y) x 100</code></p>
+                </div>
+                <div class="formula-card">
+                    <h3>Percentage Change</h3>
+                    <p>Subtract the old value from the new, divide by the absolute old value, and multiply by 100:<br><code>Change = ((New - Old) / |Old|) x 100</code></p>
+                </div>
+                <div class="formula-card">
+                    <h3>Percentage Increase</h3>
+                    <p>Add the percentage of the original value to the original:<br><code>Result = Y + (X / 100) x Y</code><br>or equivalently <code>Y x (1 + X/100)</code></p>
+                </div>
+                <div class="formula-card">
+                    <h3>Percentage Decrease</h3>
+                    <p>Subtract the percentage of the original value from the original:<br><code>Result = Y - (X / 100) x Y</code><br>or equivalently <code>Y x (1 - X/100)</code></p>
+                </div>
+                <div class="formula-card">
+                    <h3>Reverse Percentage</h3>
+                    <p>If a value is the result after an X% increase, find the original:<br><code>Original = Result / (1 + X/100)</code></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="tool-box faq-section">
+            <h2>FAQ</h2>
+            <h3>How do I calculate a tip at a restaurant?</h3>
+            <p>Use the "What is X% of Y?" mode. Enter the tip percentage (for example, 18) and the bill total. The result is the tip amount. Add it to the bill for your total.</p>
+
+            <h3>What is the difference between percentage change and percentage difference?</h3>
+            <p>Percentage change measures the relative change from an original value to a new value, with direction (increase or decrease). Percentage difference compares two values without implying that one is the starting point, using the average of both values as the denominator.</p>
+
+            <h3>Can I use decimal percentages like 7.5%?</h3>
+            <p>Yes. All input fields accept decimal numbers, so you can enter values like 7.5, 0.25, or 33.33 for precise calculations.</p>
+
+            <h3>Why does the percentage change show a sign (+ or -)?</h3>
+            <p>A positive sign indicates an increase from the original value, while a negative sign indicates a decrease. This makes it immediately clear whether the value went up or down.</p>
+
+            <h3>What happens if the original value in percentage change is zero?</h3>
+            <p>Percentage change is undefined when the starting value is zero because it would require division by zero. The calculator will display an appropriate message in that case.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>Related Tools</h2>
+            <div class="related-tools">
+                <p>
+                    <a href="../fraction-visualizer/index.html">Fraction Visualizer</a> &mdash; See fractions as pie charts, bars, and grids.
+                    &nbsp;&bull;&nbsp;
+                    <a href="../decimal-to-fraction/index.html">Decimal to Fraction Converter</a> &mdash; Convert any decimal to a fraction.
+                    &nbsp;&bull;&nbsp;
+                    <a href="../fraction-to-decimal/index.html">Fraction to Decimal Converter</a> &mdash; Convert fractions to decimals and percentages.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'math-tools',
+            title: 'Percent Calculator',
+            breadcrumbs: [
+                { label: 'Math Tools', href: '../index.html' },
+                { label: 'Percent Calculator' }
+            ]
+        });
+    </script>
+    <script src="percent-calculator.js"></script>
+</body>
+</html>

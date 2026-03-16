@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIF to SVG Converter - ToolBox</title>
+  <meta name="description" content="Convert GIF images to SVG vector graphics in your browser. Trace the first frame of GIF images into scalable vector paths.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>GIF to SVG Converter</h1>
+      <p>Trace GIF images into scalable SVG vector graphics.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../index.html">&larr; All Image Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts GIF images to SVG vector format by tracing the image into vector paths. For animated GIFs, the first frame is used for tracing. GIF supports only 256 colors per frame, which actually makes it well-suited for vectorization since the limited color palette aligns naturally with the color quantization step of the tracing process. The result is a clean, scalable SVG file.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert GIF to SVG</h2>
+      <ol>
+        <li><strong>Upload your GIF file</strong> — drag and drop or click to browse.</li>
+        <li><strong>Adjust the color count</strong> — GIF already has limited colors, so lower values work well.</li>
+        <li><strong>Set the detail level</strong> — Low for speed, Medium for balance, High for fidelity.</li>
+        <li><strong>Click Trace to SVG</strong> — the tracing happens entirely in your browser.</li>
+        <li><strong>Compare the results</strong> — see the original alongside the traced SVG.</li>
+        <li><strong>Download</strong> — save the SVG file to your device.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>GIF vs SVG — Key Differences</h2>
+      <p>GIF is a raster format limited to 256 colors per frame, often used for simple animations and graphics. SVG is a vector format with unlimited color support that scales to any size. GIF images become pixelated when enlarged, while SVG remains perfectly sharp. Converting GIF to SVG is especially effective because GIF's limited color palette produces clean, well-defined vector regions.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>What happens with animated GIFs?</h3>
+      <p>Only the first frame of an animated GIF is traced. SVG can support animation, but this tool produces a static vector image from the initial frame.</p>
+      <h3>Do GIFs convert better than JPGs to SVG?</h3>
+      <p>Often yes. GIF's limited 256-color palette means the image already has discrete color regions, which aligns well with the vectorization process. JPG artifacts can introduce unwanted noise.</p>
+      <h3>Is my image uploaded to a server?</h3>
+      <p>No. The entire conversion happens locally in your browser. Your images never leave your device.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Conversions</h2>
+      <a href="../png-to-svg/index.html">PNG to SVG Converter</a>
+      <a href="../gif-to-png/index.html">GIF to PNG Converter</a>
+      <a href="../gif-to-webp/index.html">GIF to WebP Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'image-tools',
+      title: 'GIF to SVG Converter',
+      breadcrumbs: [
+        { label: 'Image Tools', href: '../index.html' },
+        { label: 'GIF to SVG Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/converter.js"></script>
+  <script src="../../../js/svg-tracer.js"></script>
+  <script>initSvgTracer({ from: 'image/gif', mountTo: '#converter-mount' });</script>
+</body>
+</html>

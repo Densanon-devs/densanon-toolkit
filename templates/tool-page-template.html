@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TOOL_NAME - ToolBox</title>
+  <meta name="description" content="TOOL_DESCRIPTION — free browser-based tool, no sign-ups or installs.">
+  <meta name="robots" content="index, follow">
+  <!--
+    Depth guide (for stylesheet and script paths):
+      depth 3 = categories/CATEGORY/TOOL/     → ../../../
+      depth 2 = categories/CATEGORY/          → ../../
+      depth 1 = categories/                   → ../
+      depth 0 = root                          → (empty)
+
+    Categories: game-dev-tools | image-tools | developer-tools | math-tools
+  -->
+  <link rel="stylesheet" href="../../../css/style.css">
+  <!-- Optional: link a shared tool-family CSS if this tool belongs to one -->
+  <!-- <link rel="stylesheet" href="../../../css/FAMILY.css"> -->
+  <style>
+    /* Tool-specific styles go here, or in a separate CSS file */
+  </style>
+</head>
+<body>
+
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>TOOL_NAME</h1>
+      <p>One-sentence description of what the tool does and who it helps.</p>
+    </div>
+
+    <!-- ===== TOOL UI ===== -->
+    <section class="tool-box">
+      <!--
+        Option A: Build UI inline in this HTML.
+        Option B: Use a shared engine mount point:
+          <div id="tool-mount"></div>
+        Then load the engine JS at the bottom and call its init function.
+      -->
+    </section>
+
+    <!-- ===== WHAT ===== -->
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>Explain the tool in 2-3 sentences. Mention the problem it solves, who would use it, and that it runs entirely in the browser with no server uploads.</p>
+    </section>
+
+    <!-- ===== HOW TO USE ===== -->
+    <section>
+      <h2>How to Use</h2>
+      <ol>
+        <li><strong>Step one</strong> — describe the first action the user takes.</li>
+        <li><strong>Step two</strong> — describe configuration or options.</li>
+        <li><strong>Step three</strong> — describe the output or result.</li>
+        <li><strong>Step four</strong> — describe download, copy, or export.</li>
+      </ol>
+    </section>
+
+    <!-- ===== CONTEXT / COMPARISON ===== -->
+    <section>
+      <h2>When to Use / Format Comparison / Tips</h2>
+      <p>Add context that helps users understand when this tool is the right choice. Compare alternatives, explain trade-offs, or provide tips for getting the best results.</p>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section>
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>Question one?</h3>
+      <p>Answer with practical detail.</p>
+
+      <h3>Question two?</h3>
+      <p>Answer with practical detail.</p>
+
+      <h3>Question three?</h3>
+      <p>Answer with practical detail.</p>
+
+      <h3>Question four?</h3>
+      <p>Answer with practical detail.</p>
+    </section>
+
+    <!-- ===== RELATED TOOLS ===== -->
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../RELATED_TOOL_1/index.html">Related Tool 1</a>
+      <a href="../RELATED_TOOL_2/index.html">Related Tool 2</a>
+      <a href="../RELATED_TOOL_3/index.html">Related Tool 3</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'CATEGORY_ID',
+      title: 'TOOL_NAME',
+      breadcrumbs: [
+        { label: 'CATEGORY_LABEL', href: '../index.html' },
+        { label: 'TOOL_NAME' }
+      ]
+    });
+  </script>
+  <!-- Optional: load shared engine JS and call init -->
+  <!-- <script src="../../../js/ENGINE.js"></script> -->
+  <!-- <script>initEngine({ preset: 'VALUE', mountTo: '#tool-mount' });</script> -->
+  <!-- Or load a local tool script: -->
+  <!-- <script src="tool-name.js"></script> -->
+</body>
+</html>

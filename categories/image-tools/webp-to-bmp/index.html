@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebP to BMP Converter - ToolBox</title>
+  <meta name="description" content="Convert WebP images to uncompressed BMP bitmap format for legacy applications and raw pixel data. Browser-based conversion — no upload required.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>WebP to BMP Converter</h1>
+      <p>Convert WebP images to uncompressed BMP format for legacy applications and raw pixel access.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../index.html">&larr; All Image Tools</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Does This Tool Do?</h2>
+      <p>This tool converts WebP images to BMP (Bitmap) format entirely within your browser. BMP is an uncompressed raster format that stores raw pixel data without any encoding overhead, making it ideal for legacy Windows applications, embedded systems, and image processing workflows that require direct pixel access. The output files will be substantially larger than the WebP source, but they contain exact, uncompressed pixel values.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert WebP to BMP</h2>
+      <ol>
+        <li><strong>Upload your WebP file</strong> — drag and drop or click to browse.</li>
+        <li><strong>Verify the format</strong> — the source format is detected automatically.</li>
+        <li><strong>No quality adjustment needed</strong> — BMP is an uncompressed format, so every pixel is stored at full fidelity.</li>
+        <li><strong>Click Convert</strong> — instant browser conversion.</li>
+        <li><strong>Compare the results</strong> — side by side with file sizes.</li>
+        <li><strong>Download</strong> — save the converted file.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>WebP vs BMP — Key Differences</h2>
+      <p>WebP is a modern, highly efficient format that uses advanced compression to produce small file sizes suitable for web delivery. BMP stores raw, uncompressed pixel data in a simple header-plus-pixels structure, resulting in files that can be 20 to 50 times larger than the WebP equivalent. WebP supports both lossy and lossless compression along with alpha transparency, while standard BMP files lack transparency support and use no compression. The simplicity of the BMP format makes it trivially easy to parse programmatically, which is why it remains in use for legacy systems and low-level image processing.</p>
+    </section>
+
+    <section>
+      <h2>When to Use BMP Instead of WebP</h2>
+      <p>BMP is necessary when working with legacy Windows applications, industrial equipment, or embedded systems that cannot decode modern image formats like WebP. It is also useful in scientific and engineering contexts where you need direct access to raw pixel values without any compression artifacts or decoding dependencies.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>Why is the BMP file so much larger than the WebP?</h3>
+      <p>WebP uses sophisticated compression that can reduce file sizes by 95% or more compared to raw pixel data. BMP stores every pixel uncompressed, so a 100 KB WebP image could easily become a 5-10 MB BMP file depending on its dimensions.</p>
+      <h3>What happens to transparency in the WebP when converting to BMP?</h3>
+      <p>Standard BMP does not support transparency. Any transparent regions in your WebP image will be flattened against a solid background color during the conversion process.</p>
+      <h3>Who still uses BMP files?</h3>
+      <p>BMP is still used in legacy Windows software, certain industrial and medical imaging systems, embedded devices with limited processing power, and image processing pipelines where uncompressed input simplifies the code.</p>
+      <h3>Is my image uploaded to a server?</h3>
+      <p>No. The conversion happens entirely in your browser using the HTML Canvas API. Your image never leaves your device.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Conversions</h2>
+      <a href="../bmp-to-webp/index.html">BMP to WebP Converter</a>
+      <a href="../webp-to-png/index.html">WebP to PNG Converter</a>
+      <a href="../webp-to-jpg/index.html">WebP to JPG Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'image-tools',
+      title: 'WebP to BMP Converter',
+      breadcrumbs: [
+        { label: 'Image Tools', href: '../index.html' },
+        { label: 'WebP to BMP Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/converter.js"></script>
+  <script>initConverter({ from: 'image/webp', to: 'image/bmp', mountTo: '#converter-mount' });</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Human Name Generator - ToolBox</title>
+    <meta name="description" content="Generate medieval-inspired human names for D&D characters, fantasy RPGs, and creative writing. Versatile names blending Anglo-Saxon, Celtic, and Continental European traditions.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <link rel="stylesheet" href="../../../css/name-generator.css">
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Human Name Generator</h1>
+            <p>Generate versatile, medieval-flavored names for human characters across any fantasy setting</p>
+        </div>
+
+        <section class="tool-box">
+            <div id="generator-mount"></div>
+        </section>
+
+        <section class="tool-box">
+            <h2>About Human Names</h2>
+            <p>Human names in fantasy settings occupy the widest phonetic range of any race. Because humans in most campaign worlds are the most culturally diverse species, their names draw from Anglo-Saxon, Celtic, Germanic, Latinate, and Slavic roots. This generator blends those traditions into a cohesive set of syllable tables that produces names feeling both familiar and distinctly fantastical.</p>
+            <p>Unlike elves or dwarves, whose names follow rigid cultural phonetics, human names vary enormously by region within a single setting. A merchant from the southern coast might carry a name with soft vowels and rolling consonants, while a northern warrior's name could be blunt and monosyllabic. The generator's male, female, and neutral options capture this breadth, offering everything from the courtly "Aldoric" to the rural "Fenwyn."</p>
+            <p>Human names are also the most likely to be recognized by players at the table. Because they echo real-world naming patterns, they provide immediate characterization. A name like "Branmund" suggests strength and tradition, while "Sylenne" implies refinement. This implicit storytelling is one of the strengths of the human naming tradition in fantasy worldbuilding.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Select Human as the Race:</strong> The generator starts preset to Human, drawing from the broadest phoneme tables available.</li>
+                <li><strong>Choose Gender:</strong> Male names use endings like "-ric," "-mund," and "-wald" drawn from medieval naming traditions. Female names favor "-na," "-wen," and "-lia." Neutral names work perfectly for surnames or unisex characters.</li>
+                <li><strong>Set the Count:</strong> Human names have the most variety of any race in the generator. Try batches of 20 to explore the full range of possibilities.</li>
+                <li><strong>Generate and Browse:</strong> Click any name to copy it to your clipboard. Use the bookmark icon to build a shortlist of favorites.</li>
+                <li><strong>Export Your List:</strong> Download your saved names for use in character sheets, NPC rosters, or worldbuilding documents.</li>
+            </ol>
+        </section>
+
+        <section class="tool-box">
+            <h2>Human Naming Conventions</h2>
+            <p>Fantasy human names typically follow a two-part or three-part structure: a given name, sometimes a byname or epithet, and a family or regional name. The given name is what this generator produces, and it forms the core of a character's identity. In medieval-inspired settings, given names were often the only name a commoner carried, with surnames developing later from occupations, locations, or parentage.</p>
+            <p>The phonetic range of human names is deliberately broad. Prefixes like "Ald-," "Bran-," and "Gar-" carry a strong, martial quality suited to warriors and nobles. Softer prefixes like "El-," "Fay-," and "Lyn-" suggest characters connected to learning, magic, or the arts. This variety means the same generator can serve a grizzled mercenary and a temple scholar without either name feeling out of place.</p>
+            <p>Suffixes carry cultural weight as well. The ending "-ric" means ruler or king in Old English, "-mund" means protector, and "-wald" means power or rule. Female endings like "-wen" (friend, maiden) and "-ith" (battle) have similarly deep roots. Even players who do not know the etymology will intuitively sense these connotations, making name selection a subtle form of character development.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>Frequently Asked Questions</h2>
+
+            <h3>Are these names historically accurate to medieval Europe?</h3>
+            <p>They are inspired by medieval European naming patterns but are not drawn from historical records. The syllable tables blend Anglo-Saxon, Celtic, and Continental Germanic sounds into combinations that feel period-appropriate without being direct copies of real historical names. This makes them ideal for fantasy settings that echo but do not replicate the real Middle Ages.</p>
+
+            <h3>Can I use these for NPCs from different regions in my world?</h3>
+            <p>Absolutely. Generate a batch and assign names with harder consonants to northern or martial cultures and names with softer sounds to southern or scholarly cultures. The neutral gender option is particularly useful for creating regional surnames or family names that differ from the given-name tradition.</p>
+
+            <h3>How do I pair a generated name with a surname?</h3>
+            <p>Generate a second batch using the neutral option and use those results as surnames. Alternatively, follow the medieval convention of descriptive bynames: take a generated name like "Aldric" and add a descriptor like "the Bold," "of Thornwall," or "Blackwood" to create a full identity.</p>
+
+            <h3>Why do some generated names sound modern?</h3>
+            <p>Many modern English names descend directly from Anglo-Saxon and Norman roots. If a generated name happens to match a contemporary name, it reflects the deep continuity of English naming traditions rather than a flaw in the generator. These overlaps can actually be useful for characters meant to feel grounded and accessible.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>More Name Generators</h2>
+            <div class="related-tools">
+                <a href="../elf-name-generator/index.html">Elf Names</a>
+                <a href="../dwarf-name-generator/index.html">Dwarf Names</a>
+                <a href="../orc-name-generator/index.html">Orc Names</a>
+                <a href="../demon-name-generator/index.html">Demon Names</a>
+                <a href="../fantasy-name-generator/index.html">All Races</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'game-dev-tools',
+            title: 'Human Name Generator',
+            breadcrumbs: [
+                { label: 'Game Dev Tools', href: '../index.html' },
+                { label: 'Human Name Generator' }
+            ]
+        });
+    </script>
+    <script src="../../../js/name-generator.js"></script>
+    <script>initNameGenerator({ race: 'human', mountTo: '#generator-mount' });</script>
+</body>
+</html>
