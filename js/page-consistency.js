@@ -72,10 +72,10 @@ function initPage(config = {}) {
   const depth = config.depth || 0;
   const root = depth === 0 ? '' : '../'.repeat(depth);
   const activeCategory = config.activeCategory || '';
-  const pageTitle = config.title || 'ToolBox';
+  const pageTitle = config.title || 'Densanon Toolkit';
   const breadcrumbs = config.breadcrumbs || [];
 
-  document.title = pageTitle + ' - ToolBox';
+  document.title = pageTitle + ' - Densanon Toolkit';
 
   injectHeader(root, activeCategory);
   injectSearch(root);
@@ -277,7 +277,7 @@ function injectFooter() {
   footer.className = 'site-footer';
   footer.innerHTML = `
     <div class="container">
-      <p>ToolBox &mdash; Free online utilities. All processing happens in your browser.</p>
+      <p>Densanon Toolkit &mdash; Free online utilities. All processing happens in your browser.</p>
     </div>`;
 
   document.body.append(footer);
