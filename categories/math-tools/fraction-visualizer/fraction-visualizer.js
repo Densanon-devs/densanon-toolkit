@@ -13,7 +13,7 @@
     const presetButtons = document.querySelectorAll('.preset-btn');
 
     let currentMode = 'circle';
-    let fillColor = '#6c63ff';
+    let fillColor = '#e53e3e';
 
     function gcd(a, b) {
         a = Math.abs(a);

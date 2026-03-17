@@ -11,8 +11,8 @@
             --color-bg: #0f1117;
             --color-surface: #1a1d27;
             --color-border: #2a2e3d;
-            --color-primary: #6c63ff;
-            --color-primary-hover: #5a52e0;
+            --color-primary: #e53e3e;
+            --color-primary-hover: #c53030;
             --color-text: #e4e4e7;
             --color-text-muted: #9ca3af;
             --color-accent-green: #34d399;
@@ -274,7 +274,7 @@
         }
 
         .layout-presets button.active {
-            background: rgba(108, 99, 255, 0.15);
+            background: rgba(229, 62, 62, 0.15);
             border-color: var(--color-primary);
             color: var(--color-primary);
         }
@@ -334,7 +334,7 @@
 
         .custom-el:hover,
         .custom-el.dragging {
-            border-color: rgba(108, 99, 255, 0.6);
+            border-color: rgba(229, 62, 62, 0.6);
         }
 
         .custom-el .resize-handle {
@@ -575,7 +575,7 @@
             width: 210px;
             height: 294px;
             border-radius: 10px;
-            border: 3px solid #6c63ff;
+            border: 3px solid #e53e3e;
             background: linear-gradient(135deg, #1a1d27, #2a2e3d);
             display: flex;
             flex-direction: column;
@@ -612,7 +612,7 @@
             position: absolute;
             top: 8px;
             right: 8px;
-            background: rgba(108, 99, 255, 0.8);
+            background: rgba(229, 62, 62, 0.8);
             color: #fff;
             font-size: 0.6rem;
             padding: 2px 8px;
@@ -715,7 +715,7 @@
 
         .export-actions button:hover {
             border-color: var(--color-primary);
-            background: rgba(108, 99, 255, 0.1);
+            background: rgba(229, 62, 62, 0.1);
         }
 
         .export-actions .btn-export-png {
@@ -844,7 +844,7 @@
 
         .related-tools a:hover {
             border-color: var(--color-primary);
-            background: rgba(108, 99, 255, 0.1);
+            background: rgba(229, 62, 62, 0.1);
         }
 
         @media (max-width: 640px) {
@@ -1033,7 +1033,7 @@
                             <label>Card Styling</label>
                             <div class="field-row-3">
                                 <div class="color-input-wrap">
-                                    <input type="color" id="borderColor" value="#6c63ff">
+                                    <input type="color" id="borderColor" value="#e53e3e">
                                     <span>Border</span>
                                 </div>
                                 <div class="color-input-wrap">
@@ -1227,7 +1227,7 @@
                         { label: 'DEF', value: '' },
                         { label: 'HP', value: '' }
                     ],
-                    borderColor: '#6c63ff',
+                    borderColor: '#e53e3e',
                     bgColor: '#1a1d27',
                     textColor: '#e4e4e7',
                     layout: 'standard',
@@ -2223,7 +2223,7 @@
                                     { label: 'DEF', value: '' },
                                     { label: 'HP', value: '' }
                                 ],
-                                borderColor: c.borderColor || '#6c63ff',
+                                borderColor: c.borderColor || '#e53e3e',
                                 bgColor: c.bgColor || '#1a1d27',
                                 textColor: c.textColor || '#e4e4e7',
                                 layout: c.layout || 'standard',

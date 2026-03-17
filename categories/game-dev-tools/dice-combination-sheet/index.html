@@ -87,8 +87,8 @@
     .parsed-info {
       display: none;
       padding: 12px 16px;
-      background: rgba(108, 99, 255, 0.06);
-      border: 1px solid rgba(108, 99, 255, 0.15);
+      background: rgba(229, 62, 62, 0.06);
+      border: 1px solid rgba(229, 62, 62, 0.15);
       border-radius: 6px;
       margin-bottom: 20px;
       font-size: 0.9rem;
@@ -192,7 +192,7 @@
     }
 
     .result-table tr:hover td {
-      background: rgba(108, 99, 255, 0.04);
+      background: rgba(229, 62, 62, 0.04);
     }
 
     .result-table .bar-cell {
@@ -749,7 +749,7 @@
         }
 
         // Bars
-        ctx.fillStyle = '#6c63ff';
+        ctx.fillStyle = '#e53e3e';
         results.forEach((r, i) => {
           const x = padLeft + i * (barW + barGap);
           const h = (r.probability / maxProb) * plotH;

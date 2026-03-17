@@ -21,7 +21,7 @@
     .upload-area:hover,
     .upload-area.dragover {
       border-color: var(--color-primary);
-      background: rgba(108, 99, 255, 0.05);
+      background: rgba(229, 62, 62, 0.05);
     }
 
     .upload-area p {
@@ -94,7 +94,7 @@
 
     .preset-btn.active {
       border-color: var(--color-primary);
-      background: rgba(108, 99, 255, 0.12);
+      background: rgba(229, 62, 62, 0.12);
       color: var(--color-primary);
     }
 
@@ -119,8 +119,8 @@
       display: none;
       margin-top: 12px;
       padding: 12px 16px;
-      background: rgba(108, 99, 255, 0.08);
-      border: 1px solid rgba(108, 99, 255, 0.2);
+      background: rgba(229, 62, 62, 0.08);
+      border: 1px solid rgba(229, 62, 62, 0.2);
       border-radius: 6px;
       font-size: 0.85rem;
       color: var(--color-text-muted);
@@ -277,8 +277,8 @@
 
     .use-case-tag {
       padding: 5px 12px;
-      background: rgba(108, 99, 255, 0.08);
-      border: 1px solid rgba(108, 99, 255, 0.15);
+      background: rgba(229, 62, 62, 0.08);
+      border: 1px solid rgba(229, 62, 62, 0.15);
       border-radius: 20px;
       font-size: 0.82rem;
       color: var(--color-primary);
@@ -603,7 +603,7 @@
         // Column lines
         for (let i = 0; i < colLines.length; i++) {
           const x = Math.round(colLines[i] * scale);
-          ctx.strokeStyle = 'rgba(108, 99, 255, 0.8)';
+          ctx.strokeStyle = 'rgba(229, 62, 62, 0.8)';
           ctx.lineWidth = overrideEnabled ? 2 : 1;
           ctx.setLineDash(overrideEnabled ? [] : [6, 4]);
           ctx.beginPath();
@@ -613,7 +613,7 @@
 
           if (overrideEnabled) {
             // Draw grab handle
-            ctx.fillStyle = 'rgba(108, 99, 255, 0.9)';
+            ctx.fillStyle = 'rgba(229, 62, 62, 0.9)';
             ctx.fillRect(x - 4, displayH / 2 - 14, 9, 28);
             ctx.fillStyle = '#fff';
             ctx.fillRect(x - 1, displayH / 2 - 8, 3, 4);

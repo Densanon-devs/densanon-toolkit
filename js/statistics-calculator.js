@@ -139,7 +139,7 @@ function initStatisticsCalculator(config) {
       var x = padding.left + gap + i * (barWidth + gap);
       var barH = ((val - baseVal) / fullRange) * chartH;
       var y = padding.top + chartH - barH;
-      ctx.fillStyle = modeSet[val.toString()] ? '#fb923c' : '#6c63ff';
+      ctx.fillStyle = modeSet[val.toString()] ? '#fb923c' : '#e53e3e';
       ctx.fillRect(x, y, barWidth, barH);
     });
 
