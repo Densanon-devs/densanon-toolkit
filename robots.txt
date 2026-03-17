@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://toolbox.example.com/sitemap.xml
+Sitemap: https://toolkit.densanon.com/sitemap.xml
