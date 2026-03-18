@@ -581,6 +581,55 @@ main.container section ul li {
   font-size: 0.9rem;
 }
 
+/* Trust Statement */
+.trust-statement {
+  background: rgba(52, 211, 153, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-top: 32px;
+  font-size: 0.9rem;
+  color: var(--color-accent-green);
+}
+
+.trust-statement strong {
+  color: var(--color-accent-green);
+}
+
+/* Popular / Category Tool Links */
+.popular-tools-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.popular-tools-links a {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  font-size: 0.88rem;
+  color: var(--color-text);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.popular-tools-links a:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-hover);
+  color: var(--color-primary);
+}
+
+/* Last Updated */
+.last-updated {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  margin-top: 32px;
+  padding-bottom: 20px;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .hero h1 {

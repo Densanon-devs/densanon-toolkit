@@ -82,6 +82,9 @@ function initPage(config = {}) {
   if (breadcrumbs.length > 0) {
     injectBreadcrumbs(root, breadcrumbs);
   }
+  if (depth >= 3 && activeCategory) {
+    injectToolPageExtras(root, activeCategory, pageTitle);
+  }
   injectFooter();
 }
 
@@ -270,6 +273,48 @@ function injectBreadcrumbs(root, breadcrumbs) {
     }
     return `<a href="${item.href}">${item.label}</a><span class="sep">/</span>`;
   }).join('\n    ');
+}
+
+function injectToolPageExtras(root, activeCategory, currentTitle) {
+  const mainEl = document.querySelector('main.container');
+  if (!mainEl) return;
+
+  // Trust statement
+  const trustEl = document.createElement('section');
+  trustEl.className = 'trust-statement';
+  trustEl.innerHTML = `
+    <p>&#x1f512; <strong>Your privacy is protected.</strong> This tool runs entirely in your browser &mdash; no data is uploaded, stored, or sent to any server. No signup required.</p>`;
+  mainEl.appendChild(trustEl);
+
+  // Popular tools
+  const popular = TOOLKIT_TOOLS.filter(t => t.category !== activeCategory).slice(0, 5);
+  const popularHtml = popular.map(t =>
+    `<a href="${root}categories/${t.category}/${t.slug}/index.html">${t.name}</a>`
+  ).join('');
+  const popularEl = document.createElement('section');
+  popularEl.innerHTML = `<h2>Popular Tools</h2><div class="popular-tools-links">${popularHtml}</div>`;
+  mainEl.appendChild(popularEl);
+
+  // Related tools from same category (excluding current)
+  const sameCat = TOOLKIT_TOOLS.filter(t => t.category === activeCategory && t.name !== currentTitle).slice(0, 5);
+  if (sameCat.length > 0) {
+    const catLabel = sameCat[0].categoryLabel;
+    const catHtml = sameCat.map(t =>
+      `<a href="../${t.slug}/index.html">${t.name}</a>`
+    ).join('');
+    const catEl = document.createElement('section');
+    catEl.innerHTML = `
+      <h2>More ${catLabel}</h2>
+      <div class="popular-tools-links">${catHtml}</div>
+      <p style="margin-top:12px;"><a href="../index.html">&rarr; Browse all ${catLabel}</a></p>`;
+    mainEl.appendChild(catEl);
+  }
+
+  // Last updated
+  const updatedEl = document.createElement('div');
+  updatedEl.className = 'last-updated';
+  updatedEl.textContent = 'Last updated: March 2026';
+  mainEl.appendChild(updatedEl);
 }
 
 function injectFooter() {
