@@ -2,7 +2,7 @@
    Injects shared header, footer, search, and nav across all pages.
    Include this script in any page and call initPage() with config. */
 
-const TOOLBOX_TOOLS = [
+const TOOLKIT_TOOLS = [
   { name: 'Sprite Slicer', desc: 'Upload a sprite sheet and slice it into individual frames by rows and columns.', category: 'game-dev-tools', categoryLabel: 'Game Dev', slug: 'sprite-slicer', keywords: 'sprite sheet slicer split frames animation pixel art' },
   { name: 'Dice Combination Sheet', desc: 'Calculate dice roll probabilities with full distribution tables and charts.', category: 'game-dev-tools', categoryLabel: 'Game Dev', slug: 'dice-combination-sheet', keywords: 'dice probability calculator 2d6 3d6 1d20 roll odds tabletop rpg' },
   { name: 'Card Deck Generator', desc: 'Design and export printable cards for board games or TCG prototypes.', category: 'game-dev-tools', categoryLabel: 'Game Dev', slug: 'card-deck-generator', keywords: 'card generator maker tcg board game printable prototype deck' },
@@ -102,7 +102,7 @@ function injectHeader(root, activeCategory) {
   header.className = 'site-header';
   header.innerHTML = `
     <div class="container">
-      <a href="${root}index.html" class="site-logo">Tool<span>Box</span></a>
+      <a href="${root}index.html" class="site-logo">Tool<span>Kit</span></a>
       <nav class="site-nav">
         ${navLinks}
         <button class="search-toggle" aria-label="Search tools (Ctrl+K)" title="Search tools (Ctrl+K)">
@@ -205,11 +205,11 @@ function injectSearch(root) {
 
     if (!q) {
       // Show all tools grouped by category
-      resultsEl.innerHTML = renderGrouped(TOOLBOX_TOOLS, root);
+      resultsEl.innerHTML = renderGrouped(TOOLKIT_TOOLS, root);
       return;
     }
 
-    const scored = TOOLBOX_TOOLS.map(tool => {
+    const scored = TOOLKIT_TOOLS.map(tool => {
       const haystack = (tool.name + ' ' + tool.desc + ' ' + tool.keywords + ' ' + tool.categoryLabel).toLowerCase();
       let score = 0;
       const terms = q.split(/\s+/);
