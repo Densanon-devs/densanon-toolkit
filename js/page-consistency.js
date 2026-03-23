@@ -322,6 +322,10 @@ function injectFooter() {
   footer.className = 'site-footer';
   footer.innerHTML = `
     <div class="container">
+      <div class="footer-support">
+        <p class="footer-support-text">Help keep the tools free</p>
+        <a href="https://buy.stripe.com/7sYbJ37Q0d5IghXbH79sk00" class="btn-support" target="_blank" rel="noopener">Support the Team</a>
+      </div>
       <p>Densanon Toolkit &mdash; Free online utilities. All processing happens in your browser.</p>
     </div>`;
 
