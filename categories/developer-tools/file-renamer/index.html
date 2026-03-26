@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Bulk File Renamer – Rename Multiple Files at Once | Densanon Toolkit</title>
+    <meta name="description" content="Free online bulk file renamer — add prefixes, suffixes, sequential numbers, date stamps, find and replace in filenames, change case, and clean up spaces across multiple files at once. 100% browser-based, no signup required.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        /* ---- Upload Zone ---- */
+        .upload-zone {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            padding: 40px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            user-select: none;
+        }
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--color-primary);
+            background: rgba(229, 62, 62, 0.04);
+        }
+        .upload-zone .upload-icon {
+            font-size: 2.4rem;
+            margin-bottom: 10px;
+            display: block;
+            opacity: 0.65;
+        }
+        .upload-zone .upload-text {
+            color: var(--color-text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        .upload-zone .upload-text strong { color: var(--color-text); }
+        .upload-zone .upload-hint {
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 14px;
+        }
+        .btn-upload {
+            display: inline-block;
+            padding: 9px 22px;
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn-upload:hover { background: var(--color-primary-hover); }
+
+        /* ---- File Info Bar ---- */
+        .file-info-bar {
+            display: none;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 20px;
+            padding: 12px 16px;
+            background: rgba(96, 165, 250, 0.07);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            border-radius: var(--radius);
+            margin-top: 16px;
+            font-size: 0.875rem;
+        }
+        .file-info-bar.visible { display: flex; }
+        .file-info-item { display: flex; align-items: center; gap: 6px; }
+        .file-info-label { color: var(--color-text-muted); }
+        .file-info-value { color: var(--color-accent-blue); font-weight: 600; }
+        .btn-clear-files {
+            margin-left: auto;
+            padding: 5px 14px;
+            background: none;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .btn-clear-files:hover { border-color: var(--color-text-muted); color: var(--color-text); }
+
+        /* ---- Renamer Layout ---- */
+        .renamer-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        @media (max-width: 768px) { .renamer-layout { grid-template-columns: 1fr; } }
+
+        /* ---- Options Panel ---- */
+        .options-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+        .options-panel-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .option-group {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .option-group:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .option-group-title {
+            font-size: 0.73rem;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 10px;
+        }
+        .option-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .option-row:last-child { margin-bottom: 0; }
+        .option-label {
+            font-size: 0.82rem;
+            color: var(--color-text);
+            min-width: 64px;
+            flex-shrink: 0;
+        }
+        .option-input {
+            flex: 1;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: var(--color-text);
+            font-size: 0.82rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+            min-width: 0;
+        }
+        .option-input:focus { border-color: var(--color-primary); }
+        .option-select {
+            flex: 1;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: var(--color-text);
+            font-size: 0.82rem;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+            min-width: 0;
+        }
+        .option-checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .option-checkbox-row:last-child { margin-bottom: 0; }
+        .option-checkbox-row input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: var(--color-primary);
+            flex-shrink: 0;
+        }
+        .option-checkbox-row label { font-size: 0.82rem; color: var(--color-text); cursor: pointer; }
+        .sub-options { padding-left: 23px; margin-top: 8px; }
+
+        /* ---- Preview Panel ---- */
+        .preview-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+        }
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--color-border);
+            flex-shrink: 0;
+        }
+        .preview-header h3 { margin: 0; font-size: 0.95rem; color: var(--color-text); }
+        .preview-meta { display: flex; align-items: center; gap: 12px; font-size: 0.8rem; color: var(--color-text-muted); }
+        .preview-changed { color: var(--color-accent-green); font-weight: 600; }
+        .preview-table-wrap { overflow-y: auto; max-height: 460px; flex: 1; }
+        .preview-table { width: 100%; border-collapse: collapse; }
+        .preview-table thead th {
+            position: sticky;
+            top: 0;
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: 8px 12px;
+            text-align: left;
+            color: var(--color-text-muted);
+            font-weight: 600;
+            font-size: 0.73rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+        .preview-table tbody tr { border-bottom: 1px solid rgba(42, 46, 61, 0.6); }
+        .preview-table tbody tr:last-child { border-bottom: none; }
+        .preview-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+        .preview-table td {
+            padding: 7px 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+        }
+        .preview-table td.original-name { color: var(--color-text-muted); }
+        .preview-table td.new-name { color: var(--color-accent-green); }
+        .preview-table td.new-name.unchanged { color: var(--color-text-muted); }
+        .preview-table td.new-name.has-dup { color: var(--color-accent-orange); }
+        .preview-arrow-col {
+            width: 24px;
+            text-align: center;
+            padding: 7px 4px !important;
+            color: var(--color-text-muted);
+            opacity: 0.5;
+            font-size: 0.75rem;
+        }
+        .dup-badge {
+            display: inline-block;
+            padding: 1px 6px;
+            background: rgba(251, 146, 60, 0.15);
+            color: var(--color-accent-orange);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-family: inherit;
+            margin-left: 6px;
+            font-weight: 600;
+        }
+
+        /* ---- Action Bar ---- */
+        .action-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            padding: 10px 24px;
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover { background: var(--color-primary-hover); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary {
+            padding: 9px 18px;
+            background: none;
+            color: var(--color-text-muted);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .btn-secondary:hover { border-color: var(--color-text-muted); color: var(--color-text); }
+        .action-status { font-size: 0.875rem; color: var(--color-text-muted); }
+        .action-status.success { color: var(--color-accent-green); }
+        .action-status.warning { color: var(--color-accent-orange); }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.6rem; }
+            .renamer-layout { grid-template-columns: 1fr; }
+            .btn-upload, .btn-primary { min-height: 44px; }
+            .related-tools { flex-direction: column; }
+            .related-tools a { width: 100%; text-align: center; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Bulk File Renamer</h1>
+            <p>Rename multiple files at once — add prefixes, suffixes, sequential numbers, date stamps, find &amp; replace, and more</p>
+        </div>
+
+        <section class="tool-box">
+            <!-- Upload Zone -->
+            <div id="upload-zone" class="upload-zone">
+                <span class="upload-icon">📁</span>
+                <p class="upload-text"><strong>Drop files here</strong> to rename them</p>
+                <p class="upload-hint">Any file type &mdash; supports multiple files at once</p>
+                <button class="btn-upload" id="btn-select-files" type="button">Select Files</button>
+                <input type="file" id="file-input" multiple style="display:none">
+            </div>
+
+            <!-- File Info Bar -->
+            <div id="file-info-bar" class="file-info-bar">
+                <div class="file-info-item">
+                    <span class="file-info-label">Files selected:</span>
+                    <span class="file-info-value" id="file-count">0</span>
+                </div>
+                <div class="file-info-item">
+                    <span class="file-info-label">Total size:</span>
+                    <span class="file-info-value" id="total-size">0 KB</span>
+                </div>
+                <button class="btn-clear-files" id="btn-clear-files" type="button">Clear Files</button>
+            </div>
+
+            <!-- Renamer Layout -->
+            <div id="renamer-layout" class="renamer-layout" style="display:none">
+
+                <!-- Options Panel -->
+                <div class="options-panel">
+                    <div class="options-panel-title">Rename Options</div>
+
+                    <div class="option-group">
+                        <div class="option-group-title">Text Transforms</div>
+                        <div class="option-row">
+                            <span class="option-label">Prefix</span>
+                            <input type="text" id="opt-prefix" class="option-input" placeholder="e.g. project_">
+                        </div>
+                        <div class="option-row">
+                            <span class="option-label">Suffix</span>
+                            <input type="text" id="opt-suffix" class="option-input" placeholder="e.g. _final">
+                        </div>
+                        <div class="option-row">
+                            <span class="option-label">Find</span>
+                            <input type="text" id="opt-find" class="option-input" placeholder="Text to find">
+                        </div>
+                        <div class="option-row">
+                            <span class="option-label">Replace</span>
+                            <input type="text" id="opt-replace" class="option-input" placeholder="Replace with">
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <div class="option-group-title">Case &amp; Spacing</div>
+                        <div class="option-row">
+                            <span class="option-label">Case</span>
+                            <select id="opt-case" class="option-select">
+                                <option value="none">Keep original</option>
+                                <option value="lower">lowercase</option>
+                                <option value="upper">UPPERCASE</option>
+                                <option value="title">Title Case</option>
+                            </select>
+                        </div>
+                        <div class="option-row">
+                            <span class="option-label">Spaces</span>
+                            <select id="opt-spaces" class="option-select">
+                                <option value="keep">Keep as-is</option>
+                                <option value="remove">Remove spaces</option>
+                                <option value="dash">Replace with -</option>
+                                <option value="underscore">Replace with _</option>
+                            </select>
+                        </div>
+                        <div class="option-checkbox-row">
+                            <input type="checkbox" id="opt-remove-special">
+                            <label for="opt-remove-special">Remove special characters</label>
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <div class="option-group-title">Sequential Numbering</div>
+                        <div class="option-checkbox-row">
+                            <input type="checkbox" id="opt-seq-enable">
+                            <label for="opt-seq-enable">Enable numbering</label>
+                        </div>
+                        <div id="seq-options" class="sub-options" style="display:none">
+                            <div class="option-row">
+                                <span class="option-label">Start at</span>
+                                <input type="number" id="opt-seq-start" class="option-input" value="1" min="0" style="max-width:70px">
+                            </div>
+                            <div class="option-row">
+                                <span class="option-label">Padding</span>
+                                <select id="opt-seq-padding" class="option-select">
+                                    <option value="1">1 digit (1, 2)</option>
+                                    <option value="2">2 digits (01, 02)</option>
+                                    <option value="3" selected>3 digits (001, 002)</option>
+                                    <option value="4">4 digits (0001)</option>
+                                </select>
+                            </div>
+                            <div class="option-row">
+                                <span class="option-label">Position</span>
+                                <select id="opt-seq-position" class="option-select">
+                                    <option value="suffix">Append (name_001)</option>
+                                    <option value="prefix">Prepend (001_name)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <div class="option-group-title">Date Stamp</div>
+                        <div class="option-row">
+                            <span class="option-label">Add date</span>
+                            <select id="opt-date" class="option-select">
+                                <option value="none">None</option>
+                                <option value="prefix">YYYY-MM-DD prefix</option>
+                                <option value="suffix">YYYY-MM-DD suffix</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Panel -->
+                <div class="preview-panel">
+                    <div class="preview-header">
+                        <h3>Live Preview</h3>
+                        <div class="preview-meta">
+                            <span id="preview-count">0 files</span>
+                            <span id="preview-changed" class="preview-changed" style="display:none"></span>
+                        </div>
+                    </div>
+                    <div class="preview-table-wrap">
+                        <table class="preview-table">
+                            <thead>
+                                <tr>
+                                    <th>Original Name</th>
+                                    <th class="preview-arrow-col"></th>
+                                    <th>New Name</th>
+                                </tr>
+                            </thead>
+                            <tbody id="preview-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div id="action-bar" class="action-bar" style="display:none">
+                <button class="btn-primary" id="btn-download-zip" type="button">Download ZIP</button>
+                <button class="btn-secondary" id="btn-reset-options" type="button">Reset Options</button>
+                <span class="action-status" id="action-status"></span>
+            </div>
+        </section>
+
+        <section class="tool-box">
+            <h2>What is the Bulk File Renamer?</h2>
+            <p>The Bulk File Renamer is a free online tool that lets you rename many files at once entirely in your browser. Select or drop any number of files, configure your rename pattern — add prefixes or suffixes, find and replace text in filenames, apply sequential numbering, change case, clean up spaces, remove special characters, or stamp files with today's date — then download a ZIP archive containing all your renamed files. Nothing is ever uploaded to a server.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>Features</h2>
+            <div class="features-list">
+                <div class="feature-item">
+                    <h3>Drag &amp; Drop Upload</h3>
+                    <p>Drop any number of files onto the upload area or use the file picker. All file types are supported with no limit on the number of files you can rename at once.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Add Prefix &amp; Suffix</h3>
+                    <p>Prepend or append any text to every filename — add a project code like <code>client_</code> as a prefix or a version label like <code>_v2</code> as a suffix across an entire batch.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Find &amp; Replace</h3>
+                    <p>Locate a specific word or phrase in every filename and replace it with new text. Correct typos, swap product names, or strip unwanted substrings from all files at once.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Sequential Numbering</h3>
+                    <p>Number files in sequence with a configurable start number, digit padding (001, 0001), and a choice of appending or prepending the counter to each filename.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Case &amp; Spacing</h3>
+                    <p>Convert filenames to lowercase, UPPERCASE, or Title Case. Replace spaces with dashes or underscores, remove them entirely, or strip special characters for clean, web-safe names.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Date Stamp &amp; ZIP Download</h3>
+                    <p>Insert today's date (YYYY-MM-DD) as a prefix or suffix on every file, then download all renamed files in a single ZIP archive — ready to extract and use immediately.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="tool-box">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Select your files.</strong> Drag and drop files onto the upload zone, or click Select Files. You can load as many files as needed in one batch.</li>
+                <li><strong>Configure rename options.</strong> In the Options panel, set any combination of prefix, suffix, find and replace, case, space handling, sequential numbering, and date stamp.</li>
+                <li><strong>Review the live preview.</strong> The preview table updates instantly as you change options, showing the original name next to the proposed new name for every file.</li>
+                <li><strong>Check for duplicates.</strong> If any two files would end up with the same new name, the tool highlights them in orange so you can adjust your settings before downloading.</li>
+                <li><strong>Download the ZIP.</strong> Click Download ZIP to package all renamed files into a single archive. Extract it and your files are ready under their new names.</li>
+                <li><strong>Reset if needed.</strong> Click Reset Options to clear all rename settings and preview, or Clear Files to load a different batch.</li>
+            </ol>
+        </section>
+
+        <section class="tool-box">
+            <h2>When Should You Use This Tool?</h2>
+            <p>Use this bulk file renamer any time you need to apply a consistent naming convention across many files without renaming them one by one. Common situations include organizing photos after a shoot, normalizing filenames before a web deployment, adding a date or version stamp to deliverables, or cleaning up filenames exported from design tools that contain spaces and special characters.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>Common Use Cases</h2>
+            <ul>
+                <li>Add a client or project prefix to a batch of files before sending deliverables</li>
+                <li>Remove spaces and special characters to make filenames web and URL safe</li>
+                <li>Stamp exported assets with today's date for version tracking</li>
+                <li>Number a series of images or audio files sequentially for ordered playback</li>
+                <li>Convert all filenames to lowercase for consistent behavior across operating systems</li>
+                <li>Find and replace a product code or old client name across dozens of filenames at once</li>
+            </ul>
+        </section>
+
+        <section class="tool-box">
+            <h2>FAQ</h2>
+
+            <h3>Are my files uploaded to a server?</h3>
+            <p>No. All processing happens entirely in your browser. Your files are never sent anywhere, so the tool is safe for confidential or proprietary files and works offline once the page has loaded.</p>
+
+            <h3>How many files can I rename at once?</h3>
+            <p>There is no hard limit. Performance depends on the number and total size of files, since all content must be read into memory to create the ZIP. Hundreds of typical files work without issue on modern devices.</p>
+
+            <h3>Why does the tool download a ZIP instead of renaming files directly?</h3>
+            <p>Browsers cannot modify files on your file system directly for security reasons. Downloading a ZIP is the standard browser-based approach — extract the archive and your files are renamed and ready to use.</p>
+
+            <h3>Will the tool change file extensions?</h3>
+            <p>No. All rename operations apply only to the base name of each file. The original extension (e.g. .jpg, .pdf, .mp3) is always preserved exactly as it was.</p>
+
+            <h3>What happens if two files end up with the same new name?</h3>
+            <p>The preview highlights duplicate new names in orange. Adjust your settings — for example, enable sequential numbering — to ensure unique names before downloading. The ZIP download also auto-suffixes duplicates to avoid overwriting files.</p>
+
+            <h3>Can I combine multiple rename options at once?</h3>
+            <p>Yes. Options are applied in a fixed pipeline: find and replace → remove special characters → space handling → case → prefix → suffix → sequential number → date stamp. Enable as many as you need simultaneously.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>Related Tools</h2>
+            <div class="related-tools">
+                <a href="../file-converter/index.html">File Converter</a>
+                <a href="../csv-cleaner/index.html">CSV Cleaner &amp; Formatter</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'developer-tools',
+            title: 'Free Bulk File Renamer – Rename Multiple Files at Once',
+            breadcrumbs: [
+                { label: 'Developer Tools', href: '../index.html' },
+                { label: 'Bulk File Renamer' }
+            ]
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        // ---- State ----
+        let selectedFiles = [];
+
+        // ---- DOM refs ----
+        const uploadZone    = document.getElementById('upload-zone');
+        const fileInput     = document.getElementById('file-input');
+        const fileInfoBar   = document.getElementById('file-info-bar');
+        const fileCountEl   = document.getElementById('file-count');
+        const totalSizeEl   = document.getElementById('total-size');
+        const renamerLayout = document.getElementById('renamer-layout');
+        const actionBar     = document.getElementById('action-bar');
+        const previewTbody  = document.getElementById('preview-tbody');
+        const previewCount  = document.getElementById('preview-count');
+        const previewChanged = document.getElementById('preview-changed');
+        const actionStatus  = document.getElementById('action-status');
+        const seqOptions    = document.getElementById('seq-options');
+
+        const optPrefix        = document.getElementById('opt-prefix');
+        const optSuffix        = document.getElementById('opt-suffix');
+        const optFind          = document.getElementById('opt-find');
+        const optReplace       = document.getElementById('opt-replace');
+        const optCase          = document.getElementById('opt-case');
+        const optSpaces        = document.getElementById('opt-spaces');
+        const optRemoveSpecial = document.getElementById('opt-remove-special');
+        const optSeqEnable     = document.getElementById('opt-seq-enable');
+        const optSeqStart      = document.getElementById('opt-seq-start');
+        const optSeqPadding    = document.getElementById('opt-seq-padding');
+        const optSeqPosition   = document.getElementById('opt-seq-position');
+        const optDate          = document.getElementById('opt-date');
+        const btnDownloadZip   = document.getElementById('btn-download-zip');
+        const btnResetOptions  = document.getElementById('btn-reset-options');
+
+        // ---- Helpers ----
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function splitFilename(filename) {
+            const lastDot = filename.lastIndexOf('.');
+            if (lastDot <= 0) return { base: filename, ext: '' };
+            return { base: filename.slice(0, lastDot), ext: filename.slice(lastDot) };
+        }
+
+        function toTitleCase(str) {
+            return str.replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        // ---- File handling ----
+        function handleFiles(fileList) {
+            selectedFiles = Array.from(fileList);
+            if (selectedFiles.length === 0) { clearFiles(); return; }
+            const total = selectedFiles.reduce((sum, f) => sum + f.size, 0);
+            fileCountEl.textContent = selectedFiles.length;
+            totalSizeEl.textContent = formatSize(total);
+            fileInfoBar.classList.add('visible');
+            renamerLayout.style.display = 'grid';
+            actionBar.style.display = 'flex';
+            updatePreview();
+        }
+
+        function clearFiles() {
+            selectedFiles = [];
+            fileInput.value = '';
+            fileInfoBar.classList.remove('visible');
+            renamerLayout.style.display = 'none';
+            actionBar.style.display = 'none';
+            previewTbody.innerHTML = '';
+            actionStatus.textContent = '';
+            actionStatus.className = 'action-status';
+        }
+
+        // ---- Rename pipeline ----
+        function computeNewName(filename, index) {
+            const { base, ext } = splitFilename(filename);
+            let b = base;
+
+            // 1. Find & Replace
+            if (optFind.value) b = b.split(optFind.value).join(optReplace.value);
+
+            // 2. Remove special characters
+            if (optRemoveSpecial.checked) b = b.replace(/[^a-zA-Z0-9\s\-_.]/g, '');
+
+            // 3. Space handling
+            const sp = optSpaces.value;
+            if (sp === 'remove')     b = b.replace(/\s+/g, '');
+            else if (sp === 'dash')  b = b.replace(/\s+/g, '-');
+            else if (sp === 'underscore') b = b.replace(/\s+/g, '_');
+
+            // 4. Case
+            const cs = optCase.value;
+            if (cs === 'lower')      b = b.toLowerCase();
+            else if (cs === 'upper') b = b.toUpperCase();
+            else if (cs === 'title') b = toTitleCase(b);
+
+            // 5. Prefix / Suffix
+            if (optPrefix.value) b = optPrefix.value + b;
+            if (optSuffix.value) b = b + optSuffix.value;
+
+            // 6. Sequential numbering
+            if (optSeqEnable.checked) {
+                const start   = parseInt(optSeqStart.value) || 1;
+                const padding = parseInt(optSeqPadding.value) || 3;
+                const n = String(start + index).padStart(padding, '0');
+                b = optSeqPosition.value === 'prefix' ? n + '_' + b : b + '_' + n;
+            }
+
+            // 7. Date stamp
+            const ds = optDate.value;
+            if (ds !== 'none') {
+                const today = new Date().toISOString().slice(0, 10);
+                b = ds === 'prefix' ? today + '_' + b : b + '_' + today;
+            }
+
+            return b + ext;
+        }
+
+        // ---- Preview ----
+        function updatePreview() {
+            if (selectedFiles.length === 0) return;
+
+            const newNames = selectedFiles.map((f, i) => computeNewName(f.name, i));
+
+            // Detect duplicates
+            const seen = {}, dups = new Set();
+            newNames.forEach(n => { if (seen[n]) dups.add(n); seen[n] = true; });
+
+            let changedCount = 0;
+            let html = '';
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const orig    = selectedFiles[i].name;
+                const newName = newNames[i];
+                const changed = orig !== newName;
+                const isDup   = dups.has(newName);
+                if (changed) changedCount++;
+
+                let cls = 'new-name';
+                if (!changed) cls += ' unchanged';
+                if (isDup)    cls += ' has-dup';
+                const dupBadge = isDup ? '<span class="dup-badge">duplicate</span>' : '';
+
+                html +=
+                    '<tr>' +
+                    '<td class="original-name">' + escapeHtml(orig) + '</td>' +
+                    '<td class="preview-arrow-col">&rarr;</td>' +
+                    '<td class="' + cls + '">' + escapeHtml(newName) + dupBadge + '</td>' +
+                    '</tr>';
+            }
+            previewTbody.innerHTML = html;
+
+            previewCount.textContent = selectedFiles.length + ' file' + (selectedFiles.length !== 1 ? 's' : '');
+            if (changedCount > 0) {
+                previewChanged.textContent = changedCount + ' will change';
+                previewChanged.style.display = '';
+            } else {
+                previewChanged.style.display = 'none';
+            }
+
+            if (dups.size > 0) {
+                actionStatus.textContent = '\u26A0 ' + dups.size + ' duplicate name' + (dups.size !== 1 ? 's' : '') + ' detected — adjust options to fix';
+                actionStatus.className = 'action-status warning';
+            } else {
+                actionStatus.textContent = '';
+                actionStatus.className = 'action-status';
+            }
+        }
+
+        // ---- Download ZIP ----
+        async function downloadZip() {
+            if (selectedFiles.length === 0) return;
+            if (typeof JSZip === 'undefined') {
+                actionStatus.textContent = 'JSZip is still loading — please try again.';
+                actionStatus.className = 'action-status warning';
+                return;
+            }
+
+            btnDownloadZip.disabled = true;
+            btnDownloadZip.textContent = 'Building ZIP\u2026';
+
+            try {
+                const zip = new JSZip();
+                const newNames = selectedFiles.map((f, i) => computeNewName(f.name, i));
+                const usedNames = {};
+
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    let name = newNames[i];
+                    if (usedNames.hasOwnProperty(name)) {
+                        usedNames[name]++;
+                        const { base, ext } = splitFilename(name);
+                        name = base + '_' + usedNames[name] + ext;
+                    } else {
+                        usedNames[name] = 1;
+                    }
+                    zip.file(name, await selectedFiles[i].arrayBuffer());
+                }
+
+                const blob = await zip.generateAsync({ type: 'blob' });
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement('a');
+                a.href = url;
+                a.download = 'renamed-files.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                actionStatus.textContent = 'ZIP downloaded successfully!';
+                actionStatus.className = 'action-status success';
+            } catch (err) {
+                actionStatus.textContent = 'Error: ' + err.message;
+                actionStatus.className = 'action-status warning';
+            } finally {
+                btnDownloadZip.disabled = false;
+                btnDownloadZip.textContent = 'Download ZIP';
+            }
+        }
+
+        // ---- Reset options ----
+        function resetOptions() {
+            optPrefix.value = '';
+            optSuffix.value = '';
+            optFind.value = '';
+            optReplace.value = '';
+            optCase.value = 'none';
+            optSpaces.value = 'keep';
+            optRemoveSpecial.checked = false;
+            optSeqEnable.checked = false;
+            seqOptions.style.display = 'none';
+            optSeqStart.value = '1';
+            optSeqPadding.value = '3';
+            optSeqPosition.value = 'suffix';
+            optDate.value = 'none';
+            actionStatus.textContent = '';
+            actionStatus.className = 'action-status';
+            updatePreview();
+        }
+
+        // ---- Event listeners ----
+        document.getElementById('btn-select-files').addEventListener('click', function(e) {
+            e.stopPropagation();
+            fileInput.click();
+        });
+        uploadZone.addEventListener('click', function() { fileInput.click(); });
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) handleFiles(this.files);
+        });
+        uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('dragover'); });
+        uploadZone.addEventListener('dragleave', function(e) { e.preventDefault(); this.classList.remove('dragover'); });
+        uploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
+        });
+        document.getElementById('btn-clear-files').addEventListener('click', clearFiles);
+        btnDownloadZip.addEventListener('click', downloadZip);
+        btnResetOptions.addEventListener('click', resetOptions);
+        optSeqEnable.addEventListener('change', function() {
+            seqOptions.style.display = this.checked ? 'block' : 'none';
+            updatePreview();
+        });
+
+        // Live preview on any option change
+        [optPrefix, optSuffix, optFind, optReplace, optCase, optSpaces,
+         optRemoveSpecial, optSeqStart, optSeqPadding, optSeqPosition, optDate]
+            .forEach(function(el) {
+                el.addEventListener('change', updatePreview);
+                el.addEventListener('input', updatePreview);
+            });
+    </script>
+</body>
+</html>
