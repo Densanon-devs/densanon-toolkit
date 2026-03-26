@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free CSV Cleaner &amp; Formatter Online – Fix Messy CSV Data | Densanon Toolkit</title>
+    <meta name="description" content="Free online CSV cleaner and formatter — remove empty rows, trim whitespace, deduplicate, fix encoding, change delimiters, and download clean data. 100% browser-based, no signup required.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        /* ---- Upload Zone ---- */
+        .upload-zone {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            padding: 40px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            user-select: none;
+        }
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--color-primary);
+            background: rgba(229, 62, 62, 0.04);
+        }
+        .upload-zone .upload-icon {
+            font-size: 2.4rem;
+            margin-bottom: 10px;
+            display: block;
+            opacity: 0.65;
+        }
+        .upload-zone .upload-text {
+            color: var(--color-text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        .upload-zone .upload-text strong {
+            color: var(--color-text);
+        }
+        .upload-zone .upload-hint {
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 14px;
+        }
+        .btn-upload {
+            display: inline-block;
+            padding: 9px 22px;
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn-upload:hover {
+            background: var(--color-primary-hover);
+        }
+
+        /* ---- File Info Bar ---- */
+        .file-info-bar {
+            display: none;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 20px;
+            padding: 12px 16px;
+            background: rgba(96, 165, 250, 0.07);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            border-radius: var(--radius);
+            margin-top: 16px;
+            font-size: 0.875rem;
+        }
+        .file-info-bar.visible { display: flex; }
+        .file-info-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .file-info-label { color: var(--color-text-muted); }
+        .file-info-value { color: var(--color-accent-blue); font-weight: 600; }
+        .delim-badge {
+            padding: 2px 9px;
+            background: rgba(229, 62, 62, 0.12);
+            color: var(--color-primary);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .btn-clear {
+            margin-left: auto;
+            padding: 5px 14px;
+            background: none;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .btn-clear:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        /* ---- Step Divider ---- */
+        .step-divider {
+            border: none;
+            border-top: 1px solid var(--color-border);
+            margin: 24px 0;
+        }
+        .step-heading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: var(--color-primary);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 0.72rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .step-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+        .step-subtitle {
+            font-size: 0.82rem;
+            color: var(--color-text-muted);
+            font-weight: 400;
+            margin-left: 4px;
+        }
+
+        /* ---- Collapsible sections ---- */
+        .tool-section {
+            display: none;
+        }
+        .tool-section.visible {
+            display: block;
+        }
+
+        /* ---- Preview / Output Table ---- */
+        .table-container {
+            overflow: auto;
+            max-height: 420px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: nowrap;
+        }
+        .data-table thead th {
+            background: var(--color-surface);
+            color: var(--color-text-muted);
+            font-weight: 600;
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 2px solid var(--color-border);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        .data-table thead th.col-num {
+            min-width: 38px;
+            text-align: center;
+            font-weight: 400;
+            opacity: 0.5;
+        }
+        .data-table tbody td {
+            padding: 5px 12px;
+            border-bottom: 1px solid rgba(42, 46, 61, 0.5);
+            color: var(--color-text);
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .data-table tbody td.col-num {
+            color: var(--color-text-muted);
+            opacity: 0.4;
+            text-align: center;
+            font-size: 0.7rem;
+        }
+        .data-table tbody tr:hover td { background: var(--color-surface-hover); }
+
+        /* Highlight states */
+        .cell-empty {
+            background: rgba(251, 146, 60, 0.18) !important;
+            color: var(--color-accent-orange) !important;
+            font-style: italic;
+        }
+        .cell-whitespace {
+            background: rgba(251, 146, 60, 0.08) !important;
+            outline: 1px solid rgba(251, 146, 60, 0.25);
+        }
+        .row-duplicate td:not(.col-num) {
+            color: var(--color-text-muted) !important;
+            background: rgba(96, 165, 250, 0.06);
+        }
+
+        .table-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .table-meta-text {
+            font-size: 0.82rem;
+            color: var(--color-text-muted);
+        }
+
+        /* ---- Legend ---- */
+        .hl-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 10px;
+            font-size: 0.78rem;
+            color: var(--color-text-muted);
+        }
+        .hl-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .hl-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .hl-dot.empty { background: rgba(251, 146, 60, 0.45); }
+        .hl-dot.ws { background: rgba(251, 146, 60, 0.12); border: 1px solid rgba(251, 146, 60, 0.35); }
+        .hl-dot.dup { background: rgba(96, 165, 250, 0.14); border: 1px solid rgba(96, 165, 250, 0.3); }
+
+        /* ---- Options Panels ---- */
+        .options-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .option-panel {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+        }
+        .option-panel-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: var(--color-text-muted);
+            margin-bottom: 14px;
+        }
+
+        /* Checkboxes */
+        .check-list {
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+        }
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .check-item input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            margin-top: 3px;
+            accent-color: var(--color-primary);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .check-item .check-label {
+            font-size: 0.875rem;
+            color: var(--color-text);
+            cursor: pointer;
+            line-height: 1.4;
+        }
+        .check-item .check-desc {
+            display: block;
+            font-size: 0.76rem;
+            color: var(--color-text-muted);
+            margin-top: 1px;
+        }
+
+        /* Transform selects */
+        .transform-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .transform-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .transform-item label {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+        .transform-item select {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text);
+            padding: 7px 10px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .transform-item select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        /* ---- Stats Bar ---- */
+        .stats-bar {
+            padding: 16px 18px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+        }
+        .stats-summary {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            justify-content: center;
+        }
+        .stat-block {
+            text-align: center;
+        }
+        .stat-block .stat-num {
+            font-size: 1.55rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        .stat-block .stat-num.muted { color: var(--color-text-muted); }
+        .stat-block .stat-num.green { color: var(--color-accent-green); }
+        .stat-block .stat-label {
+            font-size: 0.72rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-top: 3px;
+        }
+        .stat-arrow {
+            font-size: 1.2rem;
+            color: var(--color-primary);
+            opacity: 0.7;
+        }
+        .stat-divider {
+            width: 1px;
+            height: 36px;
+            background: var(--color-border);
+        }
+        .changes-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--color-border);
+        }
+        .change-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            font-weight: 600;
+        }
+        .change-tag.removed {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        .change-tag.fixed {
+            background: rgba(52, 211, 153, 0.1);
+            color: var(--color-accent-green);
+        }
+        .change-tag.neutral {
+            background: var(--color-surface);
+            color: var(--color-text-muted);
+            border: 1px solid var(--color-border);
+        }
+
+        /* ---- Action Buttons ---- */
+        .actions-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 22px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--color-primary); color: #fff; }
+        .btn-primary:hover { background: var(--color-primary-hover); }
+        .btn-success {
+            background: rgba(52, 211, 153, 0.12);
+            color: var(--color-accent-green);
+            border: 1px solid rgba(52, 211, 153, 0.25);
+        }
+        .btn-success:hover { background: rgba(52, 211, 153, 0.22); }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 768px) {
+            .options-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            .btn { flex: 1; justify-content: center; min-height: 44px; }
+            .file-info-bar { gap: 8px 14px; }
+            .stats-summary { gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>CSV Cleaner &amp; Formatter</h1>
+            <p>Remove duplicates, trim whitespace, fix encoding, change delimiters, and export clean data — all in your browser.</p>
+        </div>
+
+        <section class="tool-box">
+
+            <!-- ═══ STEP 1: UPLOAD ═══ -->
+            <div class="step-heading">
+                <span class="step-badge">1</span>
+                <span class="step-title">Upload Your File</span>
+            </div>
+
+            <div class="upload-zone" id="uploadZone">
+                <span class="upload-icon">📂</span>
+                <p class="upload-text"><strong>Drag &amp; drop</strong> your file here</p>
+                <p class="upload-hint">Supports .csv, .tsv, .txt — delimiter auto-detected</p>
+                <button class="btn-upload" onclick="document.getElementById('fileInput').click(); event.stopPropagation();">Browse File</button>
+                <input type="file" id="fileInput" accept=".csv,.tsv,.txt" style="display:none;">
+            </div>
+
+            <div class="file-info-bar" id="fileInfoBar">
+                <div class="file-info-item">
+                    <span class="file-info-label">File:</span>
+                    <span class="file-info-value" id="infoName">—</span>
+                </div>
+                <div class="file-info-item">
+                    <span class="file-info-label">Size:</span>
+                    <span class="file-info-value" id="infoSize">—</span>
+                </div>
+                <div class="file-info-item">
+                    <span class="file-info-label">Rows:</span>
+                    <span class="file-info-value" id="infoRows">—</span>
+                </div>
+                <div class="file-info-item">
+                    <span class="file-info-label">Columns:</span>
+                    <span class="file-info-value" id="infoCols">—</span>
+                </div>
+                <div class="file-info-item">
+                    <span class="file-info-label">Delimiter:</span>
+                    <span class="delim-badge" id="infoDelim">comma</span>
+                </div>
+                <button class="btn-clear" onclick="resetTool()">&#10005; Clear</button>
+            </div>
+
+            <!-- ═══ STEP 2: PREVIEW ═══ -->
+            <div class="tool-section" id="sectionPreview">
+                <hr class="step-divider">
+                <div class="step-heading" style="margin-bottom:12px;">
+                    <span class="step-badge">2</span>
+                    <span class="step-title">Preview</span>
+                    <span class="step-subtitle" id="previewMeta"></span>
+                </div>
+                <div class="table-container">
+                    <div id="previewTableWrap"></div>
+                </div>
+                <div class="hl-legend">
+                    <div class="hl-legend-item"><div class="hl-dot empty"></div> Empty cell</div>
+                    <div class="hl-legend-item"><div class="hl-dot ws"></div> Whitespace-only</div>
+                    <div class="hl-legend-item"><div class="hl-dot dup"></div> Duplicate row</div>
+                </div>
+            </div>
+
+            <!-- ═══ STEP 3: OPTIONS ═══ -->
+            <div class="tool-section" id="sectionOptions">
+                <hr class="step-divider">
+                <div class="step-heading">
+                    <span class="step-badge">3</span>
+                    <span class="step-title">Cleaning Options</span>
+                </div>
+                <div class="options-row">
+                    <!-- Left: Cleaning checkboxes -->
+                    <div class="option-panel">
+                        <div class="option-panel-title">Remove / Fix</div>
+                        <div class="check-list">
+                            <div class="check-item">
+                                <input type="checkbox" id="optEmptyRows" checked onchange="updateOutput()">
+                                <label class="check-label" for="optEmptyRows">
+                                    Remove empty rows
+                                    <span class="check-desc">Rows where every cell is blank</span>
+                                </label>
+                            </div>
+                            <div class="check-item">
+                                <input type="checkbox" id="optEmptyCols" onchange="updateOutput()">
+                                <label class="check-label" for="optEmptyCols">
+                                    Remove empty columns
+                                    <span class="check-desc">Columns where all data cells are blank</span>
+                                </label>
+                            </div>
+                            <div class="check-item">
+                                <input type="checkbox" id="optTrim" checked onchange="updateOutput()">
+                                <label class="check-label" for="optTrim">
+                                    Trim whitespace
+                                    <span class="check-desc">Strip leading &amp; trailing spaces from cells</span>
+                                </label>
+                            </div>
+                            <div class="check-item">
+                                <input type="checkbox" id="optDuplicates" onchange="updateOutput()">
+                                <label class="check-label" for="optDuplicates">
+                                    Remove duplicate rows
+                                    <span class="check-desc">Keep only the first occurrence</span>
+                                </label>
+                            </div>
+                            <div class="check-item">
+                                <input type="checkbox" id="optEncoding" checked onchange="updateOutput()">
+                                <label class="check-label" for="optEncoding">
+                                    Fix encoding issues
+                                    <span class="check-desc">Smart quotes &#8594; straight, em-dash &#8594; hyphen, etc.</span>
+                                </label>
+                            </div>
+                            <div class="check-item">
+                                <input type="checkbox" id="optRemoveHeader" onchange="updateOutput()">
+                                <label class="check-label" for="optRemoveHeader">
+                                    Remove header row
+                                    <span class="check-desc">Strip the first row from output</span>
+                                </label>
+                            </div>
+                            <div class="check-item">
+                                <input type="checkbox" id="optLineEndings" checked onchange="updateOutput()">
+                                <label class="check-label" for="optLineEndings">
+                                    Standardize line endings
+                                    <span class="check-desc">Normalize CRLF / CR &#8594; LF (Unix)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right: Transform selects -->
+                    <div class="option-panel">
+                        <div class="option-panel-title">Transform</div>
+                        <div class="transform-list">
+                            <div class="transform-item">
+                                <label for="optDelimiter">Output Delimiter</label>
+                                <select id="optDelimiter" onchange="updateOutput()">
+                                    <option value="auto">Same as input</option>
+                                    <option value=",">Comma ( , )</option>
+                                    <option value="&#9;">Tab ( &#8677; )</option>
+                                    <option value=";">Semicolon ( ; )</option>
+                                    <option value="|">Pipe ( | )</option>
+                                </select>
+                            </div>
+                            <div class="transform-item">
+                                <label for="optQualifier">Text Qualifier</label>
+                                <select id="optQualifier" onchange="updateOutput()">
+                                    <option value='"'>Double Quotes ( " )</option>
+                                    <option value="'">Single Quotes ( ' )</option>
+                                    <option value="">None</option>
+                                </select>
+                            </div>
+                            <div class="transform-item">
+                                <label for="optCase">Case Transform</label>
+                                <select id="optCase" onchange="updateOutput()">
+                                    <option value="">No change</option>
+                                    <option value="upper">UPPERCASE</option>
+                                    <option value="lower">lowercase</option>
+                                    <option value="title">Title Case</option>
+                                </select>
+                            </div>
+                            <div class="transform-item" id="caseScopeRow" style="display:none;">
+                                <label for="optCaseScope">Apply Case To</label>
+                                <select id="optCaseScope" onchange="updateOutput()">
+                                    <option value="all">All cells (including header)</option>
+                                    <option value="data">Data rows only (skip header)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ STEP 4: OUTPUT ═══ -->
+            <div class="tool-section" id="sectionOutput">
+                <hr class="step-divider">
+                <div class="step-heading">
+                    <span class="step-badge">4</span>
+                    <span class="step-title">Cleaned Output</span>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stats-summary" id="statsSummary"></div>
+                    <div class="changes-row" id="changesRow"></div>
+                </div>
+
+                <div class="table-meta">
+                    <span class="table-meta-text" id="outputMeta">Cleaned data preview</span>
+                </div>
+                <div class="table-container">
+                    <div id="outputTableWrap"></div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="downloadCSV()">
+                        &#11015; Download Clean CSV
+                    </button>
+                    <button class="btn btn-success" id="copyBtn" onclick="copyToClipboard()">
+                        &#9109; Copy to Clipboard
+                    </button>
+                </div>
+            </div>
+
+        </section><!-- /.tool-box -->
+
+        <!-- ═══ SEO CONTENT ═══ -->
+        <section>
+            <h2>What is the CSV Cleaner?</h2>
+            <p>The Densanon CSV Cleaner is a free, browser-based utility for fixing messy delimited data files. Whether you're working with CSV (comma-separated), TSV (tab-separated), or pipe-delimited text files, this tool helps you remove noise, standardize formatting, and export a clean, ready-to-use file — all without uploading your data to any server. Your data is processed entirely in your browser's JavaScript engine.</p>
+        </section>
+
+        <section>
+            <h2>How to Use the CSV Cleaner</h2>
+            <ol>
+                <li><strong>Upload your file</strong> — drag and drop a .csv, .tsv, or .txt file onto the upload zone, or click "Browse File." The delimiter is auto-detected and shown in the file info bar.</li>
+                <li><strong>Review the preview</strong> — the first 50 rows are displayed with problem cells highlighted: orange for empty or whitespace-only cells, and blue for duplicate rows.</li>
+                <li><strong>Choose cleaning options</strong> — select which issues to fix, such as removing empty rows, trimming whitespace, deduplicating, or fixing encoding artifacts.</li>
+                <li><strong>Set transform options</strong> — optionally change the output delimiter, text qualifier character, or apply a case conversion to all or some cells.</li>
+                <li><strong>Download or copy</strong> — click "Download Clean CSV" to save the cleaned file, or "Copy to Clipboard" to paste the cleaned data elsewhere.</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>Cleaning Options Explained</h2>
+            <h3>Remove Empty Rows</h3>
+            <p>Removes any row where every cell is completely blank (after optional trimming). This is common in CSV exports from spreadsheets like Excel or Google Sheets, which often append trailing empty rows.</p>
+            <h3>Remove Empty Columns</h3>
+            <p>Removes any column where every data cell (excluding the header) is blank. Useful when source systems export extra placeholder columns with no actual data.</p>
+            <h3>Trim Whitespace</h3>
+            <p>Strips leading and trailing spaces, tabs, and other whitespace from every cell value. Fixes a common issue where values like <code style="font-family:monospace;"> John </code> should be <code style="font-family:monospace;">John</code> — extra spaces cause mismatches in database lookups and imports.</p>
+            <h3>Remove Duplicate Rows</h3>
+            <p>Keeps only the first occurrence of any row that appears more than once. Comparison is performed across all columns simultaneously (case-sensitive).</p>
+            <h3>Fix Encoding Issues</h3>
+            <p>Replaces common Unicode characters that appear when text is copy-pasted from Word or web pages: curly/smart quotes (" " ' ') become straight quotes, em-dashes (—) become double-hyphens, en-dashes (–) become single hyphens, ellipses (…) become three dots, and non-breaking spaces become regular spaces.</p>
+            <h3>Remove Header Row</h3>
+            <p>Strips the first row from the output. Useful when a downstream system needs raw data without column names, or when you're concatenating multiple CSVs and only want one header.</p>
+            <h3>Standardize Line Endings</h3>
+            <p>Normalizes all line endings to Unix-style LF (\n). This fixes files exported from Windows (CRLF) or old Mac systems (CR) that can cause parse errors in Linux-based pipelines.</p>
+        </section>
+
+        <section>
+            <h2>Transform Options Explained</h2>
+            <h3>Output Delimiter</h3>
+            <p>Changes the column separator in the output file. Choose comma, tab, semicolon, or pipe. Defaults to preserving the auto-detected input delimiter. Use this to convert CSV to TSV, for example.</p>
+            <h3>Text Qualifier</h3>
+            <p>The character used to wrap cell values that contain the delimiter or newlines. Double quotes are the RFC 4180 standard. Choose "None" only if you're certain no cell values contain the delimiter character.</p>
+            <h3>Case Transform</h3>
+            <p>Converts all text to UPPERCASE, lowercase, or Title Case. You can optionally apply this to data rows only, leaving the header row unchanged — useful for formatting name or address columns.</p>
+        </section>
+
+        <section>
+            <h2>When Should You Use This Tool?</h2>
+            <ul>
+                <li>Cleaning CSV exports from CRMs, ERPs, or analytics platforms before importing into a database</li>
+                <li>Preparing data files for ETL pipelines where extra whitespace or encoding artifacts cause parse failures</li>
+                <li>Deduplicating contact lists or product catalogs before merging multiple data sources</li>
+                <li>Converting between delimiter formats (CSV to TSV, or TSV to pipe-delimited) for tool compatibility</li>
+                <li>Fixing files from Windows systems with CRLF line endings before processing on Linux or Mac servers</li>
+                <li>Standardizing case formatting in name or address fields before uploading to a CRM or mailing platform</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Frequently Asked Questions</h2>
+            <h3>Is my data safe? Does it get uploaded to a server?</h3>
+            <p>No. All processing happens entirely in your browser using JavaScript. Your file is read locally and processed in memory — no data is ever sent to any server. It's safe for sensitive or proprietary files.</p>
+            <h3>What file formats are supported?</h3>
+            <p>Any delimited text file: .csv (comma-separated), .tsv (tab-separated), .txt (any delimiter). The delimiter is auto-detected from the content and displayed in the file info bar after upload.</p>
+            <h3>How large a file can I process?</h3>
+            <p>Processing is limited by your browser's available memory. Files up to a few hundred megabytes work fine in modern browsers. Very large files (500MB+) may process slowly depending on your device.</p>
+            <h3>What exactly does "Fix encoding issues" change?</h3>
+            <p>It replaces: curly/smart double quotes (" ") → straight double quote ("), curly single quotes (' ') → straight single quote ('), em-dash (—) → double-hyphen (--), en-dash (–) → single hyphen (-), horizontal ellipsis (…) → three dots (...), bullet (•) → asterisk (*), and non-breaking spaces → regular spaces.</p>
+            <h3>Can I process TSV or pipe-delimited files?</h3>
+            <p>Yes. The delimiter (comma, tab, semicolon, or pipe) is auto-detected from the file content. You can also independently change the output delimiter to convert between formats.</p>
+            <h3>Does "Remove header row" affect which rows get cleaned?</h3>
+            <p>Cleaning operations (trim, empty row removal, deduplication, etc.) are applied first, then the header is removed from the final output if that option is checked. Empty column detection always compares data rows only, regardless of the header removal setting.</p>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <a href="../csv-to-json/index.html">CSV to JSON Converter</a>
+            <a href="../json-to-csv/index.html">JSON to CSV Converter</a>
+            <a href="../csv-to-tsv/index.html">CSV to TSV Converter</a>
+            <a href="../tsv-to-csv/index.html">TSV to CSV Converter</a>
+            <a href="../json-formatter/index.html">JSON Formatter</a>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'developer-tools',
+            title: 'Free CSV Cleaner &amp; Formatter Online – Fix Messy CSV Data',
+            breadcrumbs: [
+                { label: 'Developer Tools', href: '../index.html' },
+                { label: 'CSV Cleaner' }
+            ]
+        });
+    </script>
+    <script>
+    (function () {
+        'use strict';
+
+        /* ─── State ─── */
+        let parsedRows = [];
+        let detectedDelim = ',';
+        let fileName = '';
+
+        /* ─── Delimiter Detection ─── */
+        function detectDelimiter(text) {
+            const candidates = [',', '\t', ';', '|'];
+            const firstLine = text.split('\n')[0] || '';
+            let best = ',', bestCount = 0;
+            for (const d of candidates) {
+                let count = 0, inQ = false;
+                for (let i = 0; i < firstLine.length; i++) {
+                    if (firstLine[i] === '"') inQ = !inQ;
+                    else if (!inQ && firstLine[i] === d) count++;
+                }
+                if (count > bestCount) { bestCount = count; best = d; }
+            }
+            return best;
+        }
+
+        function delimName(d) {
+            return { ',': 'comma', '\t': 'tab', ';': 'semicolon', '|': 'pipe' }[d] || 'custom';
+        }
+
+        /* ─── RFC 4180 CSV Parser ─── */
+        function parseCSV(text, delim) {
+            const rows = [];
+            let i = 0, n = text.length;
+            while (i < n) {
+                const row = [];
+                while (i < n) {
+                    let cell = '';
+                    if (text[i] === '"') {
+                        i++; // skip opening quote
+                        while (i < n) {
+                            if (text[i] === '"') {
+                                if (i + 1 < n && text[i + 1] === '"') { cell += '"'; i += 2; }
+                                else { i++; break; }
+                            } else {
+                                cell += text[i++];
+                            }
+                        }
+                        // skip garbage between closing quote and next delimiter/newline
+                        while (i < n && text[i] !== delim && text[i] !== '\n') i++;
+                    } else {
+                        while (i < n && text[i] !== delim && text[i] !== '\n') {
+                            cell += text[i++];
+                        }
+                    }
+                    row.push(cell);
+                    if (i < n && text[i] === delim) { i++; } else { break; }
+                }
+                if (i < n && text[i] === '\n') i++;
+                // Skip trailing empty row at EOF
+                if (row.length === 1 && row[0] === '' && i >= n) break;
+                rows.push(row);
+            }
+            return rows;
+        }
+
+        /* ─── Encoding Fixer ─── */
+        function fixEncoding(s) {
+            return s
+                .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+                .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+                .replace(/\u2014/g, '--')
+                .replace(/\u2013/g, '-')
+                .replace(/\u2026/g, '...')
+                .replace(/\u2022/g, '*')
+                .replace(/\u00A0/g, ' ');
+        }
+
+        /* ─── Title Case ─── */
+        function toTitleCase(s) {
+            return s.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+        }
+
+        /* ─── Apply All Options ─── */
+        function applyOptions(rows) {
+            let result = rows.map(r => [...r]);
+            const stats = {
+                emptyRowsRemoved: 0,
+                emptyColsRemoved: 0,
+                cellsTrimmed: 0,
+                duplicatesRemoved: 0,
+                encodingFixed: 0,
+                headerRemoved: false
+            };
+
+            const doTrim       = document.getElementById('optTrim').checked;
+            const doEncoding   = document.getElementById('optEncoding').checked;
+            const doEmptyRows  = document.getElementById('optEmptyRows').checked;
+            const doEmptyCols  = document.getElementById('optEmptyCols').checked;
+            const doDuplicates = document.getElementById('optDuplicates').checked;
+            const doRmHeader   = document.getElementById('optRemoveHeader').checked;
+            const caseMode     = document.getElementById('optCase').value;
+            const caseScope    = document.getElementById('optCaseScope').value;
+
+            // 1. Fix encoding
+            if (doEncoding) {
+                result = result.map(row => row.map(cell => {
+                    const fixed = fixEncoding(cell);
+                    if (fixed !== cell) stats.encodingFixed++;
+                    return fixed;
+                }));
+            }
+
+            // 2. Trim whitespace
+            if (doTrim) {
+                result = result.map(row => row.map(cell => {
+                    const trimmed = cell.trim();
+                    if (trimmed !== cell) stats.cellsTrimmed++;
+                    return trimmed;
+                }));
+            }
+
+            // 3. Remove empty rows
+            if (doEmptyRows) {
+                const before = result.length;
+                result = result.filter(row => row.some(c => c.trim() !== ''));
+                stats.emptyRowsRemoved = before - result.length;
+            }
+
+            // 4. Remove empty columns (preserve header, check data rows)
+            if (doEmptyCols && result.length > 1) {
+                const numCols = Math.max(...result.map(r => r.length));
+                const emptyCols = new Set();
+                for (let c = 0; c < numCols; c++) {
+                    const allEmpty = result.slice(1).every(row => !row[c] || row[c].trim() === '');
+                    if (allEmpty) emptyCols.add(c);
+                }
+                if (emptyCols.size > 0) {
+                    result = result.map(row => row.filter((_, ci) => !emptyCols.has(ci)));
+                    stats.emptyColsRemoved = emptyCols.size;
+                }
+            }
+
+            // 5. Remove duplicates
+            if (doDuplicates) {
+                const seen = new Set();
+                const before = result.length;
+                result = result.filter(row => {
+                    const key = JSON.stringify(row);
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
+                stats.duplicatesRemoved = before - result.length;
+            }
+
+            // 6. Case transform
+            if (caseMode) {
+                const skipFirst = caseScope === 'data';
+                result = result.map((row, ri) => {
+                    if (skipFirst && ri === 0) return row;
+                    return row.map(cell => {
+                        if (caseMode === 'upper') return cell.toUpperCase();
+                        if (caseMode === 'lower') return cell.toLowerCase();
+                        if (caseMode === 'title') return toTitleCase(cell);
+                        return cell;
+                    });
+                });
+            }
+
+            // 7. Remove header
+            if (doRmHeader && result.length > 0) {
+                result.shift();
+                stats.headerRemoved = true;
+            }
+
+            return { rows: result, stats };
+        }
+
+        /* ─── CSV Generator ─── */
+        function generateCSV(rows, delim, qualifier) {
+            return rows.map(row =>
+                row.map(cell => {
+                    const s = String(cell == null ? '' : cell);
+                    if (qualifier && (s.includes(delim) || s.includes('\n') || s.includes(qualifier))) {
+                        return qualifier + s.split(qualifier).join(qualifier + qualifier) + qualifier;
+                    }
+                    return s;
+                }).join(delim)
+            ).join('\n');
+        }
+
+        /* ─── Table Builder ─── */
+        function buildTable(rows, maxRows, highlights) {
+            const table = document.createElement('table');
+            table.className = 'data-table';
+
+            if (!rows || rows.length === 0) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 99;
+                td.style.cssText = 'text-align:center;padding:20px;color:var(--color-text-muted)';
+                td.textContent = 'No data to display.';
+                tr.appendChild(td);
+                table.appendChild(tr);
+                return table;
+            }
+
+            const numCols = Math.max(...rows.slice(0, Math.min(maxRows + 1, rows.length)).map(r => r.length));
+            const headerRow = rows[0];
+            const dataRows  = rows.slice(1, maxRows + 1);
+
+            // Find duplicate row indices (in original rows, 1-based)
+            let dupSet = new Set();
+            if (highlights) {
+                const seen = new Map();
+                rows.forEach((row, ri) => {
+                    const key = JSON.stringify(row);
+                    if (seen.has(key)) dupSet.add(ri);
+                    else seen.set(key, ri);
+                });
+            }
+
+            // THEAD
+            const thead = document.createElement('thead');
+            const th_tr = document.createElement('tr');
+            const th_num = document.createElement('th');
+            th_num.className = 'col-num';
+            th_num.textContent = '#';
+            th_tr.appendChild(th_num);
+            for (let c = 0; c < numCols; c++) {
+                const th = document.createElement('th');
+                const val = headerRow[c] !== undefined ? headerRow[c] : '';
+                th.textContent = val;
+                th.title = val;
+                th_tr.appendChild(th);
+            }
+            thead.appendChild(th_tr);
+            table.appendChild(thead);
+
+            // TBODY
+            const tbody = document.createElement('tbody');
+            dataRows.forEach((row, ri) => {
+                const realIdx = ri + 1;
+                const tr = document.createElement('tr');
+                const isDup = highlights && dupSet.has(realIdx);
+                if (isDup) tr.className = 'row-duplicate';
+
+                const td_num = document.createElement('td');
+                td_num.className = 'col-num';
+                td_num.textContent = realIdx;
+                tr.appendChild(td_num);
+
+                for (let c = 0; c < numCols; c++) {
+                    const td = document.createElement('td');
+                    const val = row[c] !== undefined ? row[c] : '';
+                    td.title = val;
+                    if (highlights && !isDup) {
+                        if (val === '') {
+                            td.className = 'cell-empty';
+                            td.textContent = '(empty)';
+                        } else if (val !== val.trim() || /^\s+$/.test(val)) {
+                            td.className = 'cell-whitespace';
+                            td.textContent = val;
+                        } else {
+                            td.textContent = val;
+                        }
+                    } else {
+                        td.textContent = val;
+                    }
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            return table;
+        }
+
+        function setTable(containerId, rows, maxRows, highlights) {
+            const wrap = document.getElementById(containerId);
+            wrap.innerHTML = '';
+            wrap.appendChild(buildTable(rows, maxRows, highlights));
+        }
+
+        /* ─── Stats Renderer ─── */
+        function renderStats(before, after, stats) {
+            document.getElementById('statsSummary').innerHTML = `
+                <div class="stat-block">
+                    <div class="stat-num muted">${before.rows.toLocaleString()}</div>
+                    <div class="stat-label">Rows Before</div>
+                </div>
+                <span class="stat-arrow">&#8594;</span>
+                <div class="stat-block">
+                    <div class="stat-num green">${after.rows.toLocaleString()}</div>
+                    <div class="stat-label">Rows After</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-block">
+                    <div class="stat-num muted">${before.cols}</div>
+                    <div class="stat-label">Cols Before</div>
+                </div>
+                <span class="stat-arrow">&#8594;</span>
+                <div class="stat-block">
+                    <div class="stat-num green">${after.cols}</div>
+                    <div class="stat-label">Cols After</div>
+                </div>
+            `;
+
+            const tags = [];
+            if (stats.emptyRowsRemoved > 0)
+                tags.push(`<span class="change-tag removed">&#8722;${stats.emptyRowsRemoved} empty row${stats.emptyRowsRemoved !== 1 ? 's' : ''}</span>`);
+            if (stats.emptyColsRemoved > 0)
+                tags.push(`<span class="change-tag removed">&#8722;${stats.emptyColsRemoved} empty col${stats.emptyColsRemoved !== 1 ? 's' : ''}</span>`);
+            if (stats.duplicatesRemoved > 0)
+                tags.push(`<span class="change-tag removed">&#8722;${stats.duplicatesRemoved} duplicate${stats.duplicatesRemoved !== 1 ? 's' : ''}</span>`);
+            if (stats.cellsTrimmed > 0)
+                tags.push(`<span class="change-tag fixed">&#10003; ${stats.cellsTrimmed} cell${stats.cellsTrimmed !== 1 ? 's' : ''} trimmed</span>`);
+            if (stats.encodingFixed > 0)
+                tags.push(`<span class="change-tag fixed">&#10003; ${stats.encodingFixed} encoding fix${stats.encodingFixed !== 1 ? 'es' : ''}</span>`);
+            if (stats.headerRemoved)
+                tags.push(`<span class="change-tag neutral">header removed</span>`);
+
+            const changesRow = document.getElementById('changesRow');
+            if (tags.length > 0) {
+                changesRow.style.display = '';
+                changesRow.innerHTML = tags.join('');
+            } else {
+                changesRow.style.display = 'none';
+            }
+        }
+
+        /* ─── Main Update ─── */
+        function updateOutput() {
+            if (parsedRows.length === 0) return;
+
+            // Show/hide case scope selector
+            const caseMode = document.getElementById('optCase').value;
+            document.getElementById('caseScopeRow').style.display = caseMode ? '' : 'none';
+
+            const { rows: cleaned, stats } = applyOptions(parsedRows);
+
+            // Output meta
+            const afterCols = cleaned.length > 0 ? Math.max(...cleaned.map(r => r.length)) : 0;
+            const dispRows = Math.min(cleaned.length - 1, 50);
+            document.getElementById('outputMeta').textContent =
+                `${cleaned.length.toLocaleString()} rows \u00D7 ${afterCols} columns` +
+                (cleaned.length > 51 ? ` \u2014 showing first 50 data rows` : '');
+
+            setTable('outputTableWrap', cleaned, 50, false);
+
+            const beforeCols = parsedRows.length > 0 ? Math.max(...parsedRows.map(r => r.length)) : 0;
+            renderStats(
+                { rows: parsedRows.length, cols: beforeCols },
+                { rows: cleaned.length, cols: afterCols },
+                stats
+            );
+
+            document.getElementById('sectionOutput').classList.add('visible');
+        }
+
+        /* ─── File Handling ─── */
+        function formatBytes(b) {
+            if (b < 1024) return b + ' B';
+            if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+            return (b / 1048576).toFixed(1) + ' MB';
+        }
+
+        function handleFile(file) {
+            if (!file) return;
+            fileName = file.name;
+            const reader = new FileReader();
+            reader.onload = e => {
+                // Normalize line endings for parsing
+                const text = e.target.result.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+                detectedDelim = detectDelimiter(text);
+                parsedRows = parseCSV(text, detectedDelim);
+                if (parsedRows.length === 0) return;
+
+                // File info bar
+                document.getElementById('infoName').textContent = fileName;
+                document.getElementById('infoSize').textContent = formatBytes(file.size);
+                document.getElementById('infoRows').textContent = parsedRows.length.toLocaleString();
+                document.getElementById('infoCols').textContent = parsedRows[0] ? parsedRows[0].length : 0;
+                document.getElementById('infoDelim').textContent = delimName(detectedDelim);
+                document.getElementById('fileInfoBar').classList.add('visible');
+
+                // Preview
+                const previewRows = Math.min(parsedRows.length - 1, 50);
+                document.getElementById('previewMeta').textContent =
+                    `\u2014 ${parsedRows.length.toLocaleString()} rows \u00D7 ${parsedRows[0].length} cols` +
+                    (parsedRows.length > 51 ? ', showing first 50' : '');
+                setTable('previewTableWrap', parsedRows, 50, true);
+
+                // Show sections
+                document.getElementById('sectionPreview').classList.add('visible');
+                document.getElementById('sectionOptions').classList.add('visible');
+
+                // Run initial clean
+                updateOutput();
+            };
+            reader.readAsText(file);
+        }
+
+        /* ─── Reset ─── */
+        window.resetTool = function () {
+            parsedRows = [];
+            detectedDelim = ',';
+            fileName = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfoBar').classList.remove('visible');
+            ['sectionPreview', 'sectionOptions', 'sectionOutput'].forEach(id =>
+                document.getElementById(id).classList.remove('visible')
+            );
+            document.getElementById('previewTableWrap').innerHTML = '';
+            document.getElementById('outputTableWrap').innerHTML = '';
+        };
+
+        /* ─── Download ─── */
+        window.downloadCSV = function () {
+            if (parsedRows.length === 0) return;
+            const { rows: cleaned } = applyOptions(parsedRows);
+            const delimSel = document.getElementById('optDelimiter').value;
+            const outDelim = delimSel === 'auto' ? detectedDelim : delimSel;
+            const qualifier = document.getElementById('optQualifier').value;
+            const csv = generateCSV(cleaned, outDelim, qualifier);
+            const ext = outDelim === '\t' ? '.tsv' : '.csv';
+            const base = fileName.replace(/\.[^.]+$/, '');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = base + '-clean' + ext;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        /* ─── Copy ─── */
+        window.copyToClipboard = async function () {
+            if (parsedRows.length === 0) return;
+            const { rows: cleaned } = applyOptions(parsedRows);
+            const delimSel = document.getElementById('optDelimiter').value;
+            const outDelim = delimSel === 'auto' ? detectedDelim : delimSel;
+            const qualifier = document.getElementById('optQualifier').value;
+            const csv = generateCSV(cleaned, outDelim, qualifier);
+            const btn = document.getElementById('copyBtn');
+            try {
+                await navigator.clipboard.writeText(csv);
+            } catch (_) {
+                const ta = document.createElement('textarea');
+                ta.value = csv;
+                ta.style.cssText = 'position:fixed;opacity:0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            }
+            btn.textContent = '\u2713 Copied!';
+            setTimeout(() => { btn.innerHTML = '&#9109; Copy to Clipboard'; }, 2000);
+        };
+
+        /* ─── Expose for inline handlers ─── */
+        window.updateOutput = updateOutput;
+
+        /* ─── Drag & Drop ─── */
+        const zone = document.getElementById('uploadZone');
+        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            zone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) handleFile(file);
+        });
+        zone.addEventListener('click', e => {
+            if (e.target.tagName !== 'BUTTON') document.getElementById('fileInput').click();
+        });
+        document.getElementById('fileInput').addEventListener('change', e => {
+            if (e.target.files[0]) handleFile(e.target.files[0]);
+        });
+
+    })();
+    </script>
+</body>
+</html>

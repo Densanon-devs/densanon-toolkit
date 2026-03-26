@@ -47,6 +47,7 @@ const TOOLKIT_TOOLS = [
   { name: 'YAML to JSON Converter', desc: 'Convert YAML configuration to JSON format.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'yaml-to-json', keywords: 'yaml to json convert config configuration' },
   { name: 'Base64 Encoder', desc: 'Encode text to Base64 for embedding and APIs.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'base64-encoder', keywords: 'base64 encode encoder text string' },
   { name: 'Base64 Decoder', desc: 'Decode Base64 strings back to readable text.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'base64-decoder', keywords: 'base64 decode decoder string text' },
+  { name: 'CSV Cleaner & Formatter', desc: 'Clean CSV files — remove duplicates, trim whitespace, fix encoding, and change delimiters.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'csv-cleaner', keywords: 'csv cleaner formatter clean trim whitespace duplicates encoding delimiter tsv pipe semicolon' },
   { name: 'Elf Name Generator', desc: 'Generate elegant elven names for D&D and fantasy worlds.', category: 'game-dev-tools', categoryLabel: 'Game Dev', slug: 'elf-name-generator', keywords: 'elf elven name generator dnd tolkien sindar fantasy' },
   { name: 'Dwarf Name Generator', desc: 'Generate sturdy dwarven names with Norse-inspired phonetics.', category: 'game-dev-tools', categoryLabel: 'Game Dev', slug: 'dwarf-name-generator', keywords: 'dwarf dwarven name generator dnd norse clan' },
   { name: 'Human Name Generator', desc: 'Generate medieval human names for RPGs and fiction.', category: 'game-dev-tools', categoryLabel: 'Game Dev', slug: 'human-name-generator', keywords: 'human name generator medieval fantasy rpg character' },
@@ -65,7 +66,8 @@ const TOOLKIT_TOOLS = [
   { name: 'Mean / Median / Mode Calculator', desc: 'Calculate mean, median, mode, range, and other statistics from a list of numbers.', category: 'math-tools', categoryLabel: 'Math', slug: 'mean-median-mode', keywords: 'mean median mode calculator average statistics range sum' },
   { name: 'Mean Calculator', desc: 'Calculate the arithmetic mean (average) of any set of numbers.', category: 'math-tools', categoryLabel: 'Math', slug: 'mean-calculator', keywords: 'mean average calculator arithmetic sum divide' },
   { name: 'Median Calculator', desc: 'Find the median (middle value) of any dataset.', category: 'math-tools', categoryLabel: 'Math', slug: 'median-calculator', keywords: 'median middle value calculator sorted statistics' },
-  { name: 'Mode Calculator', desc: 'Find the mode (most frequent value) in any list of numbers.', category: 'math-tools', categoryLabel: 'Math', slug: 'mode-calculator', keywords: 'mode frequent value calculator unimodal bimodal statistics' }
+  { name: 'Mode Calculator', desc: 'Find the mode (most frequent value) in any list of numbers.', category: 'math-tools', categoryLabel: 'Math', slug: 'mode-calculator', keywords: 'mode frequent value calculator unimodal bimodal statistics' },
+  { name: 'Audio Stripper', desc: 'Extract audio from any video file and download as WAV or OGG.', category: 'media-tools', categoryLabel: 'Media', slug: 'audio-stripper', keywords: 'audio stripper extract rip video mp4 webm wav ogg sound track' }
 ];
 
 function initPage(config = {}) {
@@ -93,7 +95,8 @@ function injectHeader(root, activeCategory) {
     { id: 'game-dev-tools', label: 'Game Dev' },
     { id: 'image-tools', label: 'Image Tools' },
     { id: 'developer-tools', label: 'Developer Tools' },
-    { id: 'math-tools', label: 'Math' }
+    { id: 'math-tools', label: 'Math' },
+    { id: 'media-tools', label: 'Media' }
   ];
 
   const navLinks = categories.map(cat => {
