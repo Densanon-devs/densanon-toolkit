@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Quote &amp; Estimate Generator - Densanon Toolkit</title>
+    <meta name="description" content="Free online quote and estimate generator for contractors, freelancers, and service businesses. Create professional quotes as downloadable PDFs. No signup required, 100% browser-based.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        /* ---- Layout ---- */
+        .qb-layout {
+            display: grid;
+            grid-template-columns: 460px 1fr;
+            gap: 24px;
+            align-items: start;
+            margin-top: 24px;
+        }
+        @media (max-width: 960px) { .qb-layout { grid-template-columns: 1fr; } }
+
+        /* ---- Form Panel ---- */
+        .qb-form-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .form-section {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .form-section:last-child { border-bottom: none; }
+        .form-section-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            color: var(--color-text-muted);
+            margin-bottom: 14px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .form-row:last-child { margin-bottom: 0; }
+        .form-row.full { grid-template-columns: 1fr; }
+        .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; }
+        .form-group label {
+            font-size: 0.76rem;
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text);
+            font-size: 0.875rem;
+            padding: 8px 10px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus { outline: none; border-color: var(--color-primary); }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+
+        /* ---- Logo Upload ---- */
+        .logo-upload-zone {
+            border: 2px dashed var(--color-border);
+            border-radius: 6px;
+            padding: 14px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .logo-upload-zone:hover { border-color: var(--color-primary); background: rgba(229,62,62,0.04); }
+        .logo-upload-zone.has-logo { border-style: solid; border-color: var(--color-accent-green); }
+        .logo-upload-zone img { max-height: 52px; max-width: 100%; object-fit: contain; display: block; margin: 0 auto 6px; }
+        .logo-upload-hint { font-size: 0.76rem; color: var(--color-text-muted); }
+        .btn-remove-logo {
+            background: none; border: none; color: var(--color-primary);
+            font-size: 0.74rem; cursor: pointer; margin-top: 4px;
+            font-family: inherit; display: block; margin: 4px auto 0;
+        }
+
+        /* ---- Line Items ---- */
+        .line-items-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .line-items-table th {
+            text-align: left;
+            color: var(--color-text-muted);
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0 6px 8px 0;
+        }
+        .line-items-table th:last-child, .line-items-table th.num { text-align: right; }
+        .line-items-table td { padding: 4px 6px 4px 0; vertical-align: top; }
+        .line-items-table td:last-child { padding-right: 0; }
+        .line-items-table td.num { text-align: right; }
+        .line-items-table input {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            color: var(--color-text);
+            font-size: 0.8rem;
+            padding: 6px 7px;
+            font-family: inherit;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        .line-items-table input:focus { outline: none; border-color: var(--color-primary); }
+        .line-total-cell {
+            color: var(--color-accent-green);
+            font-weight: 600;
+            white-space: nowrap;
+            padding-top: 11px;
+            font-size: 0.82rem;
+            text-align: right;
+            min-width: 64px;
+        }
+        .btn-remove-row {
+            background: none; border: none; color: var(--color-text-muted);
+            cursor: pointer; font-size: 0.9rem; padding: 0 2px;
+            line-height: 1; transition: color 0.2s; padding-top: 11px; display: block;
+        }
+        .btn-remove-row:hover { color: var(--color-primary); }
+        .btn-add-row {
+            display: inline-flex; align-items: center; gap: 5px;
+            margin-top: 10px; padding: 7px 13px;
+            background: none; border: 1px dashed var(--color-border);
+            border-radius: 6px; color: var(--color-text-muted);
+            font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            font-family: inherit; transition: border-color 0.2s, color 0.2s;
+        }
+        .btn-add-row:hover { border-color: var(--color-accent-green); color: var(--color-accent-green); }
+
+        /* ---- Summary ---- */
+        .summary-grid { display: grid; gap: 8px; }
+        .summary-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .summary-row label { font-size: 0.82rem; color: var(--color-text-muted); white-space: nowrap; }
+        .summary-value { font-size: 0.85rem; font-weight: 600; color: var(--color-text); text-align: right; }
+        .summary-input-group { display: flex; align-items: center; gap: 6px; }
+        input.summary-input {
+            background: var(--color-bg); border: 1px solid var(--color-border);
+            border-radius: 5px; color: var(--color-text); font-size: 0.82rem;
+            padding: 6px 8px; font-family: inherit; width: 80px; text-align: right;
+            transition: border-color 0.2s;
+        }
+        input.summary-input:focus { outline: none; border-color: var(--color-primary); }
+        .summary-unit { color: var(--color-text-muted); font-size: 0.82rem; }
+        select.summary-select {
+            background: var(--color-bg); border: 1px solid var(--color-border);
+            border-radius: 5px; color: var(--color-text); font-size: 0.8rem;
+            padding: 6px 4px; font-family: inherit; cursor: pointer;
+        }
+        .grand-total-row { border-top: 2px solid var(--color-border); padding-top: 10px; margin-top: 4px; }
+        .grand-total-row label { font-size: 0.9rem; font-weight: 700; color: var(--color-text); }
+        .grand-total-row .summary-value { font-size: 1rem; color: var(--color-accent-green); }
+
+        /* ---- Action Bar ---- */
+        .action-bar {
+            display: flex; gap: 10px; flex-wrap: wrap;
+            padding: 14px 16px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+        }
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 10px 18px; background: var(--color-primary); color: #fff;
+            border: none; border-radius: 7px; font-size: 0.88rem; font-weight: 700;
+            cursor: pointer; font-family: inherit; transition: background 0.2s;
+        }
+        .btn-primary:hover { background: var(--color-primary-hover); }
+        .btn-secondary {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 9px 14px; background: none;
+            border: 1px solid var(--color-border); border-radius: 7px;
+            color: var(--color-text-muted); font-size: 0.84rem; font-weight: 600;
+            cursor: pointer; font-family: inherit; transition: border-color 0.2s, color 0.2s;
+        }
+        .btn-secondary:hover { border-color: var(--color-accent-blue); color: var(--color-accent-blue); }
+        .btn-secondary.green-btn { border-color: var(--color-accent-green); color: var(--color-accent-green); }
+        .btn-secondary.green-btn:hover { background: rgba(52,211,153,0.07); }
+
+        /* ---- Toast ---- */
+        .toast {
+            display: none; position: fixed; bottom: 24px; right: 24px;
+            background: var(--color-surface); border: 1px solid var(--color-accent-green);
+            color: var(--color-accent-green); padding: 10px 18px;
+            border-radius: 8px; font-size: 0.84rem; font-weight: 600;
+            z-index: 9999; animation: toastIn 0.2s;
+        }
+        @keyframes toastIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+        /* ---- Preview Panel ---- */
+        .qb-preview-panel { position: sticky; top: 80px; }
+        .preview-label {
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.09em; color: var(--color-text-muted); margin-bottom: 10px;
+        }
+        .preview-paper {
+            background: #fff; color: #222;
+            border-radius: 5px; padding: 36px 40px;
+            box-shadow: 0 6px 32px rgba(0,0,0,0.55);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            font-size: 12.5px; line-height: 1.5;
+        }
+
+        /* ---- Preview Internals ---- */
+        .pv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; gap: 16px; }
+        .pv-biz-side { flex: 1; min-width: 0; }
+        .pv-logo { max-width: 130px; max-height: 54px; object-fit: contain; display: block; margin-bottom: 8px; }
+        .pv-biz-name { font-size: 17px; font-weight: 800; color: #111; margin-bottom: 3px; }
+        .pv-biz-details { font-size: 11px; color: #666; line-height: 1.65; }
+        .pv-quote-side { text-align: right; flex-shrink: 0; }
+        .pv-quote-title {
+            font-size: 24px; font-weight: 900; color: #c53030;
+            text-transform: uppercase; letter-spacing: 3px; margin-bottom: 10px;
+        }
+        .pv-meta-table { font-size: 11px; margin-left: auto; }
+        .pv-meta-table td { padding: 1.5px 0; }
+        .pv-meta-table td.lbl { color: #999; padding-right: 12px; text-align: right; }
+        .pv-meta-table td.val { font-weight: 700; color: #222; }
+        .pv-divider { border: none; border-top: 1.5px solid #e8edf3; margin: 18px 0; }
+        .pv-bill-to { margin-bottom: 22px; }
+        .pv-section-label {
+            font-size: 8.5px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.12em; color: #bbb; margin-bottom: 5px;
+        }
+        .pv-client-name { font-size: 13.5px; font-weight: 700; color: #111; }
+        .pv-client-details { font-size: 11px; color: #666; line-height: 1.65; }
+        .pv-items-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+        .pv-items-table th {
+            background: #f1f5f9; font-size: 9px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.07em; color: #64748b;
+            padding: 7px 9px; text-align: left; border-bottom: 1.5px solid #e2e8f0;
+        }
+        .pv-items-table th.r { text-align: right; }
+        .pv-items-table td {
+            padding: 8px 9px; border-bottom: 1px solid #f1f5f9;
+            font-size: 11.5px; color: #333; vertical-align: top;
+        }
+        .pv-items-table td.r { text-align: right; }
+        .pv-items-table tr:last-child td { border-bottom: none; }
+        .pv-items-table tr:nth-child(even) td { background: #f9fafb; }
+        .pv-totals { display: flex; justify-content: flex-end; margin-bottom: 22px; }
+        .pv-totals-inner { min-width: 210px; }
+        .pv-total-row { display: flex; justify-content: space-between; padding: 3.5px 0; font-size: 11.5px; }
+        .pv-total-row .lbl { color: #777; }
+        .pv-total-row .val { font-weight: 600; color: #333; }
+        .pv-total-divider { border: none; border-top: 1.5px solid #e2e8f0; margin: 7px 0; }
+        .pv-grand-row { display: flex; justify-content: space-between; padding: 4px 0 0; }
+        .pv-grand-row .lbl { font-size: 13px; font-weight: 700; color: #111; }
+        .pv-grand-row .val { font-size: 15px; font-weight: 900; color: #c53030; }
+        .pv-notes {
+            background: #f8fafc; border-left: 3px solid #c53030;
+            padding: 11px 13px; border-radius: 0 4px 4px 0;
+        }
+        .pv-notes-label {
+            font-size: 8.5px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.12em; color: #aaa; margin-bottom: 5px;
+        }
+        .pv-notes-content { font-size: 11px; color: #555; white-space: pre-wrap; line-height: 1.65; }
+        .pv-placeholder { color: #ccc; font-style: italic; }
+    </style>
+</head>
+<body>
+<main class="container" style="padding-bottom:60px;">
+
+    <div class="category-header">
+        <div class="breadcrumb"></div>
+        <h1>Quote &amp; Estimate Builder</h1>
+        <p>Create professional quotes for clients. Fill in the form, preview live, download as PDF.</p>
+    </div>
+
+    <div class="qb-layout">
+
+        <!-- =========== FORM =========== -->
+        <div>
+            <form id="quoteForm" autocomplete="off">
+
+                <!-- Business Info -->
+                <div class="qb-form-panel">
+                    <div class="form-section">
+                        <div class="form-section-title">Your Business</div>
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label>Business Name</label>
+                                <input type="text" id="bizName" placeholder="Acme Services LLC">
+                            </div>
+                        </div>
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label>Address</label>
+                                <input type="text" id="bizAddress" placeholder="123 Main St, City, State 12345">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="text" id="bizPhone" placeholder="(555) 000-0000">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="bizEmail" placeholder="hello@business.com">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Logo <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.72rem;">(optional)</span></div>
+                        <div class="logo-upload-zone" id="logoZone" onclick="document.getElementById('logoFileInput').click()">
+                            <div id="logoHasContent" style="display:none;">
+                                <img id="logoThumb" src="" alt="Logo">
+                                <span class="logo-upload-hint" id="logoFilename" style="color:var(--color-accent-green);"></span>
+                                <button type="button" class="btn-remove-logo" onclick="event.stopPropagation();removeLogo()">✕ Remove</button>
+                            </div>
+                            <div id="logoEmpty">
+                                <span style="font-size:1.6rem;opacity:0.4;display:block;margin-bottom:5px;">🖼</span>
+                                <span class="logo-upload-hint">Click to upload logo (PNG, JPG, SVG)</span>
+                            </div>
+                        </div>
+                        <input type="file" id="logoFileInput" accept="image/*" style="display:none;">
+                    </div>
+                </div>
+
+                <!-- Client Info -->
+                <div class="qb-form-panel">
+                    <div class="form-section">
+                        <div class="form-section-title">Client Info</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Client Name</label>
+                                <input type="text" id="clientName" placeholder="Jane Smith">
+                            </div>
+                            <div class="form-group">
+                                <label>Company</label>
+                                <input type="text" id="clientCompany" placeholder="Client Corp">
+                            </div>
+                        </div>
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label>Address</label>
+                                <input type="text" id="clientAddress" placeholder="456 Oak Ave, City, State 67890">
+                            </div>
+                        </div>
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="clientEmail" placeholder="client@company.com">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quote Details -->
+                <div class="qb-form-panel">
+                    <div class="form-section">
+                        <div class="form-section-title">Quote Details</div>
+                        <div class="form-row three">
+                            <div class="form-group">
+                                <label>Quote #</label>
+                                <input type="text" id="quoteNumber" placeholder="QT-001">
+                            </div>
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="quoteDate">
+                            </div>
+                            <div class="form-group">
+                                <label>Valid Until</label>
+                                <input type="date" id="quoteValidUntil">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Line Items + Summary -->
+                <div class="qb-form-panel">
+                    <div class="form-section">
+                        <div class="form-section-title">Line Items</div>
+                        <table class="line-items-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:42%;">Description</th>
+                                    <th class="num" style="width:11%;">Qty</th>
+                                    <th class="num" style="width:19%;">Unit Price</th>
+                                    <th class="num" style="width:17%;">Total</th>
+                                    <th style="width:11%;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="lineItemsBody"></tbody>
+                        </table>
+                        <button type="button" class="btn-add-row" id="addRowBtn">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Add Line Item
+                        </button>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Summary</div>
+                        <div class="summary-grid">
+                            <div class="summary-row">
+                                <label>Subtotal</label>
+                                <span class="summary-value" id="subtotalDisplay">$0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <label>Tax Rate</label>
+                                <div class="summary-input-group">
+                                    <input type="number" class="summary-input" id="taxRate" value="0" min="0" max="100" step="0.1">
+                                    <span class="summary-unit">%</span>
+                                </div>
+                            </div>
+                            <div class="summary-row">
+                                <label>Tax Amount</label>
+                                <span class="summary-value" id="taxAmountDisplay">$0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <label>Discount</label>
+                                <div class="summary-input-group">
+                                    <input type="number" class="summary-input" id="discountValue" value="0" min="0" step="0.01">
+                                    <select class="summary-select" id="discountType">
+                                        <option value="dollar">$</option>
+                                        <option value="percent">%</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="summary-row">
+                                <label>Discount Amount</label>
+                                <span class="summary-value" id="discountAmountDisplay">$0.00</span>
+                            </div>
+                            <div class="summary-row grand-total-row">
+                                <label>Grand Total</label>
+                                <span class="summary-value" id="grandTotalDisplay">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes / Terms -->
+                <div class="qb-form-panel">
+                    <div class="form-section">
+                        <div class="form-section-title">Notes &amp; Payment Terms</div>
+                        <div class="form-group">
+                            <textarea id="quoteNotes" rows="4" placeholder="Payment due within 30 days of invoice. Thank you for your business!"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+
+            <!-- Action Bar -->
+            <div class="action-bar">
+                <button type="button" class="btn-primary" id="downloadPdfBtn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download PDF
+                </button>
+                <button type="button" class="btn-secondary green-btn" id="saveTemplateBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Template
+                </button>
+                <button type="button" class="btn-secondary" id="loadTemplateBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 002-2v-4"/><polyline points="17 9 12 4 7 9"/><line x1="12" y1="4" x2="12" y2="16"/></svg>
+                    Load Template
+                </button>
+            </div>
+        </div>
+
+        <!-- =========== PREVIEW =========== -->
+        <div class="qb-preview-panel">
+            <div class="preview-label">Live Preview</div>
+            <div class="preview-paper" id="previewPaper"></div>
+        </div>
+
+    </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<!-- jsPDF + AutoTable from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+'use strict';
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let logoDataUrl = null;
+let lineItems = [];
+let nextItemId = 1;
+let quoteCounter = parseInt(localStorage.getItem('qb_qt_counter') || '0', 10) + 1;
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function init() {
+    const today = new Date();
+    const todayStr = fmtDateInput(today);
+    const validDate = new Date(today);
+    validDate.setDate(validDate.getDate() + 30);
+
+    document.getElementById('quoteDate').value = todayStr;
+    document.getElementById('quoteValidUntil').value = fmtDateInput(validDate);
+    document.getElementById('quoteNumber').value = 'QT-' + String(quoteCounter).padStart(3, '0');
+
+    // Default 3 rows
+    addLineItem(); addLineItem(); addLineItem();
+
+    // Logo
+    document.getElementById('logoFileInput').addEventListener('change', handleLogoUpload);
+
+    // Form → live preview
+    document.getElementById('quoteForm').addEventListener('input', updateAll);
+    document.getElementById('discountType').addEventListener('change', updateAll);
+
+    // Buttons
+    document.getElementById('addRowBtn').addEventListener('click', () => { addLineItem(); updateAll(); });
+    document.getElementById('downloadPdfBtn').addEventListener('click', downloadPDF);
+    document.getElementById('saveTemplateBtn').addEventListener('click', saveTemplate);
+    document.getElementById('loadTemplateBtn').addEventListener('click', loadTemplate);
+
+    updateAll();
+}
+
+// ─── LINE ITEMS ───────────────────────────────────────────────────────────────
+function addLineItem() {
+    lineItems.push({ id: nextItemId++, desc: '', qty: 1, price: '' });
+    renderLineItems();
+}
+
+function removeLineItem(id) {
+    if (lineItems.length <= 1) return;
+    lineItems = lineItems.filter(x => x.id !== id);
+    renderLineItems();
+    updateAll();
+}
+
+function renderLineItems() {
+    const tbody = document.getElementById('lineItemsBody');
+    tbody.innerHTML = '';
+    lineItems.forEach(item => {
+        const total = (parseFloat(item.qty) || 0) * (parseFloat(item.price) || 0);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input type="text" class="li-desc" placeholder="Description of service or item" value="${escAttr(item.desc)}"></td>
+            <td><input type="number" class="li-qty" placeholder="1" value="${item.qty}" min="0" step="any" style="text-align:right;"></td>
+            <td><input type="number" class="li-price" placeholder="0.00" value="${item.price}" min="0" step="0.01" style="text-align:right;"></td>
+            <td class="line-total-cell num">${money(total)}</td>
+            <td><button type="button" class="btn-remove-row" title="Remove row">✕</button></td>
+        `;
+        tr.querySelector('.li-desc').addEventListener('input', e => { item.desc = e.target.value; updateAll(); });
+        tr.querySelector('.li-qty').addEventListener('input', e => { item.qty = e.target.value; updateLineTotals(); updateAll(); });
+        tr.querySelector('.li-price').addEventListener('input', e => { item.price = e.target.value; updateLineTotals(); updateAll(); });
+        tr.querySelector('.btn-remove-row').addEventListener('click', () => removeLineItem(item.id));
+        tbody.appendChild(tr);
+    });
+}
+
+function updateLineTotals() {
+    const cells = document.querySelectorAll('#lineItemsBody .line-total-cell');
+    lineItems.forEach((item, i) => {
+        if (cells[i]) {
+            const t = (parseFloat(item.qty) || 0) * (parseFloat(item.price) || 0);
+            cells[i].textContent = money(t);
+        }
+    });
+}
+
+// ─── CALCULATIONS ─────────────────────────────────────────────────────────────
+function calcTotals() {
+    const subtotal = lineItems.reduce((s, x) => s + (parseFloat(x.qty) || 0) * (parseFloat(x.price) || 0), 0);
+    const taxRate  = parseFloat(document.getElementById('taxRate').value) || 0;
+    const tax      = subtotal * taxRate / 100;
+    const dVal     = parseFloat(document.getElementById('discountValue').value) || 0;
+    const dType    = document.getElementById('discountType').value;
+    const discount = dType === 'percent' ? subtotal * dVal / 100 : Math.min(dVal, subtotal + tax);
+    const grand    = Math.max(0, subtotal + tax - discount);
+    return { subtotal, taxRate, tax, dVal, dType, discount, grand };
+}
+
+// ─── UPDATE ALL ───────────────────────────────────────────────────────────────
+function updateAll() {
+    updateLineTotals();
+    const totals = calcTotals();
+    document.getElementById('subtotalDisplay').textContent      = money(totals.subtotal);
+    document.getElementById('taxAmountDisplay').textContent     = money(totals.tax);
+    document.getElementById('discountAmountDisplay').textContent = money(totals.discount);
+    document.getElementById('grandTotalDisplay').textContent    = money(totals.grand);
+    renderPreview(totals);
+}
+
+// ─── PREVIEW ──────────────────────────────────────────────────────────────────
+function renderPreview(totals) {
+    const biz = {
+        name:    g('bizName')    || 'Your Business Name',
+        address: g('bizAddress'),
+        phone:   g('bizPhone'),
+        email:   g('bizEmail'),
+    };
+    const client = {
+        name:    g('clientName'),
+        company: g('clientCompany'),
+        address: g('clientAddress'),
+        email:   g('clientEmail'),
+    };
+    const qNum  = g('quoteNumber')    || 'QT-001';
+    const qDate = fmtDateDisplay(g('quoteDate'));
+    const qVali = fmtDateDisplay(g('quoteValidUntil'));
+    const notes = g('quoteNotes');
+
+    const bizDetails = [biz.address, biz.phone, biz.email].filter(Boolean).join('<br>');
+    const clientDetails = [client.company, client.address, client.email].filter(Boolean).join('<br>');
+
+    const logoHtml = logoDataUrl
+        ? `<img class="pv-logo" src="${logoDataUrl}" alt="Logo">`
+        : '';
+
+    const itemRows = lineItems.map(item => {
+        const qty   = parseFloat(item.qty)   || 0;
+        const price = parseFloat(item.price) || 0;
+        const desc  = item.desc ? esc(item.desc) : '<span class="pv-placeholder">Item description</span>';
+        return `<tr>
+            <td>${desc}</td>
+            <td class="r">${qty}</td>
+            <td class="r">${money(price)}</td>
+            <td class="r">${money(qty * price)}</td>
+        </tr>`;
+    }).join('');
+
+    let totalsHtml = `<div class="pv-total-row"><span class="lbl">Subtotal</span><span class="val">${money(totals.subtotal)}</span></div>`;
+    if (totals.taxRate > 0)
+        totalsHtml += `<div class="pv-total-row"><span class="lbl">Tax (${totals.taxRate}%)</span><span class="val">${money(totals.tax)}</span></div>`;
+    if (totals.dVal > 0) {
+        const dlbl = totals.dType === 'percent' ? `Discount (${totals.dVal}%)` : 'Discount';
+        totalsHtml += `<div class="pv-total-row"><span class="lbl">${esc(dlbl)}</span><span class="val">&#8722;${money(totals.discount)}</span></div>`;
+    }
+
+    const notesHtml = notes ? `
+        <div class="pv-notes">
+            <div class="pv-notes-label">Notes &amp; Terms</div>
+            <div class="pv-notes-content">${esc(notes)}</div>
+        </div>` : '';
+
+    document.getElementById('previewPaper').innerHTML = `
+        <div class="pv-header">
+            <div class="pv-biz-side">
+                ${logoHtml}
+                <div class="pv-biz-name">${esc(biz.name)}</div>
+                <div class="pv-biz-details">${bizDetails || '<span class="pv-placeholder">Business details</span>'}</div>
+            </div>
+            <div class="pv-quote-side">
+                <div class="pv-quote-title">Quote</div>
+                <table class="pv-meta-table"><tbody>
+                    <tr><td class="lbl">Quote #</td><td class="val">${esc(qNum)}</td></tr>
+                    <tr><td class="lbl">Date</td><td class="val">${qDate || '—'}</td></tr>
+                    <tr><td class="lbl">Valid Until</td><td class="val">${qVali || '—'}</td></tr>
+                </tbody></table>
+            </div>
+        </div>
+        <hr class="pv-divider">
+        <div class="pv-bill-to">
+            <div class="pv-section-label">Bill To</div>
+            <div class="pv-client-name">${esc(client.name) || '<span class="pv-placeholder">Client Name</span>'}</div>
+            <div class="pv-client-details">${clientDetails || '<span class="pv-placeholder">Client details</span>'}</div>
+        </div>
+        <table class="pv-items-table">
+            <thead><tr>
+                <th style="width:44%;">Description</th>
+                <th class="r" style="width:10%;">Qty</th>
+                <th class="r" style="width:22%;">Unit Price</th>
+                <th class="r" style="width:24%;">Total</th>
+            </tr></thead>
+            <tbody>${itemRows}</tbody>
+        </table>
+        <div class="pv-totals">
+            <div class="pv-totals-inner">
+                ${totalsHtml}
+                <hr class="pv-total-divider">
+                <div class="pv-grand-row">
+                    <span class="lbl">Grand Total</span>
+                    <span class="val">${money(totals.grand)}</span>
+                </div>
+            </div>
+        </div>
+        ${notesHtml}
+    `;
+}
+
+// ─── PDF ──────────────────────────────────────────────────────────────────────
+function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const PW = doc.internal.pageSize.getWidth();
+    const PH = doc.internal.pageSize.getHeight();
+    const ML = 18, MR = 18, MT = 18;
+    const CW = PW - ML - MR;
+
+    const biz = { name: g('bizName') || 'Your Business', address: g('bizAddress'), phone: g('bizPhone'), email: g('bizEmail') };
+    const client = { name: g('clientName') || 'Client', company: g('clientCompany'), address: g('clientAddress'), email: g('clientEmail') };
+    const qNum  = g('quoteNumber') || 'QT-001';
+    const qDate = fmtDateDisplay(g('quoteDate'));
+    const qVali = fmtDateDisplay(g('quoteValidUntil'));
+    const notes = g('quoteNotes');
+
+    let y = MT;
+
+    // Logo
+    if (logoDataUrl) {
+        try { doc.addImage(logoDataUrl, 'RGBA', ML, y, 38, 18, '', 'FAST'); y += 22; }
+        catch(e) { /* skip broken logo */ }
+    }
+
+    // Biz name
+    doc.setFontSize(13.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(17, 17, 17);
+    doc.text(biz.name, ML, y); y += 5.5;
+
+    // Biz details
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
+    [biz.address, biz.phone, biz.email].filter(Boolean).forEach(line => { doc.text(line, ML, y); y += 4.3; });
+
+    // QUOTE title (right)
+    const titleY = logoDataUrl ? MT + 10 : MT;
+    doc.setFontSize(20); doc.setFont('helvetica', 'bold'); doc.setTextColor(197, 48, 48);
+    doc.text('QUOTE', PW - MR, titleY, { align: 'right' });
+
+    // Quote meta (right)
+    let mY = titleY + 9;
+    const mLX = PW - MR - 46;
+    [['Quote #:', qNum], ['Date:', qDate || '—'], ['Valid Until:', qVali || '—']].forEach(([lbl, val]) => {
+        doc.setFontSize(8.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(130, 130, 130);
+        doc.text(lbl, mLX, mY, { align: 'right' });
+        doc.setFont('helvetica', 'bold'); doc.setTextColor(40, 40, 40);
+        doc.text(val, PW - MR, mY, { align: 'right' });
+        mY += 5;
+    });
+
+    y = Math.max(y, mY) + 3;
+
+    // Divider
+    doc.setDrawColor(220, 224, 232); doc.setLineWidth(0.4);
+    doc.line(ML, y, PW - MR, y); y += 7;
+
+    // Bill To
+    doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(170, 170, 170);
+    doc.setCharSpace(0.8); doc.text('BILL TO', ML, y); doc.setCharSpace(0); y += 4.5;
+    doc.setFontSize(10.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(17, 17, 17);
+    doc.text(client.name, ML, y); y += 5;
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+    [client.company, client.address, client.email].filter(Boolean).forEach(line => { doc.text(line, ML, y); y += 4.2; });
+    y += 3;
+
+    // Line items table
+    const tableData = lineItems.map(item => {
+        const qty   = parseFloat(item.qty)   || 0;
+        const price = parseFloat(item.price) || 0;
+        return [item.desc || '', qty.toString(), money(price), money(qty * price)];
+    });
+
+    doc.autoTable({
+        startY: y,
+        margin: { left: ML, right: MR },
+        head: [['Description', 'Qty', 'Unit Price', 'Total']],
+        body: tableData,
+        styles: { fontSize: 9, cellPadding: { top: 3.5, bottom: 3.5, left: 5, right: 5 }, textColor: [51,51,51], lineColor: [232,236,242], lineWidth: 0.25 },
+        headStyles: { fillColor: [241,245,249], textColor: [100,116,139], fontStyle: 'bold', fontSize: 7.5 },
+        columnStyles: {
+            0: { cellWidth: 'auto' },
+            1: { halign: 'right', cellWidth: 16 },
+            2: { halign: 'right', cellWidth: 28 },
+            3: { halign: 'right', cellWidth: 28, fontStyle: 'bold' },
+        },
+        alternateRowStyles: { fillColor: [249,250,251] },
+    });
+
+    y = doc.lastAutoTable.finalY + 5;
+
+    // Totals block
+    const totals = calcTotals();
+    const tX = PW - MR - 68;
+    const vX = PW - MR;
+
+    function totRow(lbl, val, bold, color) {
+        doc.setFont('helvetica', bold ? 'bold' : 'normal');
+        doc.setFontSize(bold ? 10 : 9);
+        doc.setTextColor(...(color || [80,80,80]));
+        doc.text(lbl, tX, y);
+        doc.text(val, vX, y, { align: 'right' });
+        y += 5;
+    }
+
+    totRow('Subtotal', money(totals.subtotal));
+    if (totals.taxRate > 0) totRow(`Tax (${totals.taxRate}%)`, money(totals.tax));
+    if (totals.dVal > 0) {
+        const dl = totals.dType === 'percent' ? `Discount (${totals.dVal}%)` : 'Discount';
+        totRow(dl, '-' + money(totals.discount));
+    }
+    doc.setDrawColor(210, 214, 222); doc.setLineWidth(0.4);
+    doc.line(tX, y, vX, y); y += 4.5;
+    totRow('Grand Total', money(totals.grand), true, [197, 48, 48]);
+
+    y += 5;
+
+    // Notes
+    if (notes && notes.trim()) {
+        if (y > PH - 40) { doc.addPage(); y = MT; }
+        doc.setFillColor(248, 250, 252);
+        const noteLines = doc.splitTextToSize(notes, CW - 8);
+        const boxH = noteLines.length * 4.5 + 14;
+        doc.rect(ML, y, CW, boxH, 'F');
+        doc.setDrawColor(197, 48, 48); doc.setLineWidth(0.7);
+        doc.line(ML, y, ML, y + boxH);
+        doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(160,160,160);
+        doc.setCharSpace(0.8); doc.text('NOTES & TERMS', ML + 4, y + 5.5); doc.setCharSpace(0);
+        doc.setFontSize(8.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(80,80,80);
+        doc.text(noteLines, ML + 4, y + 11);
+    }
+
+    // Footer
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(190,190,190);
+    doc.text('Generated with Densanon Toolkit — toolkit.densanon.com', PW / 2, PH - 9, { align: 'center' });
+
+    const fname = `Quote-${qNum}-${(client.name).replace(/\s+/g,'-')}.pdf`;
+    doc.save(fname);
+
+    // Bump counter
+    quoteCounter++;
+    localStorage.setItem('qb_qt_counter', quoteCounter - 1);
+    document.getElementById('quoteNumber').value = 'QT-' + String(quoteCounter).padStart(3, '0');
+
+    showToast('PDF downloaded!');
+}
+
+// ─── TEMPLATE ─────────────────────────────────────────────────────────────────
+function saveTemplate() {
+    const data = {
+        bizName: g('bizName'), bizAddress: g('bizAddress'),
+        bizPhone: g('bizPhone'), bizEmail: g('bizEmail'),
+        logo: logoDataUrl,
+    };
+    localStorage.setItem('qb_template', JSON.stringify(data));
+    showToast('Business template saved!');
+}
+
+function loadTemplate() {
+    const raw = localStorage.getItem('qb_template');
+    if (!raw) { showToast('No saved template found.'); return; }
+    const t = JSON.parse(raw);
+    s('bizName', t.bizName); s('bizAddress', t.bizAddress);
+    s('bizPhone', t.bizPhone); s('bizEmail', t.bizEmail);
+    if (t.logo) {
+        logoDataUrl = t.logo;
+        document.getElementById('logoThumb').src = logoDataUrl;
+        document.getElementById('logoFilename').textContent = 'Logo loaded from template';
+        document.getElementById('logoHasContent').style.display = '';
+        document.getElementById('logoEmpty').style.display = 'none';
+        document.getElementById('logoZone').classList.add('has-logo');
+    }
+    updateAll();
+    showToast('Template loaded!');
+}
+
+// ─── LOGO ─────────────────────────────────────────────────────────────────────
+function handleLogoUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        logoDataUrl = ev.target.result;
+        document.getElementById('logoThumb').src = logoDataUrl;
+        document.getElementById('logoFilename').textContent = file.name;
+        document.getElementById('logoHasContent').style.display = '';
+        document.getElementById('logoEmpty').style.display = 'none';
+        document.getElementById('logoZone').classList.add('has-logo');
+        updateAll();
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeLogo() {
+    logoDataUrl = null;
+    document.getElementById('logoFileInput').value = '';
+    document.getElementById('logoHasContent').style.display = 'none';
+    document.getElementById('logoEmpty').style.display = '';
+    document.getElementById('logoZone').classList.remove('has-logo');
+    updateAll();
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+const g      = id => (document.getElementById(id)?.value || '').trim();
+const s      = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+const money  = n => '$' + (parseFloat(n) || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const esc    = t => (t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+const escAttr = t => (t || '').replace(/"/g,'&quot;');
+
+function fmtDateInput(d) {
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${dd}`;
+}
+function fmtDateDisplay(str) {
+    if (!str) return '';
+    const [y, m, d] = str.split('-');
+    if (!y || !m || !d) return str;
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[parseInt(m,10)-1]} ${parseInt(d,10)}, ${y}`;
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(t._tid);
+    t._tid = setTimeout(() => { t.style.display = 'none'; }, 2600);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script src="../../../js/page-consistency.js"></script>
+<script>initPage({
+    depth: 3,
+    activeCategory: 'developer-tools',
+    title: 'Free Quote &amp; Estimate Generator - Densanon Toolkit',
+    breadcrumbs: [
+        { label: 'Developer Tools', href: '../' },
+        { label: 'Quote Builder' }
+    ]
+});</script>
+</body>
+</html>
