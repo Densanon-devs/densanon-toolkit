@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Assignment Planner &amp; Task Breakdown Tool - Densanon Toolkit</title>
+    <meta name="description" content="Free assignment planner that breaks any assignment into sub-tasks with a timeline. Enter your due date and hours, get a checklist instantly. Checkboxes persist in localStorage. Export as text or PDF.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        /* ---- Input card ---- */
+        .input-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            margin-bottom: 24px;
+        }
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 680px) { .input-grid { grid-template-columns: 1fr; } }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px 12px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text);
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+        .form-group select option { background: var(--color-surface); }
+        .form-group textarea { min-height: 80px; resize: vertical; grid-column: 1 / -1; }
+
+        .btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn-primary { background: var(--color-primary); color: #fff; }
+        .btn-primary:hover { background: var(--color-primary-hover); }
+        .btn-secondary {
+            background: var(--color-surface);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+        .btn-secondary:hover { background: var(--color-surface-hover); }
+        .btn-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+        /* ---- Results ---- */
+        .results { display: none; }
+        .results.visible { display: block; }
+
+        /* ---- Progress bar ---- */
+        .progress-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .progress-label { font-size: 0.9rem; color: var(--color-text-muted); white-space: nowrap; }
+        .progress-bar-track {
+            flex: 1;
+            min-width: 120px;
+            height: 8px;
+            background: var(--color-border);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--color-accent-green);
+            border-radius: 99px;
+            transition: width 0.3s ease;
+        }
+        .progress-pct {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--color-accent-green);
+            min-width: 36px;
+            text-align: right;
+        }
+
+        /* ---- Timeline ---- */
+        .timeline-section { margin-bottom: 24px; }
+        .section-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+            padding-left: 24px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background: var(--color-border);
+        }
+        .timeline-item {
+            position: relative;
+            padding: 10px 0 10px 16px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -17px;
+            top: 14px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            border: 2px solid var(--color-bg);
+        }
+        .timeline-item.completed-phase::before { background: var(--color-accent-green); }
+        .timeline-item.urgent::before { background: var(--color-accent-orange); }
+        .timeline-date {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 2px;
+        }
+        .timeline-phase-name {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+        .timeline-phase-tasks {
+            font-size: 0.82rem;
+            color: var(--color-text-muted);
+            margin-top: 2px;
+        }
+
+        /* ---- Checklist ---- */
+        .checklist-section { margin-bottom: 24px; }
+        .checklist { display: flex; flex-direction: column; gap: 8px; }
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+            user-select: none;
+        }
+        .checklist-item:hover { background: var(--color-surface-hover); }
+        .checklist-item.done {
+            border-color: rgba(52,211,153,0.25);
+            background: rgba(52,211,153,0.04);
+        }
+        .checklist-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--color-accent-green);
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .checklist-item-body { flex: 1; }
+        .checklist-item-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--color-text);
+            line-height: 1.4;
+        }
+        .checklist-item.done .checklist-item-title {
+            text-decoration: line-through;
+            color: var(--color-text-muted);
+        }
+        .checklist-item-desc {
+            font-size: 0.82rem;
+            color: var(--color-text-muted);
+            margin-top: 2px;
+        }
+        .checklist-item-meta {
+            font-size: 0.76rem;
+            color: var(--color-accent-blue);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .phase-badge {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 99px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-right: 6px;
+        }
+
+        /* ---- Action bar ---- */
+        .action-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+
+        /* ---- Reset link ---- */
+        .reset-link {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            font-family: inherit;
+            padding: 0;
+        }
+        .reset-link:hover { color: var(--color-primary); }
+    </style>
+</head>
+<body>
+
+<main class="container" style="padding-top:32px; padding-bottom:60px;">
+
+    <div class="category-header" style="margin-bottom:24px;">
+        <div class="breadcrumb"></div>
+        <h1>Assignment Breakdown Tool</h1>
+        <p>Turn any assignment into an actionable checklist with a smart timeline.</p>
+    </div>
+
+    <section style="margin-bottom:28px;">
+        <p>Enter your assignment description, due date, and estimated hours. The tool detects the assignment type — essay, project, research, reading, presentation, or general — and breaks it into logical sub-tasks spread across your available days. Check off tasks as you go; progress saves automatically in your browser.</p>
+    </section>
+
+    <!-- Input card -->
+    <div class="input-card">
+        <div class="input-grid">
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Assignment Description</label>
+                <textarea id="assignmentDesc" placeholder="e.g. Write a 5-page essay on the causes of World War I for History class"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Assignment Type</label>
+                <select id="assignmentType">
+                    <option value="auto">Auto-detect</option>
+                    <option value="essay">Essay / Paper</option>
+                    <option value="project">Project / Build</option>
+                    <option value="reading">Reading / Analysis</option>
+                    <option value="presentation">Presentation</option>
+                    <option value="research">Research</option>
+                    <option value="general">General / Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Due Date</label>
+                <input type="date" id="dueDate">
+            </div>
+            <div class="form-group">
+                <label>Estimated Hours</label>
+                <input type="number" id="estHours" placeholder="e.g. 6" min="1" max="200" value="">
+            </div>
+        </div>
+        <div class="btn-bar">
+            <button class="btn btn-primary" id="generateBtn">Generate Plan</button>
+            <button class="reset-link" id="resetBtn" style="display:none;">Start over</button>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results" id="results">
+
+        <!-- Progress -->
+        <div class="progress-section">
+            <span class="progress-label" id="progressLabel">0 of 0 tasks complete</span>
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+            </div>
+            <span class="progress-pct" id="progressPct">0%</span>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline-section">
+            <div class="section-label">Timeline</div>
+            <div class="timeline" id="timeline"></div>
+        </div>
+
+        <!-- Checklist -->
+        <div class="checklist-section">
+            <div class="section-label">Checklist</div>
+            <div class="checklist" id="checklist"></div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-secondary" id="exportTxtBtn">Export as Text</button>
+            <button class="btn btn-secondary" id="exportPdfBtn">Export as PDF</button>
+        </div>
+    </div>
+
+</main>
+
+<script src="../../../js/page-consistency.js"></script>
+<script>
+initPage({
+    depth: 2,
+    activeCategory: 'developer-tools',
+    title: 'Free Assignment Planner &amp; Task Breakdown Tool',
+    breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'Assignment Planner' }
+    ]
+});
+</script>
+<script>
+/* ---- Task templates per assignment type ---- */
+const TEMPLATES = {
+    essay: [
+        { phase: 'Research', title: 'Gather sources and background material', desc: 'Find at least 3–5 credible sources. Take brief notes on each.', weight: 0.15 },
+        { phase: 'Outline', title: 'Create a detailed outline', desc: 'Map your thesis, main arguments, and supporting evidence for each section.', weight: 0.10 },
+        { phase: 'Draft', title: 'Write the first draft', desc: 'Get your ideas down without worrying about perfection. Aim for full coverage.', weight: 0.30 },
+        { phase: 'Citations', title: 'Add and format citations', desc: 'Insert in-text citations and build your bibliography/works cited list.', weight: 0.10 },
+        { phase: 'Revise', title: 'Revise for content and structure', desc: 'Check argument flow, paragraph order, transitions, and clarity.', weight: 0.15 },
+        { phase: 'Edit', title: 'Edit for grammar, style, and spelling', desc: 'Proofread carefully. Read aloud to catch awkward phrasing.', weight: 0.10 },
+        { phase: 'Final', title: 'Final review and submit', desc: 'Format per requirements (font, margins, header). Confirm submission method.', weight: 0.10 }
+    ],
+    project: [
+        { phase: 'Research', title: 'Research and understand the problem', desc: 'Define the goal, gather relevant info, study any examples or requirements.', weight: 0.15 },
+        { phase: 'Plan', title: 'Plan your approach and create a spec', desc: 'List what you\'ll build, tools needed, and milestones.', weight: 0.10 },
+        { phase: 'Build', title: 'Build the core deliverable', desc: 'Do the main work — writing, coding, constructing, or designing.', weight: 0.35 },
+        { phase: 'Test', title: 'Test and troubleshoot', desc: 'Check that everything works as expected. Fix issues found.', weight: 0.20 },
+        { phase: 'Present', title: 'Prepare presentation and documentation', desc: 'Write up your process, results, and conclusions. Prepare to present if needed.', weight: 0.10 },
+        { phase: 'Final', title: 'Final review and submit', desc: 'Confirm all requirements are met. Package and submit.', weight: 0.10 }
+    ],
+    reading: [
+        { phase: 'Read', title: 'Complete the assigned reading', desc: 'Read actively — highlight, annotate, or mark key passages.', weight: 0.40 },
+        { phase: 'Notes', title: 'Take structured notes', desc: 'Summarize key points, arguments, themes, or concepts from the reading.', weight: 0.25 },
+        { phase: 'Questions', title: 'Answer discussion or review questions', desc: 'Address any assigned questions or write a response/reflection.', weight: 0.20 },
+        { phase: 'Final', title: 'Review notes and prepare for class/submission', desc: 'Re-read your notes and be ready to discuss or submit.', weight: 0.15 }
+    ],
+    presentation: [
+        { phase: 'Research', title: 'Research your topic thoroughly', desc: 'Gather enough material to cover your topic with confidence.', weight: 0.20 },
+        { phase: 'Outline', title: 'Create a presentation outline', desc: 'Plan your intro, 3–5 main points, and conclusion.', weight: 0.10 },
+        { phase: 'Slides', title: 'Build your slides or visual aids', desc: 'Design clean, readable slides. Less text, more visuals.', weight: 0.25 },
+        { phase: 'Speaker Notes', title: 'Write speaker notes', desc: 'Draft what you\'ll say for each slide. Don\'t read directly from the slides.', weight: 0.15 },
+        { phase: 'Practice', title: 'Practice your delivery', desc: 'Run through it at least twice. Time yourself. Practice out loud.', weight: 0.20 },
+        { phase: 'Final', title: 'Final prep and deliver', desc: 'Review all materials, check tech (projector, remote). Arrive prepared.', weight: 0.10 }
+    ],
+    research: [
+        { phase: 'Define', title: 'Define your research question', desc: 'Clarify exactly what you are investigating and what a good answer looks like.', weight: 0.10 },
+        { phase: 'Sources', title: 'Identify and gather sources', desc: 'Find academic papers, books, and credible websites. Log each source.', weight: 0.20 },
+        { phase: 'Read', title: 'Read and annotate sources', desc: 'Work through each source and note relevant information and quotes.', weight: 0.25 },
+        { phase: 'Synthesize', title: 'Synthesize findings', desc: 'Identify patterns, agreements, and contradictions across your sources.', weight: 0.20 },
+        { phase: 'Write', title: 'Write your research report or paper', desc: 'Structure your findings clearly with an intro, body, and conclusion.', weight: 0.15 },
+        { phase: 'Final', title: 'Cite sources and submit', desc: 'Format citations correctly. Proofread before submitting.', weight: 0.10 }
+    ],
+    general: [
+        { phase: 'Understand', title: 'Read and understand the assignment prompt', desc: 'Break down what is being asked. Note requirements, format, and expectations.', weight: 0.10 },
+        { phase: 'Plan', title: 'Make a plan and gather materials', desc: 'List what you need to do and collect any resources or materials needed.', weight: 0.15 },
+        { phase: 'Work', title: 'Complete the main work', desc: 'Do the bulk of the assignment. Focus on meeting all requirements.', weight: 0.45 },
+        { phase: 'Review', title: 'Review and revise your work', desc: 'Check for completeness, quality, and accuracy.', weight: 0.20 },
+        { phase: 'Final', title: 'Final check and submit', desc: 'Confirm format requirements. Submit on time.', weight: 0.10 }
+    ]
+};
+
+/* ---- Auto-detect type from description ---- */
+function detectType(desc) {
+    const d = desc.toLowerCase();
+    if (/\b(essay|paper|write|writing|paragraph|thesis|argument|persuasive|narrative|expository)\b/.test(d)) return 'essay';
+    if (/\b(project|build|create|develop|design|code|program|construct|make|prototype)\b/.test(d)) return 'project';
+    if (/\b(read|chapter|book|article|passage|text|novel|excerpt|reading)\b/.test(d)) return 'reading';
+    if (/\b(present|presentation|slide|deck|speech|talk|demo|showcase)\b/.test(d)) return 'presentation';
+    if (/\b(research|study|investigate|analyze|analysis|survey|literature review)\b/.test(d)) return 'research';
+    return 'general';
+}
+
+const PHASE_COLORS = {
+    Research: '#60a5fa', Define: '#60a5fa', Sources: '#60a5fa', Read: '#a78bfa',
+    Outline: '#fb923c', Plan: '#fb923c',
+    Draft: '#f472b6', Write: '#f472b6', Work: '#f472b6', Build: '#f472b6',
+    Slides: '#34d399', 'Speaker Notes': '#34d399',
+    Citations: '#fbbf24', Synthesize: '#fbbf24',
+    Revise: '#60a5fa', Edit: '#60a5fa', Review: '#60a5fa',
+    Test: '#fb923c', Practice: '#fb923c',
+    Notes: '#a78bfa', Questions: '#a78bfa',
+    Present: '#34d399', 'Speaker Notes': '#34d399',
+    Understand: '#60a5fa',
+    Final: '#34d399'
+};
+
+const STORAGE_KEY = 'densanon_assignment_plan_v1';
+
+let currentPlan = null;
+let checkState = {};
+
+function loadState() {
+    try { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (s) { currentPlan = s.plan; checkState = s.checks || {}; } } catch {}
+}
+function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ plan: currentPlan, checks: checkState }));
+}
+
+/* ---- Date helpers ---- */
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+function addDays(dateStr, n) {
+    const d = new Date(dateStr + 'T00:00:00');
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+}
+function daysBetween(a, b) {
+    const da = new Date(a + 'T00:00:00'), db = new Date(b + 'T00:00:00');
+    return Math.round((db - da) / 86400000);
+}
+function todayStr() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+/* ---- Generate plan ---- */
+function generatePlan() {
+    const desc = document.getElementById('assignmentDesc').value.trim();
+    const typeSelect = document.getElementById('assignmentType').value;
+    const dueDate = document.getElementById('dueDate').value;
+    const hours = parseFloat(document.getElementById('estHours').value) || 4;
+
+    if (!dueDate) { alert('Please enter a due date.'); return; }
+
+    const type = typeSelect === 'auto' ? detectType(desc) : typeSelect;
+    const tasks = TEMPLATES[type];
+    const today = todayStr();
+    const totalDays = Math.max(daysBetween(today, dueDate), 1);
+
+    // Assign target dates based on weight distribution
+    let dayOffset = 0;
+    const plannedTasks = tasks.map((t, i) => {
+        const taskDays = Math.max(1, Math.round(t.weight * totalDays));
+        const startDay = Math.round(dayOffset);
+        const targetDate = addDays(today, Math.min(startDay, totalDays - 1));
+        dayOffset += t.weight * totalDays;
+        return {
+            id: `task_${i}`,
+            phase: t.phase,
+            title: t.title,
+            desc: t.desc,
+            targetDate,
+            hours: +(hours * t.weight).toFixed(1)
+        };
+    });
+    // Force last task to due date
+    plannedTasks[plannedTasks.length - 1].targetDate = dueDate;
+
+    currentPlan = { desc, type, dueDate, hours, tasks: plannedTasks, generatedAt: Date.now() };
+    checkState = {};
+    saveState();
+    renderResults();
+}
+
+/* ---- Render ---- */
+function renderResults() {
+    if (!currentPlan) return;
+    document.getElementById('results').classList.add('visible');
+    document.getElementById('resetBtn').style.display = '';
+
+    renderTimeline();
+    renderChecklist();
+    updateProgress();
+}
+
+function renderTimeline() {
+    const tl = document.getElementById('timeline');
+    tl.innerHTML = '';
+    const today = todayStr();
+
+    currentPlan.tasks.forEach(task => {
+        const isUrgent = task.targetDate <= addDays(today, 1);
+        const isDone = !!checkState[task.id];
+        const item = document.createElement('div');
+        item.className = 'timeline-item' + (isDone ? ' completed-phase' : isUrgent ? ' urgent' : '');
+        const color = PHASE_COLORS[task.phase] || '#9ca3af';
+        item.innerHTML = `
+            <div class="timeline-date">${formatDate(task.targetDate)}${task.targetDate === currentPlan.dueDate ? ' — <span style="color:var(--color-primary);">DUE</span>' : ''}</div>
+            <div class="timeline-phase-name"><span style="color:${color};font-weight:700;">${task.phase}</span> — ${task.title}</div>
+            <div class="timeline-phase-tasks">~${task.hours}h</div>
+        `;
+        tl.appendChild(item);
+    });
+}
+
+function renderChecklist() {
+    const list = document.getElementById('checklist');
+    list.innerHTML = '';
+    currentPlan.tasks.forEach(task => {
+        const done = !!checkState[task.id];
+        const color = PHASE_COLORS[task.phase] || '#9ca3af';
+        const item = document.createElement('div');
+        item.className = 'checklist-item' + (done ? ' done' : '');
+        item.innerHTML = `
+            <input type="checkbox" ${done ? 'checked' : ''} data-id="${task.id}">
+            <div class="checklist-item-body">
+                <div class="checklist-item-title">
+                    <span class="phase-badge" style="background:${color}22;color:${color};">${task.phase}</span>${task.title}
+                </div>
+                <div class="checklist-item-desc">${task.desc}</div>
+                <div class="checklist-item-meta">Target: ${formatDate(task.targetDate)} &nbsp;·&nbsp; ~${task.hours}h</div>
+            </div>
+        `;
+        const cb = item.querySelector('input[type="checkbox"]');
+        cb.addEventListener('change', () => {
+            checkState[task.id] = cb.checked;
+            item.classList.toggle('done', cb.checked);
+            saveState();
+            updateProgress();
+            renderTimeline();
+        });
+        list.appendChild(item);
+    });
+}
+
+function updateProgress() {
+    if (!currentPlan) return;
+    const total = currentPlan.tasks.length;
+    const done = currentPlan.tasks.filter(t => checkState[t.id]).length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    document.getElementById('progressLabel').textContent = `${done} of ${total} tasks complete`;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = pct + '%';
+}
+
+/* ---- Export ---- */
+document.getElementById('exportTxtBtn').addEventListener('click', () => {
+    if (!currentPlan) return;
+    const lines = [
+        `Assignment Plan`,
+        `===============`,
+        currentPlan.desc ? `Assignment: ${currentPlan.desc}` : '',
+        `Type: ${currentPlan.type.charAt(0).toUpperCase() + currentPlan.type.slice(1)}`,
+        `Due Date: ${formatDate(currentPlan.dueDate)}`,
+        `Estimated Hours: ${currentPlan.hours}`,
+        ``,
+        `TIMELINE & CHECKLIST`,
+        `--------------------`,
+        ...currentPlan.tasks.map(t => {
+            const done = checkState[t.id] ? '[x]' : '[ ]';
+            return `${done} [${t.phase}] ${t.title}\n    Target: ${formatDate(t.targetDate)} | ~${t.hours}h\n    ${t.desc}`;
+        })
+    ].filter(l => l !== null).join('\n');
+    const blob = new Blob([lines], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'assignment-plan.txt';
+    a.click();
+    URL.revokeObjectURL(a.href);
+});
+
+document.getElementById('exportPdfBtn').addEventListener('click', () => {
+    if (!currentPlan) return;
+    const win = window.open('', '_blank');
+    const total = currentPlan.tasks.length;
+    const done = currentPlan.tasks.filter(t => checkState[t.id]).length;
+    const rows = currentPlan.tasks.map(t => {
+        const checked = checkState[t.id];
+        const color = PHASE_COLORS[t.phase] || '#9ca3af';
+        return `<tr style="background:${checked ? '#f0fdf4' : '#fff'};">
+            <td style="padding:8px 10px;"><span style="font-size:1.1em;">${checked ? '✅' : '⬜'}</span></td>
+            <td style="padding:8px 10px;"><span style="background:${color}22;color:${color};padding:2px 8px;border-radius:99px;font-size:0.78rem;font-weight:700;">${t.phase}</span></td>
+            <td style="padding:8px 10px;font-weight:600;">${t.title}<br><span style="font-weight:400;font-size:0.85em;color:#555;">${t.desc}</span></td>
+            <td style="padding:8px 10px;font-size:0.85em;color:#555;white-space:nowrap;">${formatDate(t.targetDate)}</td>
+            <td style="padding:8px 10px;font-size:0.85em;color:#555;white-space:nowrap;">~${t.hours}h</td>
+        </tr>`;
+    }).join('');
+    win.document.write(`<!DOCTYPE html><html><head><title>Assignment Plan</title>
+    <style>body{font-family:Arial,sans-serif;padding:32px;color:#111;}h1{font-size:1.4rem;margin-bottom:4px;}
+    .meta{color:#555;font-size:0.9rem;margin-bottom:24px;}
+    table{width:100%;border-collapse:collapse;}th{background:#f3f4f6;text-align:left;padding:8px 10px;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.4px;}
+    tr{border-bottom:1px solid #e5e7eb;}td{vertical-align:top;}
+    .progress{margin-bottom:20px;font-size:0.9rem;color:#555;}</style></head><body>
+    <h1>Assignment Plan</h1>
+    <div class="meta">${currentPlan.desc ? `<strong>${currentPlan.desc}</strong><br>` : ''}
+    Due: ${formatDate(currentPlan.dueDate)} &nbsp;·&nbsp; Est. ${currentPlan.hours}h total</div>
+    <div class="progress">Progress: ${done}/${total} tasks complete</div>
+    <table><thead><tr><th></th><th>Phase</th><th>Task</th><th>Target Date</th><th>Est. Time</th></tr></thead>
+    <tbody>${rows}</tbody></table></body></html>`);
+    win.document.close();
+    setTimeout(() => win.print(), 300);
+});
+
+/* ---- Reset ---- */
+document.getElementById('resetBtn').addEventListener('click', () => {
+    currentPlan = null;
+    checkState = {};
+    localStorage.removeItem(STORAGE_KEY);
+    document.getElementById('results').classList.remove('visible');
+    document.getElementById('resetBtn').style.display = 'none';
+    document.getElementById('assignmentDesc').value = '';
+    document.getElementById('dueDate').value = '';
+    document.getElementById('estHours').value = '';
+    document.getElementById('assignmentType').value = 'auto';
+});
+
+document.getElementById('generateBtn').addEventListener('click', generatePlan);
+
+/* ---- Set default due date to 1 week from today ---- */
+const defaultDue = addDays(todayStr(), 7);
+document.getElementById('dueDate').value = defaultDue;
+document.getElementById('dueDate').min = addDays(todayStr(), 1);
+
+/* ---- Restore saved plan ---- */
+loadState();
+if (currentPlan) renderResults();
+</script>
+</body>
+</html>
