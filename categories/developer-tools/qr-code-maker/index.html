@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Maker – Generate QR Codes Instantly Online | Densanon Toolkit</title>
+  <meta name="description" content="Free online QR code maker — generate QR codes for URLs, text, emails, and phone numbers. Custom colors, sizes, and error correction. Download as PNG or SVG.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    /* ── qr-code-maker tool styles ── */
+    .qr-center { display: flex; flex-direction: column; align-items: center; padding: 0 0 2rem; }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    textarea {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { outline: none; border-color: #6366f1; }
+
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .color-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .color-input-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    input[type="color"] {
+      width: 40px;
+      height: 36px;
+      border: 1px solid #333;
+      border-radius: 8px;
+      background: #111;
+      cursor: pointer;
+      padding: 2px;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+    input[type="color"]::-webkit-color-swatch { border-radius: 4px; border: none; }
+
+    .color-hex {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+      padding: 0.5rem 0.6rem;
+      width: 90px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+    .color-hex:focus { outline: none; border-color: #6366f1; }
+
+    select {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      padding: 0.6rem 0.75rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    select:focus { outline: none; border-color: #6366f1; }
+
+    button {
+      background: linear-gradient(135deg, #6366f1, #7c3aed);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.85rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    button:hover { opacity: 0.9; }
+    button:active { transform: scale(0.98); }
+
+    .qr-output {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      min-height: 40px;
+    }
+
+    #qr-canvas-wrap {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      display: none;
+    }
+
+    #qr-canvas-wrap canvas { display: block; }
+
+    .download-row {
+      display: none;
+      gap: 0.5rem;
+    }
+
+    .download-row a {
+      background: #222;
+      border: 1px solid #333;
+      color: #ccc;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .download-row a:hover { background: #2a2a2a; color: #fff; }
+
+    .error-msg {
+      color: #f87171;
+      font-size: 0.85rem;
+      text-align: center;
+      display: none;
+    }
+
+    .char-count {
+      font-size: 0.8rem;
+      color: #555;
+      text-align: right;
+    }
+
+    footer {
+      margin-top: 2.5rem;
+      color: #444;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+<main class="container">
+  <div class="category-header">
+    <div class="breadcrumb"></div>
+    <h1>QR Code Maker</h1>
+    <p>Generate QR codes for URLs, text, emails, and phone numbers. Custom colors, sizes, and error correction levels.</p>
+  </div>
+
+  <div class="qr-center">
+  <div class="card">
+    <div class="field">
+      <label for="text-input">Content</label>
+      <textarea id="text-input" placeholder="Enter a URL, text, email, phone number..." maxlength="2953"></textarea>
+      <div class="char-count"><span id="char-count">0</span> / 2953</div>
+    </div>
+
+    <div class="options">
+      <div class="color-field">
+        <label>Foreground</label>
+        <div class="color-input-row">
+          <input type="color" id="fg-color" value="#000000">
+          <input type="text" class="color-hex" id="fg-hex" value="#000000" maxlength="7">
+        </div>
+      </div>
+      <div class="color-field">
+        <label>Background</label>
+        <div class="color-input-row">
+          <input type="color" id="bg-color" value="#ffffff">
+          <input type="text" class="color-hex" id="bg-hex" value="#ffffff" maxlength="7">
+        </div>
+      </div>
+      <div class="field">
+        <label for="size-select">Size</label>
+        <select id="size-select">
+          <option value="200">Small (200px)</option>
+          <option value="400" selected>Medium (400px)</option>
+          <option value="600">Large (600px)</option>
+          <option value="1000">XL (1000px)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="ec-select">Error Correction</label>
+        <select id="ec-select">
+          <option value="L">Low (7%)</option>
+          <option value="M" selected>Medium (15%)</option>
+          <option value="Q">Quartile (25%)</option>
+          <option value="H">High (30%)</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="generate-btn">Generate QR Code</button>
+
+    <p class="error-msg" id="error-msg"></p>
+
+    <div class="qr-output">
+      <div id="qr-canvas-wrap"><canvas id="qr-canvas"></canvas></div>
+      <div class="download-row" id="download-row">
+        <a id="dl-png" download="qrcode.png">Download PNG</a>
+        <a id="dl-svg" download="qrcode.svg">Download SVG</a>
+      </div>
+    </div>
+  </div>
+  </div><!-- /.qr-center -->
+
+</main>
+
+  <!-- qr-code-styling gives us a clean canvas-based renderer -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script>
+    const textInput    = document.getElementById('text-input');
+    const fgColor      = document.getElementById('fg-color');
+    const bgColor      = document.getElementById('bg-color');
+    const fgHex        = document.getElementById('fg-hex');
+    const bgHex        = document.getElementById('bg-hex');
+    const sizeSelect   = document.getElementById('size-select');
+    const ecSelect     = document.getElementById('ec-select');
+    const generateBtn  = document.getElementById('generate-btn');
+    const canvasWrap   = document.getElementById('qr-canvas-wrap');
+    const canvas       = document.getElementById('qr-canvas');
+    const downloadRow  = document.getElementById('download-row');
+    const dlPng        = document.getElementById('dl-png');
+    const dlSvg        = document.getElementById('dl-svg');
+    const errorMsg     = document.getElementById('error-msg');
+    const charCount    = document.getElementById('char-count');
+
+    // Sync color pickers with hex inputs
+    function syncColor(picker, hex) {
+      picker.addEventListener('input', () => { hex.value = picker.value; });
+      hex.addEventListener('input', () => {
+        let v = hex.value;
+        if (/^#[0-9a-fA-F]{6}$/.test(v)) picker.value = v;
+      });
+    }
+    syncColor(fgColor, fgHex);
+    syncColor(bgColor, bgHex);
+
+    textInput.addEventListener('input', () => {
+      charCount.textContent = textInput.value.length;
+    });
+
+    // Generate on Enter (Ctrl/Cmd+Enter for multiline)
+    textInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        generate();
+      }
+    });
+
+    generateBtn.addEventListener('click', generate);
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.style.display = 'block';
+      canvasWrap.style.display = 'none';
+      downloadRow.style.display = 'none';
+    }
+
+    function generate() {
+      errorMsg.style.display = 'none';
+      const text = textInput.value.trim();
+
+      if (!text) { showError('Please enter some content.'); return; }
+
+      const size = parseInt(sizeSelect.value);
+      const fg   = fgHex.value || '#000000';
+      const bg   = bgHex.value || '#ffffff';
+      const ec   = ecSelect.value;
+
+      const ecMap = { L: QRCode.ErrorCorrectionLevel?.L, M: undefined, Q: undefined, H: undefined };
+
+      // Render to canvas
+      QRCode.toCanvas(canvas, text, {
+        width: size,
+        margin: 2,
+        color: { dark: fg, light: bg },
+        errorCorrectionLevel: ec
+      }, (err) => {
+        if (err) { showError('Failed to generate QR code. Input may be too long for the selected error correction level.'); return; }
+
+        canvasWrap.style.display = 'block';
+        downloadRow.style.display = 'flex';
+
+        // PNG download
+        dlPng.href = canvas.toDataURL('image/png');
+
+        // SVG download
+        QRCode.toString(text, {
+          type: 'svg',
+          width: size,
+          margin: 2,
+          color: { dark: fg, light: bg },
+          errorCorrectionLevel: ec
+        }, (err, svgStr) => {
+          if (!err) {
+            const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+            dlSvg.href = URL.createObjectURL(blob);
+          }
+        });
+      });
+    }
+  </script>
+<script src="../../../js/page-consistency.js"></script>
+<script>
+initPage({
+  depth: 3,
+  activeCategory: 'developer-tools',
+  title: 'QR Code Maker',
+  breadcrumbs: [
+    { label: 'Developer Tools', href: '../index.html' },
+    { label: 'QR Code Maker' }
+  ]
+});
+</script>
+</body>
+</html>

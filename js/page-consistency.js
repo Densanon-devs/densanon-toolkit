@@ -67,7 +67,9 @@ const TOOLKIT_TOOLS = [
   { name: 'Mean Calculator', desc: 'Calculate the arithmetic mean (average) of any set of numbers.', category: 'math-tools', categoryLabel: 'Math', slug: 'mean-calculator', keywords: 'mean average calculator arithmetic sum divide' },
   { name: 'Median Calculator', desc: 'Find the median (middle value) of any dataset.', category: 'math-tools', categoryLabel: 'Math', slug: 'median-calculator', keywords: 'median middle value calculator sorted statistics' },
   { name: 'Mode Calculator', desc: 'Find the mode (most frequent value) in any list of numbers.', category: 'math-tools', categoryLabel: 'Math', slug: 'mode-calculator', keywords: 'mode frequent value calculator unimodal bimodal statistics' },
-  { name: 'Audio Stripper', desc: 'Extract audio from any video file and download as WAV or OGG.', category: 'media-tools', categoryLabel: 'Media', slug: 'audio-stripper', keywords: 'audio stripper extract rip video mp4 webm wav ogg sound track' }
+  { name: 'Audio Stripper', desc: 'Extract audio from any video file and download as WAV or OGG.', category: 'media-tools', categoryLabel: 'Media', slug: 'audio-stripper', keywords: 'audio stripper extract rip video mp4 webm wav ogg sound track' },
+  { name: 'GIF Maker', desc: 'Create animated GIFs from video clips or image sequences. Set FPS, quality, trim, and loop.', category: 'media-tools', categoryLabel: 'Media', slug: 'gif-maker', keywords: 'gif maker create animated gif video images convert trim fps loop quality dithering' },
+  { name: 'QR Code Maker', desc: 'Generate QR codes for URLs, text, emails, and phone numbers with custom colors and sizes.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'qr-code-maker', keywords: 'qr code maker generator url link text email phone custom color size download png svg' }
 ];
 
 function initPage(config = {}) {

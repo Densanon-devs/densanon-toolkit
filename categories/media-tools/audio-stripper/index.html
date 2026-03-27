@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Stripper – Extract Audio from Video Online Free | Densanon Toolkit</title>
+    <meta name="description" content="Free online audio stripper — extract audio from any video file and download as WAV or OGG. No signup, no server uploads. Runs entirely in your browser.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        .drop-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            min-height: 200px;
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            background: var(--color-surface);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            padding: 40px 24px;
+            text-align: center;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: var(--color-primary);
+            background: rgba(229, 62, 62, 0.05);
+        }
+
+        .drop-zone-icon {
+            font-size: 3rem;
+            opacity: 0.5;
+        }
+
+        .drop-zone-text {
+            color: var(--color-text-muted);
+            font-size: 1rem;
+        }
+
+        .drop-zone-text strong {
+            color: var(--color-primary);
+        }
+
+        .drop-zone-hint {
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .file-info {
+            display: none;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .file-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .file-info-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .file-info-item span {
+            font-size: 1rem;
+            color: var(--color-text);
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .controls {
+            display: none;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: end;
+            margin-bottom: 16px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .control-group label {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .control-group select {
+            padding: 10px 12px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            padding: 12px 28px;
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-secondary {
+            padding: 12px 28px;
+            background: var(--color-surface);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .btn-secondary:hover { border-color: var(--color-text-muted); }
+
+        .progress-wrap {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 8px;
+            background: var(--color-bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--color-primary);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            margin-top: 8px;
+        }
+
+        .result-section {
+            display: none;
+            background: var(--color-surface);
+            border: 1px solid var(--color-accent-green);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .result-section h3 {
+            color: var(--color-accent-green);
+            margin: 0 0 16px 0;
+            font-size: 1.1rem;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .result-grid label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .result-grid span {
+            font-size: 1rem;
+            color: var(--color-text);
+            font-weight: 600;
+        }
+
+        audio {
+            width: 100%;
+            margin-bottom: 16px;
+            border-radius: var(--radius);
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background: var(--color-accent-green);
+            color: #fff;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .download-btn:hover { opacity: 0.9; }
+
+        .error-box {
+            display: none;
+            background: rgba(229, 62, 62, 0.1);
+            border: 1px solid var(--color-primary);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            color: var(--color-primary);
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        .how-to ol {
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+
+        .how-to ol li {
+            margin-bottom: 8px;
+            color: var(--color-text-muted);
+        }
+
+        .how-to ol li strong {
+            color: var(--color-text);
+        }
+
+        .format-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+
+        .format-table th,
+        .format-table td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 0.9rem;
+        }
+
+        .format-table th {
+            color: var(--color-text);
+            font-weight: 600;
+            background: var(--color-surface);
+        }
+
+        .format-table td {
+            color: var(--color-text-muted);
+        }
+
+        .faq-section h3 {
+            color: var(--color-text);
+            margin: 20px 0 8px 0;
+            font-size: 1rem;
+        }
+
+        .faq-section p {
+            color: var(--color-text-muted);
+            line-height: 1.6;
+            margin: 0 0 16px 0;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.6rem; }
+            .file-info-grid { grid-template-columns: 1fr 1fr; }
+            .controls-row { flex-direction: column; }
+            .result-grid { grid-template-columns: 1fr 1fr; }
+            .btn-row { flex-direction: column; }
+            .btn-primary, .btn-secondary { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Audio Stripper</h1>
+            <p>Extract audio from any video file and download it as WAV or OGG — entirely in your browser</p>
+        </div>
+
+        <section class="tool-box">
+            <input type="file" id="file-input" accept="video/*,.mp4,.webm,.mov,.avi,.mkv,.ogv,.mpeg,.mpg,.3gp,.m4v,.flv,.wmv" style="display:none">
+
+            <div class="drop-zone" id="drop-zone">
+                <div class="drop-zone-icon">&#127916;</div>
+                <div class="drop-zone-text"><strong>Click to select</strong> or drag &amp; drop a video file</div>
+                <div class="drop-zone-hint">Supports MP4, WebM, MOV, AVI, MKV, and more</div>
+            </div>
+
+            <div class="file-info" id="file-info">
+                <div class="file-info-grid">
+                    <div class="file-info-item">
+                        <label>File Name</label>
+                        <span id="info-name">—</span>
+                    </div>
+                    <div class="file-info-item">
+                        <label>Size</label>
+                        <span id="info-size">—</span>
+                    </div>
+                    <div class="file-info-item">
+                        <label>Type</label>
+                        <span id="info-type">—</span>
+                    </div>
+                    <div class="file-info-item">
+                        <label>Duration</label>
+                        <span id="info-duration">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls" id="controls">
+                <div class="controls-row">
+                    <div class="control-group">
+                        <label>Output Format</label>
+                        <select id="format-select">
+                            <option value="wav">WAV (Lossless)</option>
+                            <option value="ogg">OGG / WebM (Compressed)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Channels</label>
+                        <select id="channel-select">
+                            <option value="stereo">Stereo</option>
+                            <option value="mono">Mono</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn-primary" id="strip-btn">Strip Audio</button>
+                    <button class="btn-secondary" id="reset-btn">Choose Another File</button>
+                </div>
+            </div>
+
+            <div class="error-box" id="error-box"></div>
+
+            <div class="progress-wrap" id="progress-wrap">
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="progress-bar"></div>
+                </div>
+                <div class="progress-text" id="progress-text">Preparing...</div>
+            </div>
+
+            <div class="result-section" id="result-section">
+                <h3>Audio Extracted Successfully</h3>
+                <div class="result-grid">
+                    <div>
+                        <label>Format</label>
+                        <span id="result-format">—</span>
+                    </div>
+                    <div>
+                        <label>Size</label>
+                        <span id="result-size">—</span>
+                    </div>
+                    <div>
+                        <label>Duration</label>
+                        <span id="result-duration">—</span>
+                    </div>
+                    <div>
+                        <label>Channels</label>
+                        <span id="result-channels">—</span>
+                    </div>
+                </div>
+                <audio id="audio-preview" controls></audio>
+                <a class="download-btn" id="download-btn" href="#" download>Download Audio</a>
+            </div>
+        </section>
+
+        <section class="tool-box how-to">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Upload a video</strong> by clicking the drop zone or dragging a video file onto it. MP4, WebM, MOV, AVI, MKV, and more are supported.</li>
+                <li><strong>Choose your output format</strong> — WAV for lossless quality, or OGG/WebM for a smaller compressed file.</li>
+                <li><strong>Select channels</strong> — keep the original stereo audio or mix down to mono.</li>
+                <li><strong>Click "Strip Audio"</strong> and wait for processing to complete. Your file is processed entirely in your browser.</li>
+                <li><strong>Preview and download</strong> the extracted audio using the built-in player and download button.</li>
+            </ol>
+        </section>
+
+        <section class="tool-box">
+            <h2>Output Format Comparison</h2>
+            <table class="format-table">
+                <thead>
+                    <tr>
+                        <th>Format</th>
+                        <th>Compression</th>
+                        <th>Quality</th>
+                        <th>File Size</th>
+                        <th>Best For</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>WAV</td>
+                        <td>None (lossless)</td>
+                        <td>Exact original</td>
+                        <td>Large</td>
+                        <td>Editing, archival, production</td>
+                    </tr>
+                    <tr>
+                        <td>OGG / WebM</td>
+                        <td>Opus codec</td>
+                        <td>Near-transparent</td>
+                        <td>Small</td>
+                        <td>Sharing, web use, storage</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="tool-box">
+            <h2>What Does This Tool Do?</h2>
+            <p>The Audio Stripper extracts the audio track from any video file and lets you download it as a standalone audio file. Whether you want to grab a song from a music video, pull dialogue from a clip, or separate narration from a screen recording, this tool handles it entirely in your browser — your video file never leaves your device.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>When Should You Use This Tool?</h2>
+            <p>Use this tool whenever you need just the audio from a video: ripping a podcast episode from a recorded video, extracting background music, saving voiceover from a tutorial, creating audio clips for presentations, or converting video interviews to audio-only files for transcription. Since everything runs locally, it is also ideal when working with private or sensitive recordings.</p>
+        </section>
+
+        <section class="tool-box faq-section">
+            <h2>FAQ</h2>
+            <h3>Does my video get uploaded to a server?</h3>
+            <p>No. Everything happens in your browser using the Web Audio API. Your video file never leaves your device.</p>
+
+            <h3>What video formats are supported?</h3>
+            <p>Any format your browser can decode — typically MP4 (H.264/AAC), WebM (VP8/VP9/Opus), and OGG. Support for MOV, AVI, and MKV varies by browser. Chrome and Edge generally have the widest format support.</p>
+
+            <h3>Why is the WAV file so large?</h3>
+            <p>WAV is an uncompressed lossless format, so file sizes are proportional to duration and sample rate. A 5-minute stereo track at 44.1 kHz produces roughly a 50 MB WAV file. Use the OGG option for smaller files with minimal quality loss.</p>
+
+            <h3>Can I extract audio from very long videos?</h3>
+            <p>Yes, but browser memory limits apply. For typical videos under an hour, this tool works well. For very long videos (several hours), you may run into memory limitations depending on your device.</p>
+
+            <h3>What is the difference between Stereo and Mono?</h3>
+            <p>Stereo preserves the original left/right channel separation. Mono mixes all channels into a single channel, halving the file size and producing a centered sound — useful for voice recordings or when stereo separation is not needed.</p>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'media-tools',
+            title: 'Audio Stripper – Extract Audio from Video Online Free',
+            breadcrumbs: [
+                { label: 'Media Tools', href: '../index.html' },
+                { label: 'Audio Stripper' }
+            ]
+        });
+    </script>
+    <script src="audio-stripper.js"></script>
+</body>
+</html>

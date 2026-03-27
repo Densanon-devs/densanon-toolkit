@@ -488,4 +488,17 @@
     <priority>0.9</priority>
   </url>
 
+  <url>
+    <loc>https://toolkit.densanon.com/categories/media-tools/gif-maker/</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://toolkit.densanon.com/categories/developer-tools/qr-code-maker/</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
 </urlset>
