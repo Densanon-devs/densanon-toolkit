@@ -150,6 +150,23 @@ function initNameGenerator(opts) {
                 middles: ['ik', 'iz', 'ak', 'uk', 'ez', 'ek', 'az', 'ok', 'ib', 'ix', 'ub', 'ag', 'ob', 'ig', 'uz'],
                 suffixes: ['ik', 'iz', 'ak', 'ok', 'uz', 'ek', 'az', 'ub', 'ib', 'ix', 'uk', 'ag', 'ob', 'ig', 'ez']
             }
+        },
+        gnome: {
+            male: {
+                prefixes: ['Bim', 'Cog', 'Dim', 'Fen', 'Gim', 'Jeb', 'Kel', 'Nim', 'Pip', 'Ron', 'See', 'Tin', 'Wim', 'Zook', 'Bren', 'Dun', 'Gal', 'Nak', 'Pog', 'Tos'],
+                middles: ['ble', 'dle', 'kin', 'nap', 'ber', 'wil', 'ton', 'fen', 'mer', 'dal', 'nik', 'pos', 'rig', 'wick', 'fod'],
+                suffixes: ['ble', 'kin', 'wick', 'ton', 'dle', 'ber', 'den', 'ren', 'bin', 'lin', 'nar', 'pos', 'dak', 'mus', 'gus']
+            },
+            female: {
+                prefixes: ['Bim', 'Car', 'Dol', 'Ell', 'Fen', 'Gil', 'Loo', 'Mip', 'Nin', 'Ori', 'Pip', 'Roy', 'Sha', 'Til', 'Wae', 'Zel', 'Bre', 'Duv', 'Lil', 'Nym'],
+                middles: ['ami', 'ell', 'ipo', 'wyn', 'ali', 'iss', 'ona', 'ila', 'enn', 'ari', 'ora', 'ina', 'yll', 'ova', 'umi'],
+                suffixes: ['wyn', 'lin', 'da', 'iss', 'na', 'ble', 'ra', 'tha', 'wen', 'ki', 'pa', 'mi', 'la', 'ri', 'nip']
+            },
+            neutral: {
+                prefixes: ['Bim', 'Cog', 'Daf', 'Fen', 'Gim', 'Jib', 'Kel', 'Nim', 'Pim', 'Ren', 'Sib', 'Tink', 'Wim', 'Zaf', 'Bren', 'Dip', 'Gal', 'Nix', 'Pog', 'Tib'],
+                middles: ['ble', 'kin', 'dle', 'fen', 'wil', 'ber', 'ton', 'nik', 'pos', 'dal', 'mer', 'rig', 'nap', 'wick', 'fod'],
+                suffixes: ['kin', 'ble', 'wick', 'nip', 'ren', 'den', 'pos', 'dle', 'lin', 'ton', 'ber', 'nar', 'dak', 'fiz', 'bin']
+            }
         }
     };
 
@@ -182,7 +199,8 @@ function initNameGenerator(opts) {
         { value: 'dragon', label: 'Dragon' },
         { value: 'demon', label: 'Demon' },
         { value: 'celestial', label: 'Celestial' },
-        { value: 'goblin', label: 'Goblin' }
+        { value: 'goblin', label: 'Goblin' },
+        { value: 'gnome', label: 'Gnome' }
     ];
     raceOptions.forEach(function (o) {
         var opt = document.createElement('option');
