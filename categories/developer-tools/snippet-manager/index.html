@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Snippet Manager &amp; Text Template Tool - Densanon Toolkit</title>
+    <meta name="description" content="Free browser-based snippet manager. Save reusable text snippets with titles and tags, fill in {{variable}} placeholders, search instantly, and import/export as JSON. No signup required.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        /* ---- Top bar ---- */
+        .topbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .search-input {
+            flex: 1;
+            min-width: 180px;
+            padding: 9px 14px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text);
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+        .search-input:focus { outline: none; border-color: var(--color-primary); }
+        .search-input::placeholder { color: var(--color-text-muted); }
+
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .btn-primary { background: var(--color-primary); color: #fff; }
+        .btn-primary:hover { background: var(--color-primary-hover); }
+        .btn-secondary {
+            background: var(--color-surface);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+        .btn-secondary:hover { background: var(--color-surface-hover); }
+        .btn-sm { padding: 6px 12px; font-size: 0.82rem; }
+        .btn-success { background: #065f46 !important; color: #6ee7b7 !important; }
+
+        /* ---- Layout ---- */
+        .tool-layout {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 800px) { .tool-layout { grid-template-columns: 1fr; } }
+
+        /* ---- Snippet list ---- */
+        .snippet-list { display: flex; flex-direction: column; gap: 12px; }
+        .snippet-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            transition: border-color 0.2s;
+        }
+        .snippet-card:hover { border-color: rgba(96,165,250,0.4); }
+        .snippet-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .snippet-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--color-text);
+            line-height: 1.3;
+        }
+        .snippet-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .snippet-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+        .tag {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(96,165,250,0.12);
+            color: var(--color-accent-blue);
+            cursor: pointer;
+            border: 1px solid rgba(96,165,250,0.2);
+            transition: background 0.15s;
+        }
+        .tag:hover { background: rgba(96,165,250,0.22); }
+        .snippet-body {
+            font-size: 0.88rem;
+            color: var(--color-text-muted);
+            white-space: pre-wrap;
+            line-height: 1.6;
+            max-height: 80px;
+            overflow: hidden;
+            mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+        }
+        .snippet-card.expanded .snippet-body {
+            max-height: none;
+            mask-image: none;
+            -webkit-mask-image: none;
+        }
+        .btn-icon {
+            padding: 5px 8px;
+            font-size: 0.78rem;
+            background: var(--color-surface-hover);
+            border: 1px solid var(--color-border);
+            border-radius: 5px;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            font-family: inherit;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .btn-icon:hover { color: var(--color-text); border-color: var(--color-text-muted); }
+        .btn-icon.danger:hover { color: #f87171; border-color: #f87171; }
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--color-text-muted);
+        }
+        .empty-state p { font-size: 0.95rem; }
+
+        /* ---- Right panel ---- */
+        .right-panel { display: flex; flex-direction: column; gap: 16px; }
+
+        /* ---- Form card ---- */
+        .form-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+        .form-card h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+        }
+        .form-group { margin-bottom: 12px; }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 9px 12px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text);
+            font-size: 0.88rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        .form-hint { font-size: 0.78rem; color: var(--color-text-muted); margin-top: 5px; line-height: 1.5; }
+
+        /* ---- Variable fill card ---- */
+        .var-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+        }
+        .var-card h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .var-hint { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 12px; }
+        .var-fields { display: flex; flex-direction: column; gap: 8px; }
+        .var-row { display: flex; align-items: center; gap: 8px; }
+        .var-name {
+            font-size: 0.82rem;
+            color: var(--color-accent-orange);
+            font-weight: 700;
+            min-width: 80px;
+            font-family: monospace;
+        }
+        .var-input {
+            flex: 1;
+            padding: 7px 10px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 5px;
+            color: var(--color-text);
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+        .var-input:focus { outline: none; border-color: var(--color-accent-orange); }
+        .var-empty { font-size: 0.85rem; color: var(--color-text-muted); }
+
+        /* ---- Import/export ---- */
+        .io-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* ---- Section label ---- */
+        .section-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<main class="container" style="padding-top:32px; padding-bottom:60px;">
+
+    <div class="category-header" style="margin-bottom:24px;">
+        <div class="breadcrumb"></div>
+        <h1>Snippet Manager &amp; Smart Reply Generator</h1>
+        <p>Save reusable text snippets, fill in variables, and copy with one click.</p>
+    </div>
+
+    <section style="margin-bottom:28px;">
+        <p>Save and organize reusable text snippets with titles and tags. Use <code style="background:var(--color-surface);padding:1px 5px;border-radius:4px;font-size:0.88em;">{{variable}}</code> placeholders in your snippets — fill them in once on the right panel and every instance is replaced. Search by title or tag, import/export as JSON, and copy any snippet to clipboard in one click. All data is stored locally in your browser.</p>
+    </section>
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search by title or tag…">
+        <button class="btn btn-secondary btn-sm" id="exportBtn">Export JSON</button>
+        <label class="btn btn-secondary btn-sm" style="cursor:pointer; margin:0;">Import JSON<input type="file" id="importFile" accept=".json" style="display:none"></label>
+    </div>
+
+    <div class="tool-layout">
+        <!-- Left: snippet list -->
+        <div>
+            <div class="section-label" id="listLabel">Snippets</div>
+            <div class="snippet-list" id="snippetList"></div>
+        </div>
+
+        <!-- Right panel -->
+        <div class="right-panel">
+
+            <!-- Add / Edit form -->
+            <div class="form-card">
+                <h3 id="formTitle">Add Snippet</h3>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="snippetTitle" placeholder="e.g. Follow-up email">
+                </div>
+                <div class="form-group">
+                    <label>Tags <span style="font-size:0.76rem;text-transform:none;letter-spacing:0;">(comma-separated)</span></label>
+                    <input type="text" id="snippetTags" placeholder="email, sales, support">
+                </div>
+                <div class="form-group">
+                    <label>Body</label>
+                    <textarea id="snippetBody" placeholder="Hi {{name}}, thanks for reaching out to {{company}}…"></textarea>
+                    <p class="form-hint">Use <strong>{{variable}}</strong> for placeholders — e.g. <code>{{name}}</code>, <code>{{company}}</code>, <code>{{date}}</code></p>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn btn-primary" id="saveSnippetBtn" style="flex:1;">Save Snippet</button>
+                    <button class="btn btn-secondary" id="cancelEditBtn" style="display:none;">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Variable fill -->
+            <div class="var-card" id="varCard">
+                <h3>Fill Variables</h3>
+                <p class="var-hint">Variables found across all snippets. Fill once — all copies replace automatically.</p>
+                <div class="var-fields" id="varFields">
+                    <p class="var-empty">No {{variables}} detected yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script src="../../../js/page-consistency.js"></script>
+<script>
+initPage({
+    depth: 2,
+    activeCategory: 'developer-tools',
+    title: 'Free Snippet Manager &amp; Text Template Tool',
+    breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'Snippet Manager' }
+    ]
+});
+</script>
+<script>
+const STORAGE_KEY = 'densanon_snippets_v1';
+const VAR_KEY = 'densanon_snippets_vars_v1';
+
+let snippets = load(STORAGE_KEY, []);
+let varValues = load(VAR_KEY, {});
+let editId = null;
+let filterTag = null;
+
+function load(key, def) {
+    try { return JSON.parse(localStorage.getItem(key)) ?? def; } catch { return def; }
+}
+function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(snippets));
+    localStorage.setItem(VAR_KEY, JSON.stringify(varValues));
+}
+
+/* ---- Extract {{vars}} from all snippet bodies ---- */
+function allVars() {
+    const vars = new Set();
+    snippets.forEach(s => {
+        const matches = s.body.match(/\{\{([^}]+)\}\}/g) || [];
+        matches.forEach(m => vars.add(m.slice(2, -2).trim()));
+    });
+    return [...vars].sort();
+}
+
+/* ---- Apply var values to text ---- */
+function applyVars(text) {
+    return text.replace(/\{\{([^}]+)\}\}/g, (_, v) => varValues[v.trim()] || `{{${v.trim()}}}`);
+}
+
+/* ---- Render ---- */
+function render() {
+    renderList();
+    renderVarFields();
+}
+
+function renderList() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const list = document.getElementById('snippetList');
+    const label = document.getElementById('listLabel');
+
+    let filtered = snippets;
+    if (filterTag) filtered = filtered.filter(s => s.tags.includes(filterTag));
+    if (query) filtered = filtered.filter(s =>
+        s.title.toLowerCase().includes(query) ||
+        s.tags.some(t => t.includes(query))
+    );
+
+    label.textContent = filterTag
+        ? `Snippets tagged "${filterTag}" (${filtered.length})`
+        : `Snippets (${filtered.length})`;
+
+    if (filtered.length === 0) {
+        list.innerHTML = `<div class="empty-state"><p>${snippets.length === 0 ? 'No snippets yet — add one on the right!' : 'No snippets match your search.'}</p></div>`;
+        return;
+    }
+
+    list.innerHTML = '';
+    filtered.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'snippet-card';
+        card.dataset.id = s.id;
+
+        const preview = applyVars(s.body);
+
+        card.innerHTML = `
+            <div class="snippet-card-header">
+                <div class="snippet-title">${escHtml(s.title)}</div>
+                <div class="snippet-card-actions">
+                    <button class="btn-icon copy-btn" data-id="${s.id}" title="Copy to clipboard">Copy</button>
+                    <button class="btn-icon edit-btn" data-id="${s.id}" title="Edit">Edit</button>
+                    <button class="btn-icon danger del-btn" data-id="${s.id}" title="Delete">✕</button>
+                </div>
+            </div>
+            ${s.tags.length ? `<div class="snippet-tags">${s.tags.map(t => `<span class="tag" data-tag="${escHtml(t)}">#${escHtml(t)}</span>`).join('')}</div>` : ''}
+            <div class="snippet-body">${escHtml(preview)}</div>
+            <div style="margin-top:8px;"><button class="btn-icon expand-btn" data-id="${s.id}" style="font-size:0.76rem;">Show more</button></div>
+        `;
+        list.appendChild(card);
+    });
+
+    // Event delegation
+    list.querySelectorAll('.copy-btn').forEach(btn => btn.addEventListener('click', () => copySnippet(btn.dataset.id, btn)));
+    list.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', () => startEdit(btn.dataset.id)));
+    list.querySelectorAll('.del-btn').forEach(btn => btn.addEventListener('click', () => deleteSnippet(btn.dataset.id)));
+    list.querySelectorAll('.expand-btn').forEach(btn => btn.addEventListener('click', () => {
+        const card = btn.closest('.snippet-card');
+        const expanded = card.classList.toggle('expanded');
+        btn.textContent = expanded ? 'Show less' : 'Show more';
+    }));
+    list.querySelectorAll('.tag').forEach(tag => tag.addEventListener('click', () => {
+        const t = tag.dataset.tag;
+        filterTag = filterTag === t ? null : t;
+        renderList();
+    }));
+}
+
+function renderVarFields() {
+    const vars = allVars();
+    const container = document.getElementById('varFields');
+    if (vars.length === 0) {
+        container.innerHTML = '<p class="var-empty">No {{variables}} detected yet.</p>';
+        return;
+    }
+    container.innerHTML = '';
+    vars.forEach(v => {
+        const row = document.createElement('div');
+        row.className = 'var-row';
+        row.innerHTML = `<span class="var-name">{{${v}}}</span><input class="var-input" type="text" placeholder="${v}" value="${escHtml(varValues[v] || '')}">`;
+        row.querySelector('input').addEventListener('input', e => {
+            varValues[v] = e.target.value;
+            save();
+            renderList();
+        });
+        container.appendChild(row);
+    });
+}
+
+/* ---- CRUD ---- */
+document.getElementById('saveSnippetBtn').addEventListener('click', () => {
+    const title = document.getElementById('snippetTitle').value.trim();
+    const body = document.getElementById('snippetBody').value.trim();
+    const tagsRaw = document.getElementById('snippetTags').value.trim();
+    if (!title || !body) { alert('Title and body are required.'); return; }
+    const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+    if (editId) {
+        const s = snippets.find(s => s.id === editId);
+        if (s) { s.title = title; s.body = body; s.tags = tags; s.updated = Date.now(); }
+        cancelEdit();
+    } else {
+        snippets.unshift({ id: 'sn_' + Date.now(), title, body, tags, created: Date.now() });
+    }
+    save();
+    render();
+    clearForm();
+});
+
+function startEdit(id) {
+    const s = snippets.find(s => s.id === id);
+    if (!s) return;
+    editId = id;
+    document.getElementById('snippetTitle').value = s.title;
+    document.getElementById('snippetBody').value = s.body;
+    document.getElementById('snippetTags').value = s.tags.join(', ');
+    document.getElementById('formTitle').textContent = 'Edit Snippet';
+    document.getElementById('cancelEditBtn').style.display = '';
+    document.getElementById('snippetTitle').focus();
+    document.querySelector('.right-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cancelEdit() {
+    editId = null;
+    document.getElementById('formTitle').textContent = 'Add Snippet';
+    document.getElementById('cancelEditBtn').style.display = 'none';
+    clearForm();
+}
+document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
+
+function clearForm() {
+    document.getElementById('snippetTitle').value = '';
+    document.getElementById('snippetTags').value = '';
+    document.getElementById('snippetBody').value = '';
+}
+
+function deleteSnippet(id) {
+    snippets = snippets.filter(s => s.id !== id);
+    save();
+    render();
+}
+
+function copySnippet(id, btn) {
+    const s = snippets.find(s => s.id === id);
+    if (!s) return;
+    const text = applyVars(s.body);
+    navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.classList.add('btn-success');
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove('btn-success'); }, 1800);
+    });
+}
+
+/* ---- Search ---- */
+document.getElementById('searchInput').addEventListener('input', () => { filterTag = null; renderList(); });
+
+/* ---- Export ---- */
+document.getElementById('exportBtn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(snippets, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'snippets.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+});
+
+/* ---- Import ---- */
+document.getElementById('importFile').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        try {
+            const imported = JSON.parse(ev.target.result);
+            if (!Array.isArray(imported)) { alert('Invalid JSON format. Expected an array of snippets.'); return; }
+            const valid = imported.filter(s => s.title && s.body);
+            if (valid.length === 0) { alert('No valid snippets found in the file.'); return; }
+            // Merge: avoid duplicate IDs
+            const existingIds = new Set(snippets.map(s => s.id));
+            valid.forEach(s => {
+                if (!s.id || existingIds.has(s.id)) s.id = 'sn_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+                if (!Array.isArray(s.tags)) s.tags = [];
+                existingIds.add(s.id);
+            });
+            snippets = [...valid, ...snippets];
+            save();
+            render();
+            alert(`Imported ${valid.length} snippet(s).`);
+        } catch { alert('Could not parse JSON file.'); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+});
+
+/* ---- Utility ---- */
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ---- Seed demo snippets if empty ---- */
+if (snippets.length === 0) {
+    snippets = [
+        { id: 'demo1', title: 'Follow-up Email', tags: ['email','sales'], body: 'Hi {{name}},\n\nJust following up on my previous message about {{topic}}. Would you have 15 minutes this week to connect?\n\nBest,\n{{sender}}', created: Date.now() },
+        { id: 'demo2', title: 'Meeting Confirmed', tags: ['email','scheduling'], body: 'Hi {{name}},\n\nYour meeting is confirmed for {{date}} at {{time}}. Looking forward to speaking with you!\n\n{{sender}}', created: Date.now() - 1000 },
+        { id: 'demo3', title: 'Support Closing', tags: ['support'], body: 'Hi {{name}},\n\nThanks for reaching out to {{company}} support. I\'m happy to report that your issue has been resolved.\n\nPlease don\'t hesitate to contact us if you need anything else.\n\nBest,\n{{sender}}', created: Date.now() - 2000 }
+    ];
+    save();
+}
+
+render();
+</script>
+</body>
+</html>
