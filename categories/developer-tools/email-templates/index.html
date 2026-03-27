@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Email Template Generator - Densanon Toolkit</title>
+    <meta name="description" content="Free parent-teacher email template generator. Choose from 7 preset templates, fill in placeholders, preview in real time, and copy or download as .txt. Add your own custom templates too.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        .tool-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 700px) {
+            .tool-layout { grid-template-columns: 1fr; }
+        }
+
+        /* Sidebar */
+        .template-sidebar {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .sidebar-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sidebar-header h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .template-list { list-style: none; padding: 8px 0; }
+        .template-list li { position: relative; }
+        .template-list li button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px 16px;
+            background: none;
+            border: none;
+            color: var(--color-text);
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.15s;
+            line-height: 1.4;
+        }
+        .template-list li button:hover { background: var(--color-surface-hover); }
+        .template-list li.active button {
+            background: rgba(229, 62, 62, 0.12);
+            color: #f87171;
+            font-weight: 600;
+        }
+        .template-list li .del-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 4px 6px;
+            border-radius: 4px;
+            display: none;
+        }
+        .template-list li:hover .del-btn { display: block; }
+        .template-list li .del-btn:hover { color: #f87171; background: rgba(229,62,62,0.1); }
+        .add-template-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 16px;
+            background: none;
+            border: none;
+            border-top: 1px solid var(--color-border);
+            color: var(--color-accent-blue);
+            font-size: 0.88rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .add-template-btn:hover { background: var(--color-surface-hover); }
+
+        /* Main panel */
+        .main-panel { display: flex; flex-direction: column; gap: 16px; }
+
+        /* Fields grid */
+        .fields-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .field-group { display: flex; flex-direction: column; gap: 5px; }
+        .field-group label {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .field-group input {
+            padding: 9px 12px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text);
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .field-group input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        /* Preview */
+        .preview-box {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            min-height: 260px;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+            line-height: 1.75;
+            color: var(--color-text);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+        .preview-box .placeholder-highlight {
+            color: var(--color-accent-orange);
+            font-weight: 600;
+        }
+
+        /* Action bar */
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 9px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s, opacity 0.2s;
+        }
+        .btn-primary { background: var(--color-primary); color: #fff; }
+        .btn-primary:hover { background: var(--color-primary-hover); }
+        .btn-secondary {
+            background: var(--color-surface);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+        .btn-secondary:hover { background: var(--color-surface-hover); }
+        .btn-success { background: #065f46; color: #6ee7b7; }
+        .btn-success:hover { background: #047857; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 28px;
+            width: 90%;
+            max-width: 560px;
+        }
+        .modal h3 { font-size: 1.1rem; margin-bottom: 16px; }
+        .modal label {
+            display: block;
+            font-size: 0.82rem;
+            color: var(--color-text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 5px;
+        }
+        .modal input, .modal textarea {
+            width: 100%;
+            padding: 9px 12px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text);
+            font-size: 0.9rem;
+            font-family: inherit;
+            margin-bottom: 14px;
+        }
+        .modal input:focus, .modal textarea:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+        .modal textarea { min-height: 180px; resize: vertical; }
+        .modal-hint {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+
+        /* Section label */
+        .section-label {
+            font-size: 0.82rem;
+            color: var(--color-text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<main class="container" style="padding-top:32px; padding-bottom:60px;">
+
+    <div class="category-header" style="margin-bottom:24px;">
+        <div class="breadcrumb"></div>
+        <h1>Parent Communication Email Templates</h1>
+        <p>Choose a template, fill in the details, and copy or download your ready-to-send email.</p>
+    </div>
+
+    <section style="margin-bottom:28px;">
+        <p>Seven preset parent-teacher email templates for the most common communications. Fill in the placeholder fields — the preview updates in real time. Copy to clipboard, download as a .txt file, or save your own custom templates for reuse. Everything runs in your browser; no data is sent anywhere.</p>
+    </section>
+
+    <div class="tool-layout">
+
+        <!-- Sidebar -->
+        <aside class="template-sidebar">
+            <div class="sidebar-header">
+                <h3>Templates</h3>
+            </div>
+            <ul class="template-list" id="templateList"></ul>
+            <button class="add-template-btn" id="addTemplateBtn">
+                <span>+</span> Add Custom Template
+            </button>
+        </aside>
+
+        <!-- Main panel -->
+        <div class="main-panel">
+
+            <!-- Fields -->
+            <div>
+                <div class="section-label">Fill In Details</div>
+                <div class="fields-grid" id="fieldsGrid"></div>
+            </div>
+
+            <!-- Preview -->
+            <div>
+                <div class="section-label">Preview</div>
+                <div class="preview-box" id="previewBox"></div>
+            </div>
+
+            <!-- Actions -->
+            <div class="action-bar">
+                <button class="btn btn-primary" id="copyBtn">Copy to Clipboard</button>
+                <button class="btn btn-secondary" id="downloadBtn">Download .txt</button>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- Add Template Modal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <h3>Add Custom Template</h3>
+        <label>Template Name</label>
+        <input type="text" id="newTemplateName" placeholder="e.g. Semester Wrap-Up">
+        <label>Template Body</label>
+        <p class="modal-hint">Use placeholders like <strong>[Student Name]</strong>, <strong>[Parent Name]</strong>, <strong>[Teacher Name]</strong>, <strong>[Date]</strong>, <strong>[Subject]</strong>, <strong>[Details]</strong> — they'll be replaced by the fields above.</p>
+        <textarea id="newTemplateBody" placeholder="Dear [Parent Name],&#10;&#10;I wanted to reach out regarding [Student Name]..."></textarea>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveTemplateBtn">Save Template</button>
+        </div>
+    </div>
+</div>
+
+<script src="../../../js/page-consistency.js"></script>
+<script>
+initPage({
+    depth: 2,
+    activeCategory: 'developer-tools',
+    title: 'Free Email Template Generator',
+    breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'Email Templates' }
+    ]
+});
+</script>
+<script>
+/* ---- Preset templates ---- */
+const PRESET_TEMPLATES = [
+    {
+        id: 'progress-report',
+        name: 'Progress Report',
+        body: `Subject: [Student Name]'s Progress Update – [Subject]
+
+Dear [Parent Name],
+
+I hope this message finds you well. I wanted to take a moment to share an update on [Student Name]'s progress in [Subject].
+
+[Details]
+
+Overall, [Student Name] has shown dedication and effort in class. Please feel free to reply to this email or contact me to schedule a brief call if you'd like to discuss this further.
+
+Thank you for your continued support.
+
+Warm regards,
+[Teacher Name]
+[Date]`
+    },
+    {
+        id: 'absence-follow-up',
+        name: 'Absence Follow-Up',
+        body: `Subject: Following Up on [Student Name]'s Recent Absence
+
+Dear [Parent Name],
+
+I'm reaching out to follow up regarding [Student Name]'s absence from class recently.
+
+[Details]
+
+I want to make sure [Student Name] has everything needed to stay on track. Please let me know if there is anything I can do to help during this time.
+
+Thank you for keeping me informed.
+
+Best regards,
+[Teacher Name]
+[Date]`
+    },
+    {
+        id: 'behavior-concern',
+        name: 'Behavior Concern',
+        body: `Subject: Regarding [Student Name]'s Behavior in [Subject]
+
+Dear [Parent Name],
+
+I am writing to share a concern about [Student Name]'s behavior in [Subject] class.
+
+[Details]
+
+I believe that with your support at home and our partnership, we can help [Student Name] get back on track. I would love the opportunity to connect with you to discuss this together.
+
+Please let me know your availability for a brief call or meeting.
+
+Respectfully,
+[Teacher Name]
+[Date]`
+    },
+    {
+        id: 'positive-feedback',
+        name: 'Positive Feedback',
+        body: `Subject: Great News About [Student Name]!
+
+Dear [Parent Name],
+
+I just wanted to share some wonderful news about [Student Name] in [Subject] class!
+
+[Details]
+
+It is a pleasure having [Student Name] in class. Their attitude and effort are a great example for their peers. Please pass along my congratulations!
+
+Warmly,
+[Teacher Name]
+[Date]`
+    },
+    {
+        id: 'meeting-request',
+        name: 'Meeting Request',
+        body: `Subject: Meeting Request – [Student Name] / [Subject]
+
+Dear [Parent Name],
+
+I would like to schedule a time to meet with you to discuss [Student Name]'s progress in [Subject]. This will be a great opportunity for us to work together and make sure [Student Name] is getting the support they need.
+
+[Details]
+
+Please let me know a few times that work for you and I will do my best to accommodate your schedule. We can meet in person, over the phone, or via video call — whichever is most convenient.
+
+Thank you for your time.
+
+Best regards,
+[Teacher Name]
+[Date]`
+    },
+    {
+        id: 'field-trip-permission',
+        name: 'Field Trip Permission',
+        body: `Subject: Field Trip Permission – [Date]
+
+Dear [Parent Name],
+
+I am excited to inform you that our [Subject] class will be going on a field trip!
+
+[Details]
+
+To give permission for [Student Name] to attend, please sign and return the attached permission slip by [Date]. The cost, if any, is noted on the slip.
+
+If you have any questions or concerns, please do not hesitate to reach out.
+
+Looking forward to a great experience!
+
+[Teacher Name]`
+    },
+    {
+        id: 'homework-reminder',
+        name: 'Homework Reminder',
+        body: `Subject: Homework Reminder for [Student Name] – [Subject]
+
+Dear [Parent Name],
+
+I wanted to send a quick reminder that [Student Name] has some outstanding homework in [Subject] that is due soon.
+
+[Details]
+
+Completing assignments on time is an important part of staying on track. A little encouragement at home goes a long way! Please feel free to reach out if [Student Name] needs any clarification on the assignment.
+
+Thank you for your partnership.
+
+Best,
+[Teacher Name]
+[Date]`
+    }
+];
+
+const FIELDS = ['Student Name', 'Parent Name', 'Teacher Name', 'Date', 'Subject', 'Details'];
+const STORAGE_KEY = 'densanon_email_templates_custom';
+
+/* ---- State ---- */
+let customTemplates = loadCustom();
+let activeId = PRESET_TEMPLATES[0].id;
+let fieldValues = {};
+
+function loadCustom() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
+}
+function saveCustom() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(customTemplates));
+}
+function allTemplates() {
+    return [...PRESET_TEMPLATES, ...customTemplates];
+}
+function getTemplate(id) {
+    return allTemplates().find(t => t.id === id);
+}
+
+/* ---- Render sidebar ---- */
+function renderSidebar() {
+    const list = document.getElementById('templateList');
+    list.innerHTML = '';
+    allTemplates().forEach(t => {
+        const li = document.createElement('li');
+        if (t.id === activeId) li.classList.add('active');
+        const btn = document.createElement('button');
+        btn.textContent = t.name;
+        btn.onclick = () => { activeId = t.id; renderSidebar(); renderPreview(); };
+        li.appendChild(btn);
+        // Delete button for custom templates
+        if (!PRESET_TEMPLATES.find(p => p.id === t.id)) {
+            const del = document.createElement('button');
+            del.className = 'del-btn';
+            del.textContent = '✕';
+            del.title = 'Delete template';
+            del.onclick = (e) => {
+                e.stopPropagation();
+                customTemplates = customTemplates.filter(c => c.id !== t.id);
+                saveCustom();
+                if (activeId === t.id) activeId = PRESET_TEMPLATES[0].id;
+                renderSidebar();
+                renderPreview();
+            };
+            li.appendChild(del);
+        }
+        list.appendChild(li);
+    });
+}
+
+/* ---- Render fields ---- */
+function renderFields() {
+    const grid = document.getElementById('fieldsGrid');
+    grid.innerHTML = '';
+    FIELDS.forEach(f => {
+        const group = document.createElement('div');
+        group.className = 'field-group';
+        const label = document.createElement('label');
+        label.textContent = f;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = f;
+        input.value = fieldValues[f] || '';
+        input.oninput = () => { fieldValues[f] = input.value; renderPreview(); };
+        group.appendChild(label);
+        group.appendChild(input);
+        grid.appendChild(group);
+    });
+}
+
+/* ---- Render preview ---- */
+function renderPreview() {
+    const template = getTemplate(activeId);
+    if (!template) return;
+    let text = template.body;
+    FIELDS.forEach(f => {
+        const val = fieldValues[f] || '';
+        const placeholder = `[${f}]`;
+        text = text.split(placeholder).join(val || placeholder);
+    });
+    const box = document.getElementById('previewBox');
+    // Highlight unfilled placeholders
+    const escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const highlighted = escaped.replace(/\[([^\]]+)\]/g, '<span class="placeholder-highlight">[$1]</span>');
+    box.innerHTML = highlighted;
+}
+
+/* ---- Copy & download ---- */
+document.getElementById('copyBtn').addEventListener('click', () => {
+    const text = getRawText();
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyBtn');
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-primary');
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove('btn-success'); btn.classList.add('btn-primary'); }, 2000);
+    });
+});
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+    const text = getRawText();
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const t = getTemplate(activeId);
+    a.download = (t ? t.name.replace(/\s+/g, '-').toLowerCase() : 'email') + '.txt';
+    a.click();
+    URL.revokeObjectURL(a.href);
+});
+
+function getRawText() {
+    const template = getTemplate(activeId);
+    if (!template) return '';
+    let text = template.body;
+    FIELDS.forEach(f => {
+        const val = fieldValues[f] || '';
+        text = text.split(`[${f}]`).join(val || `[${f}]`);
+    });
+    return text;
+}
+
+/* ---- Modal ---- */
+document.getElementById('addTemplateBtn').addEventListener('click', () => {
+    document.getElementById('newTemplateName').value = '';
+    document.getElementById('newTemplateBody').value = '';
+    document.getElementById('modalOverlay').classList.add('open');
+});
+document.getElementById('cancelModalBtn').addEventListener('click', () => {
+    document.getElementById('modalOverlay').classList.remove('open');
+});
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('modalOverlay'))
+        document.getElementById('modalOverlay').classList.remove('open');
+});
+document.getElementById('saveTemplateBtn').addEventListener('click', () => {
+    const name = document.getElementById('newTemplateName').value.trim();
+    const body = document.getElementById('newTemplateBody').value.trim();
+    if (!name || !body) {
+        alert('Please enter a template name and body.');
+        return;
+    }
+    const id = 'custom_' + Date.now();
+    customTemplates.push({ id, name, body });
+    saveCustom();
+    activeId = id;
+    document.getElementById('modalOverlay').classList.remove('open');
+    renderSidebar();
+    renderPreview();
+});
+
+/* ---- Init ---- */
+renderSidebar();
+renderFields();
+renderPreview();
+</script>
+</body>
+</html>
