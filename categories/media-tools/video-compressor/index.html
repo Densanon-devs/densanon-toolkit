@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Compressor – Reduce Video File Size Online Free | Densanon Toolkit</title>
+    <meta name="description" content="Free online video compressor — reduce video file size by adjusting resolution, quality, and bitrate. No signup, no server uploads. Runs entirely in your browser.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        .drop-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            min-height: 200px;
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            background: var(--color-surface);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            padding: 40px 24px;
+            text-align: center;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: var(--color-primary);
+            background: rgba(229, 62, 62, 0.05);
+        }
+
+        .drop-zone-icon { font-size: 3rem; opacity: 0.5; }
+        .drop-zone-text { color: var(--color-text-muted); font-size: 1rem; }
+        .drop-zone-text strong { color: var(--color-primary); }
+        .drop-zone-hint { color: var(--color-text-muted); font-size: 0.8rem; opacity: 0.7; }
+
+        .file-info {
+            display: none;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .file-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .file-info-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .file-info-item span {
+            font-size: 1rem;
+            color: var(--color-text);
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .controls {
+            display: none;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: end;
+            margin-bottom: 16px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .control-group label {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .control-group select,
+        .control-group input[type="range"] {
+            padding: 10px 12px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .range-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .range-wrap input[type="range"] {
+            flex: 1;
+            padding: 0;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--color-border);
+            border: none;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .range-wrap input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            cursor: pointer;
+        }
+
+        .range-wrap input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            cursor: pointer;
+            border: none;
+        }
+
+        .range-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--color-text);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .est-size {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            padding: 12px 28px;
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-secondary {
+            padding: 12px 28px;
+            background: var(--color-surface);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .btn-secondary:hover { border-color: var(--color-text-muted); }
+
+        .progress-wrap {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 8px;
+            background: var(--color-bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--color-primary);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            margin-top: 8px;
+        }
+
+        .result-section {
+            display: none;
+            background: var(--color-surface);
+            border: 1px solid var(--color-accent-green);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .result-section h3 {
+            color: var(--color-accent-green);
+            margin: 0 0 16px 0;
+            font-size: 1.1rem;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .result-grid label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .result-grid span {
+            font-size: 1rem;
+            color: var(--color-text);
+            font-weight: 600;
+        }
+
+        .result-grid .savings {
+            color: var(--color-accent-green);
+        }
+
+        .preview-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .preview-col h4 {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 0 0 8px 0;
+        }
+
+        .preview-col video {
+            width: 100%;
+            border-radius: var(--radius);
+            background: #000;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background: var(--color-accent-green);
+            color: #fff;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .download-btn:hover { opacity: 0.9; }
+
+        .error-box {
+            display: none;
+            background: rgba(229, 62, 62, 0.1);
+            border: 1px solid var(--color-primary);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            color: var(--color-primary);
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        .how-to ol {
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+
+        .how-to ol li {
+            margin-bottom: 8px;
+            color: var(--color-text-muted);
+        }
+
+        .how-to ol li strong {
+            color: var(--color-text);
+        }
+
+        .format-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+
+        .format-table th,
+        .format-table td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 0.9rem;
+        }
+
+        .format-table th {
+            color: var(--color-text);
+            font-weight: 600;
+            background: var(--color-surface);
+        }
+
+        .format-table td {
+            color: var(--color-text-muted);
+        }
+
+        .faq-section h3 {
+            color: var(--color-text);
+            margin: 20px 0 8px 0;
+            font-size: 1rem;
+        }
+
+        .faq-section p {
+            color: var(--color-text-muted);
+            line-height: 1.6;
+            margin: 0 0 16px 0;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.6rem; }
+            .file-info-grid { grid-template-columns: 1fr 1fr; }
+            .controls-row { flex-direction: column; }
+            .result-grid { grid-template-columns: 1fr 1fr; }
+            .preview-row { grid-template-columns: 1fr; }
+            .btn-row { flex-direction: column; }
+            .btn-primary, .btn-secondary { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Video Compressor</h1>
+            <p>Reduce video file size by adjusting resolution, quality, and bitrate — entirely in your browser</p>
+        </div>
+
+        <section class="tool-box">
+            <input type="file" id="file-input" accept="video/*,.mp4,.webm,.mov,.avi,.mkv,.ogv,.mpeg,.mpg,.3gp,.m4v" style="display:none">
+
+            <div class="drop-zone" id="drop-zone">
+                <div class="drop-zone-icon">&#127916;</div>
+                <div class="drop-zone-text"><strong>Click to select</strong> or drag &amp; drop a video file</div>
+                <div class="drop-zone-hint">Supports MP4, WebM, MOV, AVI, MKV, and more</div>
+            </div>
+
+            <div class="file-info" id="file-info">
+                <div class="file-info-grid">
+                    <div class="file-info-item">
+                        <label>File Name</label>
+                        <span id="info-name">—</span>
+                    </div>
+                    <div class="file-info-item">
+                        <label>Size</label>
+                        <span id="info-size">—</span>
+                    </div>
+                    <div class="file-info-item">
+                        <label>Type</label>
+                        <span id="info-type">—</span>
+                    </div>
+                    <div class="file-info-item">
+                        <label>Duration</label>
+                        <span id="info-duration">—</span>
+                    </div>
+                    <div class="file-info-item">
+                        <label>Resolution</label>
+                        <span id="info-resolution">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls" id="controls">
+                <div class="controls-row">
+                    <div class="control-group">
+                        <label>Target Resolution</label>
+                        <select id="resolution-select">
+                            <option value="original">Original</option>
+                            <option value="1080">1080p (1920&times;1080)</option>
+                            <option value="720" selected>720p (1280&times;720)</option>
+                            <option value="480">480p (854&times;480)</option>
+                            <option value="360">360p (640&times;360)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Output Format</label>
+                        <select id="format-select">
+                            <option value="webm">WebM (VP8 + Vorbis)</option>
+                            <option value="mp4">MP4 (H.264 + AAC)*</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="controls-row">
+                    <div class="control-group">
+                        <label>Video Quality</label>
+                        <div class="range-wrap">
+                            <input type="range" id="quality-slider" min="0.5" max="8" step="0.5" value="2.5">
+                            <span class="range-value" id="quality-value">2.5 Mbps</span>
+                        </div>
+                        <div class="est-size" id="est-size"></div>
+                    </div>
+                </div>
+                <div class="controls-row">
+                    <div class="control-group">
+                        <label>Audio</label>
+                        <select id="audio-select">
+                            <option value="include">Include Audio</option>
+                            <option value="mute">Remove Audio (smaller file)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Speed</label>
+                        <select id="speed-select">
+                            <option value="quality">Quality (slower, better)</option>
+                            <option value="fast" selected>Balanced</option>
+                        </select>
+                    </div>
+                </div>
+                <p style="font-size:0.8rem;color:var(--color-text-muted);margin:0 0 16px 0;">*MP4 output requires browser support for MediaRecorder with H.264. WebM is universally supported.</p>
+                <div class="btn-row">
+                    <button class="btn-primary" id="compress-btn">Compress Video</button>
+                    <button class="btn-secondary" id="reset-btn">Choose Another File</button>
+                </div>
+            </div>
+
+            <div class="error-box" id="error-box"></div>
+
+            <div class="progress-wrap" id="progress-wrap">
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="progress-bar"></div>
+                </div>
+                <div class="progress-text" id="progress-text">Preparing...</div>
+            </div>
+
+            <div class="result-section" id="result-section">
+                <h3>Video Compressed Successfully</h3>
+                <div class="result-grid">
+                    <div>
+                        <label>Original Size</label>
+                        <span id="result-original">—</span>
+                    </div>
+                    <div>
+                        <label>Compressed Size</label>
+                        <span id="result-compressed">—</span>
+                    </div>
+                    <div>
+                        <label>Saved</label>
+                        <span id="result-saved" class="savings">—</span>
+                    </div>
+                    <div>
+                        <label>Resolution</label>
+                        <span id="result-resolution">—</span>
+                    </div>
+                    <div>
+                        <label>Duration</label>
+                        <span id="result-duration">—</span>
+                    </div>
+                    <div>
+                        <label>Format</label>
+                        <span id="result-format">—</span>
+                    </div>
+                </div>
+                <div class="preview-row">
+                    <div class="preview-col">
+                        <h4>Original</h4>
+                        <video id="preview-original" controls muted playsinline></video>
+                    </div>
+                    <div class="preview-col">
+                        <h4>Compressed</h4>
+                        <video id="preview-compressed" controls muted playsinline></video>
+                    </div>
+                </div>
+                <a class="download-btn" id="download-btn" href="#" download>Download Compressed Video</a>
+            </div>
+        </section>
+
+        <section class="tool-box how-to">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Upload a video</strong> by clicking the drop zone or dragging a video file onto it. MP4, WebM, MOV, and more are supported.</li>
+                <li><strong>Choose a target resolution</strong> — downscaling from 1080p to 720p or 480p significantly reduces file size.</li>
+                <li><strong>Adjust the video quality slider</strong> to set the target bitrate. Lower values produce smaller files with some quality trade-off.</li>
+                <li><strong>Select the output format</strong> — WebM is universally supported in browsers; MP4 depends on your browser's encoding capabilities.</li>
+                <li><strong>Optionally remove audio</strong> to save even more space if you only need the video track.</li>
+                <li><strong>Click "Compress Video"</strong> and wait for processing. Compare the original and compressed previews side by side.</li>
+                <li><strong>Download</strong> your compressed video with the download button.</li>
+            </ol>
+        </section>
+
+        <section class="tool-box">
+            <h2>What Does This Tool Do?</h2>
+            <p>The Video Compressor re-encodes your video at a lower bitrate and/or resolution to reduce file size. It uses the browser's built-in MediaRecorder API to process everything locally — your video is never uploaded to any server. This makes it ideal for shrinking clips before sharing on social media, attaching to emails, or uploading to platforms with file size limits.</p>
+        </section>
+
+        <section class="tool-box">
+            <h2>Compression Tips</h2>
+            <table class="format-table">
+                <thead>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Impact on Size</th>
+                        <th>Impact on Quality</th>
+                        <th>Recommendation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Resolution</td>
+                        <td>High</td>
+                        <td>Noticeable if scaled down far</td>
+                        <td>720p is a great balance for most use cases</td>
+                    </tr>
+                    <tr>
+                        <td>Bitrate</td>
+                        <td>High</td>
+                        <td>Moderate — artifacts appear at very low values</td>
+                        <td>2-3 Mbps for 720p, 4-6 Mbps for 1080p</td>
+                    </tr>
+                    <tr>
+                        <td>Remove Audio</td>
+                        <td>Moderate</td>
+                        <td>None (no audio)</td>
+                        <td>Use for silent clips, GIF-like loops, or b-roll</td>
+                    </tr>
+                    <tr>
+                        <td>Format</td>
+                        <td>Moderate</td>
+                        <td>WebM/VP8 comparable to MP4/H.264</td>
+                        <td>WebM for web, MP4 for wider device compatibility</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="tool-box faq-section">
+            <h2>FAQ</h2>
+
+            <h3>Does my video get uploaded to a server?</h3>
+            <p>No. Everything happens in your browser using the Canvas API and MediaRecorder API. Your video file never leaves your device.</p>
+
+            <h3>What video formats can I compress?</h3>
+            <p>Any format your browser can decode — typically MP4 (H.264), WebM (VP8/VP9), and OGG. Support varies by browser; Chrome and Edge tend to have the widest support.</p>
+
+            <h3>Why is my compressed file larger than the original?</h3>
+            <p>This can happen if the original was already highly compressed at a low bitrate, or if you set the target bitrate higher than the source. Try lowering the bitrate slider or reducing the resolution.</p>
+
+            <h3>How much can I reduce the file size?</h3>
+            <p>Typically 40-80% for high-bitrate source videos. Downscaling resolution provides the biggest savings. A 100 MB 1080p clip can often become 15-30 MB at 720p with 2 Mbps.</p>
+
+            <h3>Can I compress very long videos?</h3>
+            <p>Yes, but browser memory limits apply. Videos under 15-20 minutes typically work well. For very long videos, you may run into memory limitations depending on your device's RAM.</p>
+
+            <h3>Why does compression take so long?</h3>
+            <p>The video must be decoded frame-by-frame, drawn to a canvas, and re-encoded in real time. Processing speed depends on your device's CPU. The "Balanced" speed option processes faster than "Quality" mode.</p>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'media-tools',
+            title: 'Video Compressor – Reduce Video File Size Online Free',
+            breadcrumbs: [
+                { label: 'Media Tools', href: '../index.html' },
+                { label: 'Video Compressor' }
+            ]
+        });
+    </script>
+    <script src="video-compressor.js"></script>
+</body>
+</html>
