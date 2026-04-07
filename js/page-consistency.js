@@ -334,6 +334,7 @@ function injectFooter() {
         <a href="https://buy.stripe.com/7sYbJ37Q0d5IghXbH79sk00" class="btn-support" target="_blank" rel="noopener">Support the Team</a>
       </div>
       <p>Densanon Toolkit &mdash; Free online utilities. All processing happens in your browser.</p>
+      <p class="footer-made-by">Made by <a href="https://densanon.com" target="_blank" rel="noopener">Densanon</a></p>
     </div>`;
 
   document.body.append(footer);
