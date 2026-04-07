@@ -239,7 +239,7 @@
 </main>
 
   <!-- qr-code-styling gives us a clean canvas-based renderer -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
   <script>
     const textInput    = document.getElementById('text-input');
     const fgColor      = document.getElementById('fg-color');
@@ -299,8 +299,6 @@
       const fg   = fgHex.value || '#000000';
       const bg   = bgHex.value || '#ffffff';
       const ec   = ecSelect.value;
-
-      const ecMap = { L: QRCode.ErrorCorrectionLevel?.L, M: undefined, Q: undefined, H: undefined };
 
       // Render to canvas
       QRCode.toCanvas(canvas, text, {
