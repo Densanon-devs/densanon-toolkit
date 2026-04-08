@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Crop Online Free - Crop & Auto-Trim Images | Densanon Toolkit</title>
+    <meta name="description" content="Free online image cropper with manual crop and auto-trim. Remove whitespace borders, crop to exact dimensions. 100% browser-based, no signup required.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        .crop-drop-zone {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            background: var(--color-surface);
+            margin-bottom: 20px;
+        }
+        .crop-drop-zone:hover,
+        .crop-drop-zone.dragover {
+            border-color: var(--color-primary);
+            background: rgba(229, 62, 62, 0.05);
+        }
+        .crop-drop-zone .drop-icon { font-size: 2.4rem; display: block; margin-bottom: 10px; opacity: 0.65; }
+        .crop-drop-zone .drop-label { color: var(--color-text-muted); font-size: 1rem; margin-bottom: 4px; }
+        .crop-drop-zone .drop-label strong { color: var(--color-text); }
+        .crop-drop-zone .drop-hint { font-size: 0.82rem; color: var(--color-text-muted); opacity: 0.6; }
+
+        .crop-app { display: none; flex-direction: column; gap: 16px; }
+        .crop-app.visible { display: flex; }
+
+        /* Mode tabs */
+        .mode-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+        .mode-tab {
+            flex: 1; padding: 10px 16px; background: var(--color-surface); border: 1px solid var(--color-border);
+            border-radius: 6px; color: var(--color-text-muted); font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; text-align: center; font-family: inherit;
+        }
+        .mode-tab:hover { border-color: var(--color-text-muted); color: var(--color-text); }
+        .mode-tab.active { border-color: var(--color-primary); color: var(--color-primary); background: rgba(229, 62, 62, 0.06); }
+
+        /* Controls panel */
+        .controls-panel {
+            background: var(--color-surface); border: 1px solid var(--color-border);
+            border-radius: var(--radius); padding: 16px;
+        }
+        .controls-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+        .control-group { display: flex; flex-direction: column; gap: 4px; }
+        .control-group label { font-size: 0.78rem; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+        .control-group input[type="number"],
+        .control-group input[type="range"] { font-family: inherit; }
+        .control-group input[type="number"] {
+            width: 90px; padding: 8px 10px; background: var(--color-bg); border: 1px solid var(--color-border);
+            border-radius: 6px; color: var(--color-text); font-size: 0.9rem;
+        }
+        .control-group input[type="number"]:focus { border-color: var(--color-primary); outline: none; }
+        .threshold-value { font-size: 0.85rem; color: var(--color-primary); font-weight: 600; min-width: 32px; text-align: right; }
+
+        /* Preview area */
+        .preview-container {
+            position: relative; border: 1px solid var(--color-border); border-radius: var(--radius);
+            overflow: hidden; background: repeating-conic-gradient(#1a1d27 0% 25%, #15171f 0% 50%) 0 0 / 16px 16px;
+            display: flex; align-items: center; justify-content: center; min-height: 200px; max-height: 500px;
+        }
+        .preview-container img { max-width: 100%; max-height: 480px; display: block; }
+        .crop-overlay {
+            position: absolute; border: 2px solid var(--color-primary); background: rgba(229, 62, 62, 0.12);
+            pointer-events: none; display: none;
+        }
+        .preview-dims {
+            padding: 8px 14px; font-size: 0.78rem; color: var(--color-text-muted);
+            background: var(--color-surface); border: 1px solid var(--color-border);
+            border-radius: var(--radius); margin-top: 6px;
+        }
+
+        /* Action buttons */
+        .crop-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn-crop {
+            padding: 12px 28px; background: var(--color-primary); color: #fff; border: none;
+            border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer;
+            transition: background 0.2s; font-family: inherit;
+        }
+        .btn-crop:hover { background: var(--color-primary-hover); }
+        .btn-crop:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary {
+            padding: 12px 28px; background: transparent; border: 1px solid var(--color-border);
+            border-radius: 6px; color: var(--color-text-muted); font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: border-color 0.2s, color 0.2s; font-family: inherit;
+        }
+        .btn-secondary:hover { border-color: var(--color-primary); color: var(--color-text); }
+
+        /* Result */
+        .result-section { display: none; flex-direction: column; gap: 12px; }
+        .result-section.visible { display: flex; }
+        .result-compare {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+        }
+        @media (max-width: 640px) { .result-compare { grid-template-columns: 1fr; } }
+        .result-pane {
+            border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden;
+        }
+        .result-pane-label {
+            padding: 10px 14px; font-size: 0.78rem; font-weight: 600; color: var(--color-text-muted);
+            text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--color-border);
+            background: var(--color-surface);
+        }
+        .result-pane-img {
+            background: repeating-conic-gradient(#1a1d27 0% 25%, #15171f 0% 50%) 0 0 / 16px 16px;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 140px; max-height: 400px; overflow: auto; padding: 8px;
+        }
+        .result-pane-img img { max-width: 100%; max-height: 380px; display: block; }
+        .result-pane-meta {
+            padding: 8px 14px; font-size: 0.78rem; color: var(--color-text-muted);
+            border-top: 1px solid var(--color-border); background: var(--color-surface);
+        }
+
+        /* SEO content */
+        .content-section { margin-top: 40px; }
+        .content-section h2 { color: var(--color-text); margin-bottom: 12px; }
+        .content-section p,
+        .content-section li { color: var(--color-text-muted); line-height: 1.7; }
+        .content-section ol { padding-left: 20px; }
+        .content-section ol li { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="tool-header">
+            <div class="breadcrumb"></div>
+            <h1>Image Crop</h1>
+            <p>Crop images manually with precise coordinates or auto-trim whitespace borders. All processing happens in your browser — your images never leave your device.</p>
+        </div>
+
+        <!-- Drop Zone -->
+        <div class="crop-drop-zone" id="dropZone">
+            <span class="drop-icon">✂️</span>
+            <p class="drop-label"><strong>Drop an image here</strong> or click to browse</p>
+            <p class="drop-hint">PNG, JPG, WebP, BMP, GIF</p>
+            <input type="file" id="fileInput" accept="image/*" style="display:none">
+        </div>
+
+        <!-- App -->
+        <div class="crop-app" id="cropApp">
+            <!-- Mode Tabs -->
+            <div class="mode-tabs">
+                <button class="mode-tab active" data-mode="manual">Manual Crop</button>
+                <button class="mode-tab" data-mode="auto">Auto-Trim</button>
+            </div>
+
+            <!-- Manual Controls -->
+            <div class="controls-panel" id="manualControls">
+                <div class="controls-row">
+                    <div class="control-group">
+                        <label for="cropX">X</label>
+                        <input type="number" id="cropX" value="0" min="0">
+                    </div>
+                    <div class="control-group">
+                        <label for="cropY">Y</label>
+                        <input type="number" id="cropY" value="0" min="0">
+                    </div>
+                    <div class="control-group">
+                        <label for="cropW">Width</label>
+                        <input type="number" id="cropW" value="100" min="1">
+                    </div>
+                    <div class="control-group">
+                        <label for="cropH">Height</label>
+                        <input type="number" id="cropH" value="100" min="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auto-Trim Controls -->
+            <div class="controls-panel" id="autoControls" style="display:none">
+                <div class="controls-row">
+                    <div class="control-group" style="flex:1;">
+                        <label for="threshold">Threshold (0-100)</label>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <input type="range" id="threshold" min="0" max="100" value="15" style="flex:1;">
+                            <span class="threshold-value" id="thresholdVal">15</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="preview-container" id="previewContainer">
+                <img id="previewImg" alt="Preview">
+                <div class="crop-overlay" id="cropOverlay"></div>
+            </div>
+            <div class="preview-dims" id="previewDims">No image loaded</div>
+
+            <!-- Actions -->
+            <div class="crop-actions">
+                <button class="btn-crop" id="btnCrop">Crop</button>
+                <button class="btn-secondary" id="btnReset">Load New Image</button>
+            </div>
+
+            <!-- Result -->
+            <div class="result-section" id="resultSection">
+                <div class="result-compare">
+                    <div class="result-pane">
+                        <div class="result-pane-label">Original</div>
+                        <div class="result-pane-img"><img id="resultOrigImg" alt="Original"></div>
+                        <div class="result-pane-meta" id="resultOrigMeta">—</div>
+                    </div>
+                    <div class="result-pane">
+                        <div class="result-pane-label">Cropped</div>
+                        <div class="result-pane-img"><img id="resultCropImg" alt="Cropped"></div>
+                        <div class="result-pane-meta" id="resultCropMeta">—</div>
+                    </div>
+                </div>
+                <div class="crop-actions">
+                    <button class="btn-crop" id="btnDownload">Download PNG</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEO Content -->
+        <section class="content-section">
+            <h2>What is Image Crop?</h2>
+            <p>The Image Crop tool lets you remove unwanted areas from any image directly in your browser. It supports two modes: Manual Crop, where you specify exact pixel coordinates and dimensions for precise control, and Auto-Trim, which automatically detects and removes uniform background borders around your subject. The tool uses the HTML5 Canvas API for all processing, so your images are never uploaded to any server. Whether you need to trim whitespace from a scanned document, crop a screenshot to a specific region, or remove empty borders from exported game assets, this tool handles it instantly with zero setup.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Upload Your Image:</strong> Drag and drop an image onto the upload area or click to browse your files. The tool accepts PNG, JPG, WebP, BMP, and GIF formats.</li>
+                <li><strong>Choose a Mode:</strong> Select "Manual Crop" to enter exact X, Y, Width, and Height values, or "Auto-Trim" to let the tool detect and remove background borders automatically.</li>
+                <li><strong>Adjust Settings:</strong> In manual mode, enter pixel coordinates for the crop region and watch the overlay update on the preview. In auto-trim mode, adjust the threshold slider to control how aggressively the tool detects background pixels.</li>
+                <li><strong>Crop the Image:</strong> Click the "Crop" button to produce the result. The before-and-after comparison shows the original alongside the cropped output with dimensions displayed.</li>
+                <li><strong>Download:</strong> Click "Download PNG" to save the cropped image to your device.</li>
+            </ol>
+        </section>
+
+        <section class="content-section">
+            <h2>Common Uses</h2>
+            <ol>
+                <li><strong>Trimming whitespace:</strong> Remove blank margins from scanned documents, exported charts, or screenshots before sharing or embedding.</li>
+                <li><strong>Precise region extraction:</strong> Crop a specific area from a larger image using exact pixel coordinates — useful for UI mockups, sprite sheets, and design assets.</li>
+                <li><strong>Product photo cleanup:</strong> Trim excess background around product images for consistent catalog listings and e-commerce thumbnails.</li>
+                <li><strong>Game asset preparation:</strong> Remove empty borders from exported sprites and textures to reduce file size and ensure tight bounding boxes.</li>
+                <li><strong>Social media sizing:</strong> Crop images to focus on the subject before resizing to platform-specific dimensions.</li>
+            </ol>
+        </section>
+
+        <section class="content-section">
+            <h2>Related Tools</h2>
+            <div class="related-tools">
+                <a href="../image-resizer/index.html">Image Resizer</a>
+                <a href="../background-remover/index.html">Background Remover</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'image-tools',
+            title: 'Image Crop',
+            breadcrumbs: [
+                { label: 'Image Tools', href: '../index.html' },
+                { label: 'Image Crop' }
+            ]
+        });
+    </script>
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const cropApp = document.getElementById('cropApp');
+        const previewImg = document.getElementById('previewImg');
+        const previewDims = document.getElementById('previewDims');
+        const previewContainer = document.getElementById('previewContainer');
+        const cropOverlay = document.getElementById('cropOverlay');
+        const resultSection = document.getElementById('resultSection');
+        const modeTabs = document.querySelectorAll('.mode-tab');
+        const manualControls = document.getElementById('manualControls');
+        const autoControls = document.getElementById('autoControls');
+        const thresholdSlider = document.getElementById('threshold');
+        const thresholdVal = document.getElementById('thresholdVal');
+        const inputX = document.getElementById('cropX');
+        const inputY = document.getElementById('cropY');
+        const inputW = document.getElementById('cropW');
+        const inputH = document.getElementById('cropH');
+
+        let currentMode = 'manual';
+        let originalImg = null;   // HTMLImageElement
+        let origWidth = 0;
+        let origHeight = 0;
+        let croppedBlob = null;
+
+        // ---- Drop zone ----
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) loadImage(file);
+        });
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files[0]) loadImage(fileInput.files[0]);
+        });
+
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    originalImg = img;
+                    origWidth = img.naturalWidth;
+                    origHeight = img.naturalHeight;
+                    previewImg.src = img.src;
+                    previewDims.textContent = `${origWidth} x ${origHeight} px`;
+                    inputW.value = origWidth;
+                    inputH.value = origHeight;
+                    inputW.max = origWidth;
+                    inputH.max = origHeight;
+                    inputX.max = origWidth - 1;
+                    inputY.max = origHeight - 1;
+                    inputX.value = 0;
+                    inputY.value = 0;
+                    dropZone.style.display = 'none';
+                    cropApp.classList.add('visible');
+                    resultSection.classList.remove('visible');
+                    croppedBlob = null;
+                    updateOverlay();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ---- Mode tabs ----
+        modeTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                modeTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentMode = tab.dataset.mode;
+                manualControls.style.display = currentMode === 'manual' ? '' : 'none';
+                autoControls.style.display = currentMode === 'auto' ? '' : 'none';
+                cropOverlay.style.display = currentMode === 'manual' ? '' : 'none';
+                if (currentMode === 'manual') updateOverlay();
+            });
+        });
+
+        // ---- Threshold slider ----
+        thresholdSlider.addEventListener('input', () => {
+            thresholdVal.textContent = thresholdSlider.value;
+        });
+
+        // ---- Manual crop overlay ----
+        function updateOverlay() {
+            if (!originalImg || currentMode !== 'manual') { cropOverlay.style.display = 'none'; return; }
+            const x = clamp(parseInt(inputX.value) || 0, 0, origWidth);
+            const y = clamp(parseInt(inputY.value) || 0, 0, origHeight);
+            const w = clamp(parseInt(inputW.value) || 1, 1, origWidth - x);
+            const h = clamp(parseInt(inputH.value) || 1, 1, origHeight - y);
+
+            // Map image coords to displayed preview coords
+            const imgEl = previewImg;
+            const contRect = previewContainer.getBoundingClientRect();
+            const imgRect = imgEl.getBoundingClientRect();
+            const scaleX = imgRect.width / origWidth;
+            const scaleY = imgRect.height / origHeight;
+            const offX = imgRect.left - contRect.left;
+            const offY = imgRect.top - contRect.top;
+
+            cropOverlay.style.display = 'block';
+            cropOverlay.style.left = (offX + x * scaleX) + 'px';
+            cropOverlay.style.top = (offY + y * scaleY) + 'px';
+            cropOverlay.style.width = (w * scaleX) + 'px';
+            cropOverlay.style.height = (h * scaleY) + 'px';
+        }
+
+        [inputX, inputY, inputW, inputH].forEach(el => el.addEventListener('input', updateOverlay));
+        window.addEventListener('resize', updateOverlay);
+
+        function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+        // ---- Auto-trim algorithm ----
+        function autoTrimBounds(imgEl, threshold) {
+            const canvas = document.createElement('canvas');
+            const w = imgEl.naturalWidth, h = imgEl.naturalHeight;
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(imgEl, 0, 0);
+            const data = ctx.getImageData(0, 0, w, h).data;
+
+            // Reference pixel: top-left corner
+            const refR = data[0], refG = data[1], refB = data[2], refA = data[3];
+            const thr = threshold * 2.55; // scale 0-100 to 0-255
+
+            function isBackground(idx) {
+                return Math.abs(data[idx] - refR) <= thr &&
+                       Math.abs(data[idx + 1] - refG) <= thr &&
+                       Math.abs(data[idx + 2] - refB) <= thr &&
+                       Math.abs(data[idx + 3] - refA) <= thr;
+            }
+
+            // Scan from top
+            let top = 0;
+            topLoop: for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    if (!isBackground((y * w + x) * 4)) { top = y; break topLoop; }
+                }
+                if (y === h - 1) top = y;
+            }
+
+            // Scan from bottom
+            let bottom = h - 1;
+            bottomLoop: for (let y = h - 1; y >= top; y--) {
+                for (let x = 0; x < w; x++) {
+                    if (!isBackground((y * w + x) * 4)) { bottom = y; break bottomLoop; }
+                }
+            }
+
+            // Scan from left
+            let left = 0;
+            leftLoop: for (let x = 0; x < w; x++) {
+                for (let y = top; y <= bottom; y++) {
+                    if (!isBackground((y * w + x) * 4)) { left = x; break leftLoop; }
+                }
+                if (x === w - 1) left = x;
+            }
+
+            // Scan from right
+            let right = w - 1;
+            rightLoop: for (let x = w - 1; x >= left; x--) {
+                for (let y = top; y <= bottom; y++) {
+                    if (!isBackground((y * w + x) * 4)) { right = x; break rightLoop; }
+                }
+            }
+
+            return {
+                x: left,
+                y: top,
+                w: Math.max(1, right - left + 1),
+                h: Math.max(1, bottom - top + 1)
+            };
+        }
+
+        // ---- Crop action ----
+        document.getElementById('btnCrop').addEventListener('click', () => {
+            if (!originalImg) return;
+
+            let cx, cy, cw, ch;
+
+            if (currentMode === 'manual') {
+                cx = clamp(parseInt(inputX.value) || 0, 0, origWidth);
+                cy = clamp(parseInt(inputY.value) || 0, 0, origHeight);
+                cw = clamp(parseInt(inputW.value) || 1, 1, origWidth - cx);
+                ch = clamp(parseInt(inputH.value) || 1, 1, origHeight - cy);
+            } else {
+                const bounds = autoTrimBounds(originalImg, parseInt(thresholdSlider.value));
+                cx = bounds.x;
+                cy = bounds.y;
+                cw = bounds.w;
+                ch = bounds.h;
+            }
+
+            // Draw cropped region
+            const canvas = document.createElement('canvas');
+            canvas.width = cw;
+            canvas.height = ch;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(originalImg, cx, cy, cw, ch, 0, 0, cw, ch);
+
+            canvas.toBlob(blob => {
+                croppedBlob = blob;
+                const url = URL.createObjectURL(blob);
+
+                document.getElementById('resultOrigImg').src = originalImg.src;
+                document.getElementById('resultOrigMeta').textContent = `${origWidth} x ${origHeight} px`;
+                document.getElementById('resultCropImg').src = url;
+                document.getElementById('resultCropMeta').textContent = `${cw} x ${ch} px`;
+
+                resultSection.classList.add('visible');
+                resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 'image/png');
+        });
+
+        // ---- Download ----
+        document.getElementById('btnDownload').addEventListener('click', () => {
+            if (!croppedBlob) return;
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(croppedBlob);
+            a.download = 'cropped-image.png';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+        });
+
+        // ---- Reset ----
+        document.getElementById('btnReset').addEventListener('click', () => {
+            originalImg = null;
+            croppedBlob = null;
+            cropApp.classList.remove('visible');
+            resultSection.classList.remove('visible');
+            dropZone.style.display = '';
+            fileInput.value = '';
+            previewImg.src = '';
+            cropOverlay.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

@@ -508,4 +508,547 @@
     }
   });
 
+  // ══════════════════════════════════════════
+  //  BATCH 1 EXPANSION — Additional Helpers
+  // ══════════════════════════════════════════
+
+  function parseDelimitedLine(line, delimiter) {
+    var fields = [], current = '', inQuotes = false;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (i + 1 < line.length && line[i + 1] === '"') { current += '"'; i++; }
+          else inQuotes = false;
+        } else current += ch;
+      } else {
+        if (ch === '"') inQuotes = true;
+        else if (ch === delimiter) { fields.push(current); current = ''; }
+        else current += ch;
+      }
+    }
+    fields.push(current);
+    return fields;
+  }
+
+  function escHtmlStr(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function markdownToHtml(md) {
+    var html = md;
+    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, function (_, lang, code) {
+      return '<pre><code>' + escHtmlStr(code.trimEnd()) + '</code></pre>';
+    });
+    html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+    html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>');
+    html = html.replace(/^##### (.+)$/gm, '<h5>$1</h5>');
+    html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+    html = html.replace(/^---+$/gm, '<hr>');
+    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+    html = html.replace(/(^[-*] .+\n?)+/gm, function (match) {
+      var items = match.trim().split('\n').map(function (line) {
+        return '<li>' + line.replace(/^[-*] /, '') + '</li>';
+      }).join('\n');
+      return '<ul>\n' + items + '\n</ul>';
+    });
+    html = html.replace(/(^\d+\. .+\n?)+/gm, function (match) {
+      var items = match.trim().split('\n').map(function (line) {
+        return '<li>' + line.replace(/^\d+\. /, '') + '</li>';
+      }).join('\n');
+      return '<ol>\n' + items + '\n</ol>';
+    });
+    html = html.replace(/^(?!<[a-z/])((?!^\s*$).+)$/gm, '<p>$1</p>');
+    html = html.replace(/\n{3,}/g, '\n\n');
+    return html.trim();
+  }
+
+  function parseSimpleYaml(yaml) {
+    var result = {}, lines = yaml.trim().split('\n');
+    var currentKey = null, currentList = null;
+    for (var li = 0; li < lines.length; li++) {
+      var trimmed = lines[li].trim();
+      if (!trimmed || trimmed.charAt(0) === '#') continue;
+      if (trimmed.indexOf('- ') === 0) {
+        if (currentKey && currentList) currentList.push(parseYamlValue(trimmed.slice(2).trim()));
+        continue;
+      }
+      var colonIdx = trimmed.indexOf(':');
+      if (colonIdx === -1) continue;
+      var key = trimmed.slice(0, colonIdx).trim();
+      var rawVal = trimmed.slice(colonIdx + 1).trim();
+      if (rawVal === '') { currentKey = key; currentList = []; result[key] = currentList; }
+      else { currentKey = key; currentList = null; result[key] = parseYamlValue(rawVal); }
+    }
+    return result;
+  }
+
+  function parseYamlValue(val) {
+    if (val === 'true') return true;
+    if (val === 'false') return false;
+    if (val === 'null' || val === '~') return null;
+    if (/^-?\d+$/.test(val)) return parseInt(val);
+    if (/^-?\d+\.\d+$/.test(val)) return parseFloat(val);
+    if ((val.charAt(0) === '"' && val.charAt(val.length - 1) === '"') ||
+        (val.charAt(0) === "'" && val.charAt(val.length - 1) === "'")) return val.slice(1, -1);
+    return val;
+  }
+
+  function detectDelimiter(text) {
+    var candidates = [',', '\t', ';', '|'];
+    var firstLine = text.split('\n')[0] || '';
+    var best = ',', bestCount = 0;
+    for (var ci = 0; ci < candidates.length; ci++) {
+      var d = candidates[ci], count = 0, inQ = false;
+      for (var i = 0; i < firstLine.length; i++) {
+        if (firstLine[i] === '"') inQ = !inQ;
+        else if (!inQ && firstLine[i] === d) count++;
+      }
+      if (count > bestCount) { bestCount = count; best = d; }
+    }
+    return best;
+  }
+
+  function parseCsvFull(text, delim) {
+    var rows = [], i = 0, n = text.length;
+    while (i < n) {
+      var row = [];
+      while (i < n) {
+        var cell = '';
+        if (text[i] === '"') {
+          i++;
+          while (i < n) {
+            if (text[i] === '"') {
+              if (i + 1 < n && text[i + 1] === '"') { cell += '"'; i += 2; }
+              else { i++; break; }
+            } else cell += text[i++];
+          }
+          while (i < n && text[i] !== delim && text[i] !== '\n') i++;
+        } else {
+          while (i < n && text[i] !== delim && text[i] !== '\n') { cell += text[i++]; }
+        }
+        row.push(cell);
+        if (i < n && text[i] === delim) { i++; }
+        else { if (i < n && text[i] === '\n') i++; break; }
+      }
+      if (row.length > 1 || (row.length === 1 && row[0] !== '')) rows.push(row);
+    }
+    return rows;
+  }
+
+  function fixEncoding(s) {
+    return s
+      .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+      .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+      .replace(/\u2014/g, '--').replace(/\u2013/g, '-')
+      .replace(/\u2026/g, '...').replace(/\u2022/g, '*').replace(/\u00A0/g, ' ');
+  }
+
+  function rgbToHex(rgb) {
+    return '#' + rgb.map(function (v) { return Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0'); }).join('');
+  }
+
+  var qrCodeLoaded = false;
+  function loadQRCode() {
+    if (qrCodeLoaded || typeof QRCode !== 'undefined') { qrCodeLoaded = true; return Promise.resolve(); }
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js';
+      s.onload = function () { qrCodeLoaded = true; resolve(); };
+      s.onerror = function () { reject(new Error('Failed to load QRCode library')); };
+      document.head.appendChild(s);
+    });
+  }
+
+  // ══════════════════════════════════════════
+  //  BATCH 1 EXPANSION — Data Nodes
+  // ══════════════════════════════════════════
+
+  // ── JSON Prettify ──
+  NodeRegistry.register({
+    id: 'json-prettify', name: 'JSON Prettify', category: 'Data', icon: '\uD83D\uDCDD',
+    inputs: [{ name: 'text', type: 'Text', label: 'JSON' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'Formatted' }],
+    config: [{ name: 'indent', type: 'number', label: 'Indent Spaces', default: 2 }],
+    execute: async function (inputs, config) {
+      var indent = parseInt(config.indent) || 2;
+      return { text: JSON.stringify(JSON.parse(inputs.text), null, indent) };
+    }
+  });
+
+  // ── JSON Minify ──
+  NodeRegistry.register({
+    id: 'json-minify', name: 'JSON Minify', category: 'Data', icon: '\uD83D\uDCE6',
+    inputs: [{ name: 'text', type: 'Text', label: 'JSON' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'Minified' }],
+    config: [],
+    execute: async function (inputs) {
+      return { text: JSON.stringify(JSON.parse(inputs.text)) };
+    }
+  });
+
+  // ── Markdown to HTML ──
+  NodeRegistry.register({
+    id: 'markdown-to-html', name: 'Markdown to HTML', category: 'Data', icon: '\uD83D\uDCC4',
+    inputs: [{ name: 'text', type: 'Text', label: 'Markdown' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'HTML' }],
+    config: [],
+    execute: async function (inputs) {
+      return { text: markdownToHtml(inputs.text) };
+    }
+  });
+
+  // ── YAML to JSON ──
+  NodeRegistry.register({
+    id: 'yaml-to-json', name: 'YAML to JSON', category: 'Data', icon: '\uD83D\uDCC2',
+    inputs: [{ name: 'text', type: 'Text', label: 'YAML' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'JSON' }],
+    config: [],
+    execute: async function (inputs) {
+      return { text: JSON.stringify(parseSimpleYaml(inputs.text), null, 2) };
+    }
+  });
+
+  // ── Base64 Encode ──
+  NodeRegistry.register({
+    id: 'base64-encode', name: 'Base64 Encode', category: 'Data', icon: '\uD83D\uDD10',
+    inputs: [{ name: 'text', type: 'Text', label: 'Text' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'Base64' }],
+    config: [],
+    execute: async function (inputs) {
+      return { text: btoa(unescape(encodeURIComponent(inputs.text))) };
+    }
+  });
+
+  // ── Base64 Decode ──
+  NodeRegistry.register({
+    id: 'base64-decode', name: 'Base64 Decode', category: 'Data', icon: '\uD83D\uDD13',
+    inputs: [{ name: 'text', type: 'Text', label: 'Base64' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'Text' }],
+    config: [],
+    execute: async function (inputs) {
+      return { text: decodeURIComponent(escape(atob(inputs.text.trim()))) };
+    }
+  });
+
+  // ── TSV to CSV ──
+  NodeRegistry.register({
+    id: 'tsv-to-csv', name: 'TSV to CSV', category: 'Data', icon: '\uD83D\uDD00',
+    inputs: [{ name: 'text', type: 'Text', label: 'TSV' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'CSV' }],
+    config: [],
+    execute: async function (inputs) {
+      return { text: inputs.text.split('\n').map(function (line) {
+        return parseDelimitedLine(line, '\t').map(escapeCsvField).join(',');
+      }).join('\n') };
+    }
+  });
+
+  // ── CSV to TSV ──
+  NodeRegistry.register({
+    id: 'csv-to-tsv', name: 'CSV to TSV', category: 'Data', icon: '\uD83D\uDD01',
+    inputs: [{ name: 'text', type: 'Text', label: 'CSV' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'TSV' }],
+    config: [],
+    execute: async function (inputs) {
+      return { text: inputs.text.split('\n').map(function (line) {
+        return parseCsvLine(line).join('\t');
+      }).join('\n') };
+    }
+  });
+
+  // ── CSV Cleaner ──
+  NodeRegistry.register({
+    id: 'csv-cleaner', name: 'CSV Cleaner', category: 'Data', icon: '\uD83E\uDDF9',
+    inputs: [{ name: 'text', type: 'Text', label: 'CSV' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'Cleaned CSV' }],
+    config: [
+      { name: 'trimWhitespace', type: 'select', label: 'Trim Whitespace',
+        options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }], default: 'yes' },
+      { name: 'removeEmpty', type: 'select', label: 'Remove Empty Rows',
+        options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }], default: 'yes' },
+      { name: 'removeDuplicates', type: 'select', label: 'Remove Duplicates',
+        options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }], default: 'no' },
+      { name: 'doFixEncoding', type: 'select', label: 'Fix Encoding',
+        options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }], default: 'yes' }
+    ],
+    execute: async function (inputs, config) {
+      var delim = detectDelimiter(inputs.text);
+      var rows = parseCsvFull(inputs.text, delim);
+      if (config.doFixEncoding === 'yes') {
+        rows = rows.map(function (r) { return r.map(fixEncoding); });
+      }
+      if (config.trimWhitespace === 'yes') {
+        rows = rows.map(function (r) { return r.map(function (c) { return c.trim(); }); });
+      }
+      if (config.removeEmpty === 'yes') {
+        rows = rows.filter(function (r) { return r.some(function (c) { return c !== ''; }); });
+      }
+      if (config.removeDuplicates === 'yes') {
+        var seen = {};
+        rows = rows.filter(function (r) { var k = r.join('\x00'); if (seen[k]) return false; seen[k] = true; return true; });
+      }
+      return { text: rows.map(function (r) { return r.map(escapeCsvField).join(','); }).join('\n') };
+    }
+  });
+
+  // ── QR Code Maker ──
+  NodeRegistry.register({
+    id: 'qr-code-maker', name: 'QR Code Maker', category: 'Data', icon: '\uD83D\uDCF1',
+    inputs: [{ name: 'text', type: 'Text', label: 'Content' }],
+    outputs: [{ name: 'image', type: 'Image', label: 'QR Code' }],
+    config: [
+      { name: 'size', type: 'number', label: 'Size (px)', default: 256 },
+      { name: 'errorCorrection', type: 'select', label: 'Error Correction',
+        options: [{ value: 'L', label: 'Low' }, { value: 'M', label: 'Medium' },
+                  { value: 'Q', label: 'Quartile' }, { value: 'H', label: 'High' }], default: 'M' }
+    ],
+    execute: async function (inputs, config) {
+      await loadQRCode();
+      var size = parseInt(config.size) || 256;
+      var ec = config.errorCorrection || 'M';
+      var canvas = document.createElement('canvas');
+      await new Promise(function (resolve, reject) {
+        QRCode.toCanvas(canvas, inputs.text, { width: size, margin: 2, errorCorrectionLevel: ec }, function (err) {
+          if (err) reject(err); else resolve();
+        });
+      });
+      var blob = await canvasToBlob(canvas, 'image/png');
+      canvas.width = 0;
+      return { image: blob };
+    }
+  });
+
+  // ── Color Palette Extractor ──
+  NodeRegistry.register({
+    id: 'color-palette', name: 'Color Palette', category: 'Image', icon: '\uD83C\uDFA8',
+    inputs: [{ name: 'image', type: 'Image', label: 'Image' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'Palette JSON' }],
+    config: [{ name: 'colors', type: 'number', label: 'Colors', default: 6 }],
+    execute: async function (inputs, config) {
+      var img = await blobToImage(inputs.image);
+      var maxDim = 200;
+      var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      var sw = Math.round(img.width * scale), sh = Math.round(img.height * scale);
+      var canvas = document.createElement('canvas');
+      canvas.width = sw; canvas.height = sh;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, sw, sh);
+      var data = ctx.getImageData(0, 0, sw, sh).data;
+      var pixels = [];
+      for (var i = 0; i < data.length; i += 4) {
+        if (data[i + 3] > 128) pixels.push([data[i], data[i + 1], data[i + 2]]);
+      }
+      var numColors = parseInt(config.colors) || 6;
+      var palette = medianCut(pixels, numColors);
+      canvas.width = 0;
+      return { text: JSON.stringify(palette.map(rgbToHex), null, 2) };
+    }
+  });
+
+  // ══════════════════════════════════════════
+  //  BATCH 1 EXPANSION — New Image Nodes
+  // ══════════════════════════════════════════
+
+  // ── Image Crop ──
+  NodeRegistry.register({
+    id: 'image-crop', name: 'Image Crop', category: 'Image', icon: '\u2702\uFE0F',
+    inputs: [{ name: 'image', type: 'Image', label: 'Image' }],
+    outputs: [{ name: 'image', type: 'Image', label: 'Cropped' }],
+    config: [
+      { name: 'mode', type: 'select', label: 'Mode',
+        options: [{ value: 'manual', label: 'Manual' }, { value: 'auto', label: 'Auto-Trim' }], default: 'manual' },
+      { name: 'x', type: 'number', label: 'X', default: 0 },
+      { name: 'y', type: 'number', label: 'Y', default: 0 },
+      { name: 'width', type: 'number', label: 'Width', default: 256 },
+      { name: 'height', type: 'number', label: 'Height', default: 256 },
+      { name: 'threshold', type: 'range', label: 'Trim Threshold', min: 0, max: 100, default: 10 }
+    ],
+    execute: async function (inputs, config) {
+      var img = await blobToImage(inputs.image);
+      var sx, sy, sw, sh;
+
+      if (config.mode === 'auto') {
+        // Auto-trim: scan edges for background
+        var tc = document.createElement('canvas');
+        tc.width = img.width; tc.height = img.height;
+        var tctx = tc.getContext('2d');
+        tctx.drawImage(img, 0, 0);
+        var id = tctx.getImageData(0, 0, tc.width, tc.height);
+        var d = id.data, w = tc.width, h = tc.height;
+        var thresh = (parseInt(config.threshold) || 10) * 2.55;
+        // Reference: top-left pixel
+        var refR = d[0], refG = d[1], refB = d[2], refA = d[3];
+        function isBg(i) {
+          if (d[i + 3] < 10) return true; // transparent
+          return Math.abs(d[i] - refR) < thresh && Math.abs(d[i+1] - refG) < thresh && Math.abs(d[i+2] - refB) < thresh;
+        }
+        var top = 0, bot = h - 1, left = 0, right = w - 1;
+        outer_top: for (var yt = 0; yt < h; yt++) { for (var xt = 0; xt < w; xt++) { if (!isBg((yt * w + xt) * 4)) { top = yt; break outer_top; } } }
+        outer_bot: for (var yb = h - 1; yb >= top; yb--) { for (var xb = 0; xb < w; xb++) { if (!isBg((yb * w + xb) * 4)) { bot = yb; break outer_bot; } } }
+        outer_left: for (var xl = 0; xl < w; xl++) { for (var yl = top; yl <= bot; yl++) { if (!isBg((yl * w + xl) * 4)) { left = xl; break outer_left; } } }
+        outer_right: for (var xr = w - 1; xr >= left; xr--) { for (var yr = top; yr <= bot; yr++) { if (!isBg((yr * w + xr) * 4)) { right = xr; break outer_right; } } }
+        sx = left; sy = top; sw = right - left + 1; sh = bot - top + 1;
+        tc.width = 0;
+      } else {
+        sx = parseInt(config.x) || 0; sy = parseInt(config.y) || 0;
+        sw = parseInt(config.width) || img.width; sh = parseInt(config.height) || img.height;
+        // Clamp to image bounds
+        if (sx + sw > img.width) sw = img.width - sx;
+        if (sy + sh > img.height) sh = img.height - sy;
+      }
+
+      if (sw < 1 || sh < 1) throw new Error('Crop area is empty');
+      var canvas = document.createElement('canvas');
+      canvas.width = sw; canvas.height = sh;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+      var blob = await canvasToBlob(canvas, 'image/png');
+      canvas.width = 0;
+      return { image: blob };
+    }
+  });
+
+  // ── Color Adjust ──
+  NodeRegistry.register({
+    id: 'color-adjust', name: 'Color Adjust', category: 'Image', icon: '\u2600\uFE0F',
+    inputs: [{ name: 'image', type: 'Image', label: 'Image' }],
+    outputs: [{ name: 'image', type: 'Image', label: 'Adjusted' }],
+    config: [
+      { name: 'brightness', type: 'range', label: 'Brightness', min: -100, max: 100, default: 0 },
+      { name: 'contrast', type: 'range', label: 'Contrast', min: -100, max: 100, default: 0 },
+      { name: 'saturation', type: 'range', label: 'Saturation', min: 0, max: 200, default: 100 },
+      { name: 'grayscale', type: 'select', label: 'Grayscale',
+        options: [{ value: 'no', label: 'No' }, { value: 'yes', label: 'Yes' }], default: 'no' },
+      { name: 'invert', type: 'select', label: 'Invert',
+        options: [{ value: 'no', label: 'No' }, { value: 'yes', label: 'Yes' }], default: 'no' }
+    ],
+    execute: async function (inputs, config) {
+      var img = await blobToImage(inputs.image);
+      var canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var d = imageData.data;
+      var bright = (parseInt(config.brightness) || 0) * 2.55;
+      var con = parseInt(config.contrast) || 0;
+      var conFactor = con !== 0 ? (259 * (con * 2.55 + 255)) / (255 * (259 - con * 2.55)) : 1;
+      var sat = (parseInt(config.saturation) !== undefined ? parseInt(config.saturation) : 100) / 100;
+      var doGray = config.grayscale === 'yes';
+      var doInvert = config.invert === 'yes';
+
+      for (var i = 0; i < d.length; i += 4) {
+        var r = d[i], g = d[i + 1], b = d[i + 2];
+        // Brightness
+        r += bright; g += bright; b += bright;
+        // Contrast
+        if (con !== 0) { r = conFactor * (r - 128) + 128; g = conFactor * (g - 128) + 128; b = conFactor * (b - 128) + 128; }
+        // Saturation
+        if (sat !== 1) {
+          var gray = 0.299 * r + 0.587 * g + 0.114 * b;
+          r = gray + sat * (r - gray); g = gray + sat * (g - gray); b = gray + sat * (b - gray);
+        }
+        // Grayscale
+        if (doGray) { var lum = 0.299 * r + 0.587 * g + 0.114 * b; r = g = b = lum; }
+        // Invert
+        if (doInvert) { r = 255 - r; g = 255 - g; b = 255 - b; }
+        d[i] = Math.max(0, Math.min(255, r));
+        d[i + 1] = Math.max(0, Math.min(255, g));
+        d[i + 2] = Math.max(0, Math.min(255, b));
+      }
+      ctx.putImageData(imageData, 0, 0);
+      var blob = await canvasToBlob(canvas, 'image/png');
+      canvas.width = 0;
+      return { image: blob };
+    }
+  });
+
+  // ── Image Overlay / Watermark ──
+  NodeRegistry.register({
+    id: 'image-overlay', name: 'Image Overlay', category: 'Image', icon: '\uD83D\uDDBC\uFE0F',
+    inputs: [
+      { name: 'base', type: 'Image', label: 'Base Image' },
+      { name: 'overlay', type: 'Image', label: 'Overlay' }
+    ],
+    outputs: [{ name: 'image', type: 'Image', label: 'Composited' }],
+    config: [
+      { name: 'position', type: 'select', label: 'Position',
+        options: [{ value: 'center', label: 'Center' }, { value: 'top-left', label: 'Top-Left' },
+                  { value: 'top-right', label: 'Top-Right' }, { value: 'bottom-left', label: 'Bottom-Left' },
+                  { value: 'bottom-right', label: 'Bottom-Right' }, { value: 'tile', label: 'Tile' }], default: 'bottom-right' },
+      { name: 'opacity', type: 'range', label: 'Opacity %', min: 0, max: 100, default: 50 },
+      { name: 'scale', type: 'range', label: 'Scale %', min: 10, max: 200, default: 100 }
+    ],
+    execute: async function (inputs, config) {
+      var baseImg = await blobToImage(inputs.base);
+      var overImg = await blobToImage(inputs.overlay);
+      var canvas = document.createElement('canvas');
+      canvas.width = baseImg.width; canvas.height = baseImg.height;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(baseImg, 0, 0);
+
+      var opacity = (parseInt(config.opacity) || 50) / 100;
+      var scale = (parseInt(config.scale) || 100) / 100;
+      var ow = Math.round(overImg.width * scale), oh = Math.round(overImg.height * scale);
+      var pad = 20, pos = config.position || 'bottom-right';
+
+      ctx.globalAlpha = opacity;
+      if (pos === 'tile') {
+        for (var ty = 0; ty < canvas.height; ty += oh + pad) {
+          for (var tx = 0; tx < canvas.width; tx += ow + pad) {
+            ctx.drawImage(overImg, tx, ty, ow, oh);
+          }
+        }
+      } else {
+        var x = 0, y = 0;
+        if (pos === 'center') { x = (canvas.width - ow) / 2; y = (canvas.height - oh) / 2; }
+        else if (pos === 'top-left') { x = pad; y = pad; }
+        else if (pos === 'top-right') { x = canvas.width - ow - pad; y = pad; }
+        else if (pos === 'bottom-left') { x = pad; y = canvas.height - oh - pad; }
+        else { x = canvas.width - ow - pad; y = canvas.height - oh - pad; }
+        ctx.drawImage(overImg, x, y, ow, oh);
+      }
+      ctx.globalAlpha = 1.0;
+      var blob = await canvasToBlob(canvas, 'image/png');
+      canvas.width = 0;
+      return { image: blob };
+    }
+  });
+
+  // ── Image Compress ──
+  NodeRegistry.register({
+    id: 'image-compress', name: 'Image Compress', category: 'Image', icon: '\uD83D\uDDDC\uFE0F',
+    inputs: [{ name: 'image', type: 'Image', label: 'Image' }],
+    outputs: [{ name: 'image', type: 'Image', label: 'Compressed' }],
+    config: [
+      { name: 'quality', type: 'range', label: 'Quality', min: 1, max: 100, default: 80 },
+      { name: 'format', type: 'select', label: 'Format',
+        options: [{ value: 'image/jpeg', label: 'JPEG' }, { value: 'image/webp', label: 'WebP' }], default: 'image/jpeg' }
+    ],
+    execute: async function (inputs, config) {
+      var img = await blobToImage(inputs.image);
+      var canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      var ctx = canvas.getContext('2d');
+      var format = config.format || 'image/jpeg';
+      if (format === 'image/jpeg') {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+      ctx.drawImage(img, 0, 0);
+      var quality = (parseInt(config.quality) || 80) / 100;
+      var blob = await canvasToBlob(canvas, format, quality);
+      canvas.width = 0;
+      return { image: blob };
+    }
+  });
+
 })();

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Adjust - Brightness, Contrast, Saturation | Densanon Toolkit</title>
+    <meta name="description" content="Free online color adjustment tool. Adjust brightness, contrast, saturation, grayscale, and invert on any image. Live preview with before/after comparison. 100% browser-based, no signup.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        .upload-area {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s, background 0.3s;
+            background: var(--color-surface);
+        }
+        .upload-area:hover,
+        .upload-area.drag-over {
+            border-color: var(--color-primary);
+            background: rgba(229, 62, 62, 0.04);
+        }
+        .upload-area .upload-icon { font-size: 2.4rem; display: block; margin-bottom: 10px; opacity: 0.65; }
+        .upload-area .upload-text { color: var(--color-text-muted); font-size: 0.95rem; margin: 4px 0; }
+        .upload-area .upload-text strong { color: var(--color-text); }
+        .upload-area .upload-hint { color: var(--color-text-muted); font-size: 0.8rem; opacity: 0.7; }
+
+        .editor-layout {
+            display: none;
+            grid-template-columns: 280px 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .editor-layout.visible { display: grid; }
+        @media (max-width: 768px) { .editor-layout { grid-template-columns: 1fr; } }
+
+        .controls-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .controls-panel h3 { margin: 0; color: var(--color-text); font-size: 1rem; }
+
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--color-text);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .slider-group label span { color: var(--color-primary); font-variant-numeric: tabular-nums; min-width: 36px; text-align: right; }
+        .slider-group input[type="range"] {
+            width: 100%;
+            accent-color: var(--color-primary);
+            cursor: pointer;
+        }
+
+        .toggle-row {
+            display: flex;
+            gap: 10px;
+        }
+        .toggle-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .toggle-btn.active {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: #fff;
+        }
+        .toggle-btn:hover:not(.active) { border-color: var(--color-text-muted); color: var(--color-text); }
+
+        .action-row { display: flex; gap: 8px; margin-top: 4px; }
+        .btn-action {
+            flex: 1;
+            padding: 10px 14px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn-reset { background: var(--color-surface); border: 1px solid var(--color-border) !important; color: var(--color-text); }
+        .btn-reset:hover { background: var(--color-border); }
+        .btn-download { background: var(--color-primary); color: #fff; }
+        .btn-download:hover { background: var(--color-primary-hover); }
+
+        .preview-area {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .preview-tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 10px;
+        }
+        .preview-tab {
+            padding: 6px 16px;
+            background: none;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .preview-tab.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+        .preview-tab:hover:not(.active) { border-color: var(--color-text-muted); color: var(--color-text); }
+
+        .preview-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .preview-container img {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 6px;
+            background: repeating-conic-gradient(#333 0% 25%, #2a2a2a 0% 50%) 0 0 / 16px 16px;
+        }
+        .compare-view {
+            display: none;
+            gap: 12px;
+            flex: 1;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        .compare-view.visible { display: flex; }
+        .compare-col { text-align: center; flex: 1; min-width: 0; }
+        .compare-col img {
+            max-width: 100%;
+            max-height: 450px;
+            border-radius: 6px;
+            background: repeating-conic-gradient(#333 0% 25%, #2a2a2a 0% 50%) 0 0 / 16px 16px;
+        }
+        .compare-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        canvas { display: none; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="tool-header">
+            <div class="breadcrumb"></div>
+            <h1>Color Adjust</h1>
+            <p>Adjust brightness, contrast, saturation, grayscale, and invert on any image with live preview. Export the result as PNG. All processing happens in your browser.</p>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <span class="upload-icon">🎨</span>
+            <p class="upload-text"><strong>Drop an image here</strong> or click to browse</p>
+            <p class="upload-hint">PNG, JPG, WebP, BMP, GIF</p>
+            <input type="file" id="fileInput" accept="image/*" style="display:none;">
+        </div>
+
+        <div class="editor-layout" id="editorLayout">
+            <div class="controls-panel">
+                <h3>Adjustments</h3>
+
+                <div class="slider-group">
+                    <label>Brightness <span id="brightnessVal">0</span></label>
+                    <input type="range" id="brightness" min="-100" max="100" value="0">
+                </div>
+                <div class="slider-group">
+                    <label>Contrast <span id="contrastVal">0</span></label>
+                    <input type="range" id="contrast" min="-100" max="100" value="0">
+                </div>
+                <div class="slider-group">
+                    <label>Saturation <span id="saturationVal">100</span></label>
+                    <input type="range" id="saturation" min="0" max="200" value="100">
+                </div>
+
+                <div class="toggle-row">
+                    <button class="toggle-btn" id="grayscaleBtn" type="button">Grayscale</button>
+                    <button class="toggle-btn" id="invertBtn" type="button">Invert</button>
+                </div>
+
+                <div class="action-row">
+                    <button class="btn-action btn-reset" id="resetBtn" type="button">Reset</button>
+                    <button class="btn-action btn-download" id="downloadBtn" type="button">Download</button>
+                </div>
+            </div>
+
+            <div class="preview-area">
+                <div class="preview-tabs">
+                    <button class="preview-tab active" data-tab="adjusted">Adjusted</button>
+                    <button class="preview-tab" data-tab="compare">Before / After</button>
+                </div>
+
+                <div class="preview-container" id="adjustedView">
+                    <img id="previewImg" src="" alt="Adjusted preview">
+                </div>
+
+                <div class="compare-view" id="compareView">
+                    <div class="compare-col">
+                        <div class="compare-label">Original</div>
+                        <img id="originalImg" src="" alt="Original image">
+                    </div>
+                    <div class="compare-col">
+                        <div class="compare-label">Adjusted</div>
+                        <img id="compareImg" src="" alt="Adjusted image">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <canvas id="exportCanvas"></canvas>
+
+        <section class="content-section">
+            <h2>What is Color Adjust?</h2>
+            <p>Color Adjust is a free browser-based image editing tool that lets you fine-tune the visual appearance of any image. Using intuitive sliders you can increase or decrease brightness, boost or reduce contrast, and shift saturation from fully desaturated to hyper-vivid. Toggle buttons let you instantly convert an image to grayscale or invert all its colors. A live CSS-filter preview updates in real time as you drag sliders, so you see the result immediately without waiting for pixel-level processing. When you are satisfied, the export engine applies the same adjustments at the pixel level for a high-quality downloadable PNG. All computation runs locally in your browser. Your images are never uploaded to any server.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Upload an Image:</strong> Click the upload area or drag and drop an image file. Supported formats include PNG, JPG, WebP, BMP, and GIF.</li>
+                <li><strong>Adjust Sliders:</strong> Drag the Brightness, Contrast, and Saturation sliders to modify the image. Changes are previewed instantly using hardware-accelerated CSS filters.</li>
+                <li><strong>Toggle Effects:</strong> Click the Grayscale or Invert buttons to enable or disable those effects. Active effects are highlighted in red.</li>
+                <li><strong>Compare:</strong> Switch to the Before/After tab to see the original and adjusted images side by side.</li>
+                <li><strong>Reset:</strong> Click Reset to restore all adjustments to their default values.</li>
+                <li><strong>Download:</strong> Click Download to export the adjusted image as a PNG file. The export applies pixel-level processing for accurate color reproduction.</li>
+            </ol>
+        </section>
+
+        <section class="content-section">
+            <h2>Common Uses</h2>
+            <div class="features-list">
+                <div class="feature-item">
+                    <h3>Photo Correction</h3>
+                    <p>Fix underexposed or overexposed photos by adjusting brightness and contrast. Recover detail in shadows or highlights without specialized software.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Social Media Graphics</h3>
+                    <p>Quickly enhance product photos, thumbnails, or banner images before posting. Boost saturation for eye-catching visuals or desaturate for a muted aesthetic.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Game Asset Preparation</h3>
+                    <p>Adjust sprite and texture colors for different environments or factions. Convert to grayscale for disabled-state UI elements or invert for negative-space effects.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Accessibility Testing</h3>
+                    <p>Preview how images look in grayscale or inverted mode to evaluate accessibility and contrast for users with visual impairments.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Related Tools</h2>
+            <div class="related-tools">
+                <a href="../color-palette-extractor/index.html">Color Palette Extractor</a>
+                <a href="../image-resizer/index.html">Image Resizer</a>
+                <a href="../pixel-art-palette/index.html">Pixel Art Palette</a>
+                <a href="../background-remover/index.html">Background Remover</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'image-tools',
+            title: 'Color Adjust',
+            breadcrumbs: [
+                { label: 'Image Tools', href: '../index.html' },
+                { label: 'Color Adjust' }
+            ]
+        });
+    </script>
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const editorLayout = document.getElementById('editorLayout');
+        const previewImg = document.getElementById('previewImg');
+        const originalImg = document.getElementById('originalImg');
+        const compareImg = document.getElementById('compareImg');
+        const exportCanvas = document.getElementById('exportCanvas');
+        const ctx = exportCanvas.getContext('2d');
+
+        const brightnessSlider = document.getElementById('brightness');
+        const contrastSlider = document.getElementById('contrast');
+        const saturationSlider = document.getElementById('saturation');
+        const brightnessVal = document.getElementById('brightnessVal');
+        const contrastVal = document.getElementById('contrastVal');
+        const saturationVal = document.getElementById('saturationVal');
+        const grayscaleBtn = document.getElementById('grayscaleBtn');
+        const invertBtn = document.getElementById('invertBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        let sourceImg = null;
+        let grayscale = false;
+        let invert = false;
+
+        /* ---- Upload ---- */
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) loadImage(file);
+        });
+        fileInput.addEventListener('change', () => { if (fileInput.files[0]) loadImage(fileInput.files[0]); });
+
+        function loadImage(file) {
+            const url = URL.createObjectURL(file);
+            sourceImg = new Image();
+            sourceImg.onload = () => {
+                originalImg.src = url;
+                previewImg.src = url;
+                compareImg.src = url;
+                editorLayout.classList.add('visible');
+                uploadArea.style.display = 'none';
+                resetDefaults();
+                applyPreview();
+            };
+            sourceImg.src = url;
+        }
+
+        /* ---- Live Preview (CSS filter) ---- */
+        function applyPreview() {
+            const b = +brightnessSlider.value;
+            const c = +contrastSlider.value;
+            const s = +saturationSlider.value;
+            const filterStr =
+                `brightness(${1 + b / 100}) ` +
+                `contrast(${1 + c / 100}) ` +
+                `saturate(${s / 100})` +
+                (grayscale ? ' grayscale(1)' : '') +
+                (invert ? ' invert(1)' : '');
+            previewImg.style.filter = filterStr;
+            compareImg.style.filter = filterStr;
+        }
+
+        /* ---- Slider events ---- */
+        brightnessSlider.addEventListener('input', () => { brightnessVal.textContent = brightnessSlider.value; applyPreview(); });
+        contrastSlider.addEventListener('input', () => { contrastVal.textContent = contrastSlider.value; applyPreview(); });
+        saturationSlider.addEventListener('input', () => { saturationVal.textContent = saturationSlider.value; applyPreview(); });
+
+        /* ---- Toggle buttons ---- */
+        grayscaleBtn.addEventListener('click', () => { grayscale = !grayscale; grayscaleBtn.classList.toggle('active', grayscale); applyPreview(); });
+        invertBtn.addEventListener('click', () => { invert = !invert; invertBtn.classList.toggle('active', invert); applyPreview(); });
+
+        /* ---- Reset ---- */
+        function resetDefaults() {
+            brightnessSlider.value = 0; brightnessVal.textContent = '0';
+            contrastSlider.value = 0; contrastVal.textContent = '0';
+            saturationSlider.value = 100; saturationVal.textContent = '100';
+            grayscale = false; invert = false;
+            grayscaleBtn.classList.remove('active');
+            invertBtn.classList.remove('active');
+            applyPreview();
+        }
+        resetBtn.addEventListener('click', resetDefaults);
+
+        /* ---- Preview Tabs ---- */
+        document.querySelectorAll('.preview-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const view = tab.dataset.tab;
+                document.getElementById('adjustedView').style.display = view === 'adjusted' ? 'flex' : 'none';
+                const cv = document.getElementById('compareView');
+                cv.style.display = view === 'compare' ? 'flex' : 'none';
+                if (view === 'compare') cv.classList.add('visible');
+                else cv.classList.remove('visible');
+            });
+        });
+
+        /* ---- Pixel-Level Export ---- */
+        downloadBtn.addEventListener('click', () => {
+            if (!sourceImg) return;
+            const w = sourceImg.naturalWidth;
+            const h = sourceImg.naturalHeight;
+            exportCanvas.width = w;
+            exportCanvas.height = h;
+            ctx.drawImage(sourceImg, 0, 0, w, h);
+            const imageData = ctx.getImageData(0, 0, w, h);
+            const d = imageData.data;
+            const brightness = +brightnessSlider.value;
+            const contrast = +contrastSlider.value;
+            const sat = +saturationSlider.value / 100;
+
+            for (let i = 0; i < d.length; i += 4) {
+                let r = d[i], g = d[i + 1], b = d[i + 2];
+
+                // Brightness
+                if (brightness !== 0) {
+                    const adj = brightness * 2.55;
+                    r += adj; g += adj; b += adj;
+                }
+
+                // Contrast
+                if (contrast !== 0) {
+                    const c255 = contrast * 2.55;
+                    const factor = (259 * (c255 + 255)) / (255 * (259 - c255));
+                    r = factor * (r - 128) + 128;
+                    g = factor * (g - 128) + 128;
+                    b = factor * (b - 128) + 128;
+                }
+
+                // Saturation
+                if (sat !== 1) {
+                    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                    r = gray + sat * (r - gray);
+                    g = gray + sat * (g - gray);
+                    b = gray + sat * (b - gray);
+                }
+
+                // Grayscale
+                if (grayscale) {
+                    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+                    r = g = b = lum;
+                }
+
+                // Invert
+                if (invert) { r = 255 - r; g = 255 - g; b = 255 - b; }
+
+                d[i] = Math.max(0, Math.min(255, Math.round(r)));
+                d[i + 1] = Math.max(0, Math.min(255, Math.round(g)));
+                d[i + 2] = Math.max(0, Math.min(255, Math.round(b)));
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+            exportCanvas.toBlob((blob) => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'color-adjusted.png';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }, 'image/png');
+        });
+    </script>
+</body>
+</html>

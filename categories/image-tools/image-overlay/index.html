@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Image Overlay & Watermark Tool - Densanon Toolkit</title>
+    <meta name="description" content="Free online image overlay and watermark tool. Add logos, watermarks, or images on top of photos with adjustable position, opacity, and scale. 100% browser-based, no signup required.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        /* ---- Upload Zones ---- */
+        .upload-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 640px) { .upload-row { grid-template-columns: 1fr; } }
+
+        .upload-zone {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            user-select: none;
+            position: relative;
+        }
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--color-primary);
+            background: rgba(229, 62, 62, 0.04);
+        }
+        .upload-zone .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: block;
+            opacity: 0.65;
+        }
+        .upload-zone .upload-label {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 4px;
+        }
+        .upload-zone .upload-hint {
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 12px;
+        }
+        .upload-zone .thumb-preview {
+            max-width: 100%;
+            max-height: 120px;
+            border-radius: 6px;
+            margin-top: 8px;
+            display: none;
+        }
+        .btn-upload {
+            display: inline-block;
+            padding: 8px 20px;
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn-upload:hover { background: var(--color-primary-hover); }
+
+        /* ---- Controls Panel ---- */
+        .controls-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .controls-panel.visible { display: block; }
+        .controls-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .control-group label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+        .control-group select,
+        .control-group input[type="range"] {
+            width: 100%;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 7px 10px;
+            color: var(--color-text);
+            font-size: 0.85rem;
+            font-family: inherit;
+            outline: none;
+        }
+        .control-group input[type="range"] {
+            padding: 0;
+            height: 6px;
+            border: none;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--color-border);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            cursor: pointer;
+        }
+        .range-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .range-row input[type="range"] { flex: 1; }
+        .range-val {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--color-text);
+            min-width: 42px;
+            text-align: right;
+        }
+
+        /* ---- Action Buttons ---- */
+        .action-row {
+            gap: 10px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .action-row.visible { display: flex; }
+        .btn-action {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s, opacity 0.2s;
+        }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-apply {
+            background: var(--color-primary);
+            color: #fff;
+        }
+        .btn-apply:hover:not(:disabled) { background: var(--color-primary-hover); }
+        .btn-download {
+            background: none;
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+        }
+        .btn-download:hover:not(:disabled) {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        /* ---- Canvas Preview ---- */
+        .preview-wrap {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+            display: none;
+        }
+        .preview-wrap.visible { display: block; }
+        .preview-wrap canvas {
+            max-width: 100%;
+            border-radius: 6px;
+            background-image:
+                linear-gradient(45deg, #2a2d37 25%, transparent 25%),
+                linear-gradient(-45deg, #2a2d37 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #2a2d37 75%),
+                linear-gradient(-45deg, transparent 75%, #2a2d37 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+        }
+        .preview-label {
+            font-size: 0.78rem;
+            color: var(--color-text-muted);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="tool-header">
+            <div class="breadcrumb"></div>
+            <h1>Image Overlay / Watermark</h1>
+            <p>Add a logo, watermark, or any image on top of another with adjustable position, opacity, and scale. All processing happens in your browser — your images never leave your device.</p>
+        </div>
+
+        <!-- Upload Zones -->
+        <div class="upload-row">
+            <div class="upload-zone" id="baseZone">
+                <span class="upload-icon">🖼️</span>
+                <div class="upload-label">Base Image</div>
+                <p class="upload-hint">The background photo or image</p>
+                <button class="btn-upload" type="button">Choose Base Image</button>
+                <img class="thumb-preview" id="baseThumb" alt="Base preview">
+                <input type="file" id="baseInput" accept="image/*" style="display:none;">
+            </div>
+            <div class="upload-zone" id="overlayZone">
+                <span class="upload-icon">💧</span>
+                <div class="upload-label">Overlay / Watermark</div>
+                <p class="upload-hint">Logo, watermark, or overlay image</p>
+                <button class="btn-upload" type="button">Choose Overlay</button>
+                <img class="thumb-preview" id="overlayThumb" alt="Overlay preview">
+                <input type="file" id="overlayInput" accept="image/*" style="display:none;">
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-panel" id="controls">
+            <div class="controls-title">Overlay Settings</div>
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="posSelect">Position</label>
+                    <select id="posSelect">
+                        <option value="center">Center</option>
+                        <option value="top-left">Top Left</option>
+                        <option value="top-right">Top Right</option>
+                        <option value="bottom-left">Bottom Left</option>
+                        <option value="bottom-right" selected>Bottom Right</option>
+                        <option value="tile">Tile (Repeat)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Opacity</label>
+                    <div class="range-row">
+                        <input type="range" id="opacitySlider" min="0" max="100" value="50">
+                        <span class="range-val" id="opacityVal">50%</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Scale</label>
+                    <div class="range-row">
+                        <input type="range" id="scaleSlider" min="10" max="200" value="100">
+                        <span class="range-val" id="scaleVal">100%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-row" id="actions">
+            <button class="btn-action btn-apply" id="btnApply" onclick="applyOverlay()">Apply Overlay</button>
+            <button class="btn-action btn-download" id="btnDownload" onclick="downloadResult()" disabled>Download PNG</button>
+        </div>
+
+        <!-- Canvas Preview -->
+        <div class="preview-wrap" id="previewWrap">
+            <canvas id="canvas"></canvas>
+            <div class="preview-label" id="previewLabel">Live preview — adjust settings above</div>
+        </div>
+
+        <!-- SEO: What is Image Overlay -->
+        <section style="margin-top:48px;">
+            <h2>What is Image Overlay?</h2>
+            <p>Image overlay is the process of placing one image on top of another. It is commonly used to add watermarks to photographs, apply logos to product images, brand social media posts, or composite multiple images together. The overlay image is drawn over the base image at a specified position, opacity, and scale, producing a single merged result.</p>
+            <p style="margin-top:12px;">This tool handles the entire process directly in your browser. There is no server upload, no account required, and no file size limits beyond your device's memory. The output is a lossless PNG that preserves the full resolution of your base image.</p>
+        </section>
+
+        <!-- SEO: How to Use -->
+        <section style="margin-top:32px;">
+            <h2>How to Use</h2>
+            <ol style="margin-left:20px;line-height:1.9;color:var(--color-text-muted);">
+                <li><strong style="color:var(--color-text);">Upload your base image</strong> — Drag and drop or click to browse. This is the background photo.</li>
+                <li><strong style="color:var(--color-text);">Upload your overlay</strong> — Choose a logo, watermark, or any image to place on top. PNG with transparency works best.</li>
+                <li><strong style="color:var(--color-text);">Adjust settings</strong> — Pick a position (center, corners, or tile), set the opacity (0-100%), and scale the overlay (10-200%).</li>
+                <li><strong style="color:var(--color-text);">Preview and apply</strong> — The canvas shows a live preview. Click "Apply Overlay" to render the final composite.</li>
+                <li><strong style="color:var(--color-text);">Download</strong> — Save the result as a full-resolution PNG file.</li>
+            </ol>
+        </section>
+
+        <!-- SEO: Common Uses -->
+        <section style="margin-top:32px;">
+            <h2>Common Uses</h2>
+            <ul style="margin-left:20px;line-height:1.9;color:var(--color-text-muted);">
+                <li><strong style="color:var(--color-text);">Watermarking photos</strong> — Protect your photography by adding a semi-transparent watermark across images before sharing online.</li>
+                <li><strong style="color:var(--color-text);">Adding logos to product images</strong> — Brand your e-commerce product photos with a company logo in the corner for consistent visual identity.</li>
+                <li><strong style="color:var(--color-text);">Social media branding</strong> — Place your brand mark or handle on images before posting to Instagram, Twitter, or Facebook.</li>
+                <li><strong style="color:var(--color-text);">Certificate and document stamping</strong> — Overlay approval stamps, signatures, or seals onto documents and certificates.</li>
+                <li><strong style="color:var(--color-text);">Tiled patterns</strong> — Use the tile mode to repeat a watermark across the entire image, making it harder to crop out.</li>
+            </ul>
+        </section>
+
+        <!-- Related Tools -->
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <a href="../image-resizer/index.html">Image Resizer</a>
+            <a href="../background-remover/index.html">Background Remover</a>
+            <a href="../color-palette-extractor/index.html">Color Palette Extractor</a>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'image-tools',
+            title: 'Image Overlay',
+            breadcrumbs: [
+                { label: 'Image Tools', href: '../index.html' },
+                { label: 'Image Overlay' }
+            ]
+        });
+    </script>
+    <script>
+        // ---- State ----
+        let baseImg = null;
+        let overlayImg = null;
+        let resultBlob = null;
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // ---- Upload Wiring ----
+        function wireUpload(zoneId, inputId, thumbId, onLoad) {
+            const zone = document.getElementById(zoneId);
+            const input = document.getElementById(inputId);
+            const thumb = document.getElementById(thumbId);
+
+            zone.addEventListener('click', e => {
+                if (e.target.tagName === 'BUTTON' || e.target === zone || e.target.closest('.upload-zone')) {
+                    input.click();
+                }
+            });
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) handleFile(file, thumb, onLoad);
+            });
+            input.addEventListener('change', () => {
+                if (input.files[0]) handleFile(input.files[0], thumb, onLoad);
+            });
+        }
+
+        function handleFile(file, thumb, onLoad) {
+            const img = new Image();
+            img.onload = () => {
+                thumb.src = img.src;
+                thumb.style.display = 'block';
+                onLoad(img);
+                updateUI();
+            };
+            img.src = URL.createObjectURL(file);
+        }
+
+        wireUpload('baseZone', 'baseInput', 'baseThumb', img => { baseImg = img; });
+        wireUpload('overlayZone', 'overlayInput', 'overlayThumb', img => { overlayImg = img; });
+
+        // ---- UI Visibility ----
+        function updateUI() {
+            const ready = baseImg && overlayImg;
+            document.getElementById('controls').classList.toggle('visible', ready);
+            document.getElementById('actions').classList.toggle('visible', ready);
+            document.getElementById('previewWrap').classList.toggle('visible', ready);
+            if (ready) {
+                renderPreview();
+                document.getElementById('btnDownload').disabled = true;
+                resultBlob = null;
+            }
+        }
+
+        // ---- Slider Labels ----
+        document.getElementById('opacitySlider').addEventListener('input', e => {
+            document.getElementById('opacityVal').textContent = e.target.value + '%';
+            if (baseImg && overlayImg) renderPreview();
+        });
+        document.getElementById('scaleSlider').addEventListener('input', e => {
+            document.getElementById('scaleVal').textContent = e.target.value + '%';
+            if (baseImg && overlayImg) renderPreview();
+        });
+        document.getElementById('posSelect').addEventListener('change', () => {
+            if (baseImg && overlayImg) renderPreview();
+        });
+
+        // ---- Core Composite Logic ----
+        function compositeToCanvas(targetCanvas, base, overlay, position, opacity, scale) {
+            const tCtx = targetCanvas.getContext('2d');
+            targetCanvas.width = base.width;
+            targetCanvas.height = base.height;
+
+            // Draw base image
+            tCtx.drawImage(base, 0, 0);
+
+            // Calculate scaled overlay dimensions
+            const ow = Math.round(overlay.width * scale);
+            const oh = Math.round(overlay.height * scale);
+            const pad = 20;
+
+            tCtx.globalAlpha = opacity;
+
+            if (position === 'tile') {
+                // Tile overlay across entire canvas
+                for (let y = 0; y < base.height; y += oh) {
+                    for (let x = 0; x < base.width; x += ow) {
+                        tCtx.drawImage(overlay, x, y, ow, oh);
+                    }
+                }
+            } else {
+                // Calculate single position
+                let x, y;
+                switch (position) {
+                    case 'top-left':
+                        x = pad; y = pad; break;
+                    case 'top-right':
+                        x = base.width - ow - pad; y = pad; break;
+                    case 'bottom-left':
+                        x = pad; y = base.height - oh - pad; break;
+                    case 'bottom-right':
+                        x = base.width - ow - pad; y = base.height - oh - pad; break;
+                    case 'center':
+                    default:
+                        x = Math.round((base.width - ow) / 2);
+                        y = Math.round((base.height - oh) / 2);
+                        break;
+                }
+                tCtx.drawImage(overlay, x, y, ow, oh);
+            }
+
+            tCtx.globalAlpha = 1.0;
+        }
+
+        function getSettings() {
+            return {
+                position: document.getElementById('posSelect').value,
+                opacity: parseInt(document.getElementById('opacitySlider').value) / 100,
+                scale: parseInt(document.getElementById('scaleSlider').value) / 100
+            };
+        }
+
+        // ---- Live Preview ----
+        function renderPreview() {
+            if (!baseImg || !overlayImg) return;
+            const { position, opacity, scale } = getSettings();
+            compositeToCanvas(canvas, baseImg, overlayImg, position, opacity, scale);
+            document.getElementById('previewLabel').textContent =
+                baseImg.width + ' x ' + baseImg.height + ' px — live preview';
+        }
+
+        // ---- Apply (Final Render) ----
+        function applyOverlay() {
+            if (!baseImg || !overlayImg) return;
+            const btn = document.getElementById('btnApply');
+            btn.disabled = true;
+            btn.textContent = 'Processing\u2026';
+
+            // Use a timeout to let the UI update before heavy work
+            setTimeout(() => {
+                const { position, opacity, scale } = getSettings();
+                const outCanvas = document.createElement('canvas');
+                compositeToCanvas(outCanvas, baseImg, overlayImg, position, opacity, scale);
+
+                // Copy to visible canvas for display
+                canvas.width = outCanvas.width;
+                canvas.height = outCanvas.height;
+                ctx.drawImage(outCanvas, 0, 0);
+
+                outCanvas.toBlob(blob => {
+                    resultBlob = blob;
+                    document.getElementById('btnDownload').disabled = false;
+                    document.getElementById('previewLabel').textContent =
+                        outCanvas.width + ' x ' + outCanvas.height + ' px — final output ready';
+                    btn.disabled = false;
+                    btn.textContent = 'Apply Overlay';
+                }, 'image/png');
+            }, 30);
+        }
+
+        // ---- Download ----
+        function downloadResult() {
+            if (!resultBlob) return;
+            const url = URL.createObjectURL(resultBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'overlay-result.png';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+        }
+    </script>
+</body>
+</html>
