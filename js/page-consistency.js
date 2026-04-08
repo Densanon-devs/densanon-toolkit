@@ -109,6 +109,10 @@ function injectHeader(root, activeCategory) {
     return `<a href="${root}categories/${cat.id}/index.html"${activeClass}>${cat.label}</a>`;
   }).join('\n        ');
 
+  const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+  const modKey = isMac ? '\u2318' : 'Ctrl';
+  const modLabel = isMac ? 'Cmd+K' : 'Ctrl+K';
+
   const header = document.createElement('header');
   header.className = 'site-header';
   header.innerHTML = `
@@ -116,9 +120,9 @@ function injectHeader(root, activeCategory) {
       <a href="${root}index.html" class="site-logo">Tool<span>Kit</span></a>
       <nav class="site-nav">
         ${navLinks}
-        <button class="search-toggle" aria-label="Search tools (Ctrl+K)" title="Search tools (Ctrl+K)">
+        <button class="search-toggle" aria-label="Search tools (${modLabel})" title="Search tools (${modLabel})">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <kbd class="search-shortcut">Ctrl K</kbd>
+          <kbd class="search-shortcut">${modKey} K</kbd>
         </button>
       </nav>
     </div>`;
@@ -165,9 +169,9 @@ function injectSearch(root) {
     if (e.target === overlay) close();
   });
 
-  // Keyboard shortcut: Ctrl+K or /
+  // Keyboard shortcut: Ctrl+K / Cmd+K or /
   document.addEventListener('keydown', e => {
-    if ((e.ctrlKey && e.key === 'k') || (e.key === '/' && !isInputFocused())) {
+    if (((e.ctrlKey || e.metaKey) && e.key === 'k') || (e.key === '/' && !isInputFocused())) {
       e.preventDefault();
       open();
     }
