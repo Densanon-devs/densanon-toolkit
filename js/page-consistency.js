@@ -71,7 +71,8 @@ const TOOLKIT_TOOLS = [
   { name: 'Audio Stripper', desc: 'Extract audio from any video file and download as WAV or OGG.', category: 'media-tools', categoryLabel: 'Media', slug: 'audio-stripper', keywords: 'audio stripper extract rip video mp4 webm wav ogg sound track' },
   { name: 'GIF Maker', desc: 'Create animated GIFs from video clips or image sequences. Set FPS, quality, trim, and loop.', category: 'media-tools', categoryLabel: 'Media', slug: 'gif-maker', keywords: 'gif maker create animated gif video images convert trim fps loop quality dithering' },
   { name: 'Video Compressor', desc: 'Reduce video file size by adjusting resolution, quality, and bitrate. 100% browser-based.', category: 'media-tools', categoryLabel: 'Media', slug: 'video-compressor', keywords: 'video compressor compress reduce file size shrink resolution bitrate mp4 webm quality' },
-  { name: 'QR Code Maker', desc: 'Generate QR codes for URLs, text, emails, and phone numbers with custom colors and sizes.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'qr-code-maker', keywords: 'qr code maker generator url link text email phone custom color size download png svg' }
+  { name: 'QR Code Maker', desc: 'Generate QR codes for URLs, text, emails, and phone numbers with custom colors and sizes.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'qr-code-maker', keywords: 'qr code maker generator url link text email phone custom color size download png svg' },
+  { name: 'Pipeline Builder', desc: 'Chain tools together visually — connect image processors, data converters, and more into automated workflows.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'pipeline-builder', keywords: 'pipeline builder workflow chain node graph visual automation batch image converter data' }
 ];
 
 function initPage(config = {}) {
