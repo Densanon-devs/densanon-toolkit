@@ -142,6 +142,14 @@
     .b-sheriff   { color:var(--gold); border:1px solid #7a6020; background:rgba(201,168,76,.08); }
     .b-custom    { color:#cc7acc; border:1px solid #7a3a9a; background:rgba(154,74,170,.1); }
 
+    .toggle-row { display:flex; align-items:center; gap:12px; width:100%; cursor:pointer; user-select:none; padding:10px 0; }
+    .toggle-track { width:38px; height:20px; background:var(--border); border-radius:10px; position:relative; transition:background .2s; flex-shrink:0; }
+    .toggle-thumb { position:absolute; top:2px; left:2px; width:16px; height:16px; background:var(--muted); border-radius:50%; transition:all .2s; }
+    .toggle-row.on .toggle-track { background:rgba(201,168,76,.35); }
+    .toggle-row.on .toggle-thumb { left:20px; background:var(--gold); }
+    .toggle-label { font-family:'Cinzel',serif; font-size:.7rem; letter-spacing:.1em; color:var(--muted); }
+    .toggle-row.on .toggle-label { color:var(--gold); }
+
     .loading-overlay { position:fixed; inset:0; background:rgba(13,13,13,.85); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:100; gap:16px; }
     .loading-overlay .spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; }
     .loading-overlay p { font-family:'Cinzel',serif; font-size:.75rem; letter-spacing:.2em; color:var(--muted); text-transform:uppercase; }
@@ -224,6 +232,10 @@
             <div class="roles-table" id="lobbyRolesTable"></div>
             <div class="role-total" id="lobbyTotal"></div>
           </div>
+          <label class="toggle-row" onclick="S.hostSeeAll=!S.hostSeeAll;this.classList.toggle('on',S.hostSeeAll)">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span class="toggle-label">Let me see all roles after dealing</span>
+          </label>
           <div class="warn-txt" id="dealWarn"></div>
           <div class="rd-btn-group">
             <button class="rd-btn rd-btn-primary" id="dealBtn" onclick="dealRoles()">DEAL ROLES</button>
@@ -233,10 +245,10 @@
 
         <!-- HOST RESULTS -->
         <div class="screen" id="s-results">
-          <div class="logo"><h1>DEALT</h1></div>
-          <div class="info-box">Players: tap your card to reveal your secret role!</div>
+          <div class="logo"><h1>ALL ROLES</h1></div>
           <div class="results-list" id="resultsList"></div>
           <div class="rd-btn-group">
+            <button class="rd-btn rd-btn-secondary" onclick="go('s-reveal')">BACK TO MY CARD</button>
             <button class="rd-btn rd-btn-primary" onclick="dealRoles()">RE-DEAL</button>
             <button class="rd-btn rd-btn-danger" onclick="endGame()">END GAME</button>
           </div>
@@ -288,6 +300,11 @@
             </div>
           </div>
           <button class="rd-btn rd-btn-secondary" style="margin-top:6px;" onclick="hideCard()">HIDE</button>
+          <div id="hostRevealBtns" style="display:none;width:100%;margin-top:6px;">
+            <button class="rd-btn rd-btn-secondary" style="margin-bottom:10px;" onclick="renderResults();go('s-results')">VIEW ALL ROLES</button>
+            <button class="rd-btn rd-btn-primary" onclick="dealRoles()">RE-DEAL</button>
+            <button class="rd-btn rd-btn-danger" style="margin-top:10px;" onclick="endGame()">END GAME</button>
+          </div>
         </div>
 
       </div>
@@ -326,7 +343,7 @@
       { id:'doctor',    name:'Doctor',    emoji:'\u{1FA7A}', desc:'You can save one player each round from elimination.',  theme:'doctor',    count:0 },
       { id:'sheriff',   name:'Sheriff',   emoji:'\u2B50', desc:'You carry a badge. Use your authority wisely.',           theme:'sheriff',   count:0 },
     ];
-    var S = { mode:null, myId:null, myName:'', roomCode:'', roles:[], players:{}, assignments:{} };
+    var S = { mode:null, myId:null, myName:'', roomCode:'', roles:[], players:{}, assignments:{}, hostSeeAll:false };
     var roomListener = null;
     var _fb = null; // set once Firebase loads
 
@@ -467,6 +484,15 @@
       document.getElementById('revealTitle').textContent=(role.name||role.id).toUpperCase();
       document.getElementById('revealDesc').textContent=role.desc||'';
       document.getElementById('revealPlayer').textContent=S.myName;
+      var hostBtns=document.getElementById('hostRevealBtns');
+      if(S.mode==='host') {
+        hostBtns.style.display='flex';
+        hostBtns.style.flexDirection='column';
+        // hide/show "view all" based on toggle
+        hostBtns.children[0].style.display=S.hostSeeAll?'':'none';
+      } else {
+        hostBtns.style.display='none';
+      }
       go('s-reveal');
     }
 
@@ -566,15 +592,14 @@
       players.forEach(function(p,i){ assignments[p.id]=pool[i]; });
       S.assignments=assignments;
       _fb.update(_fb.ref(_fb.db,'rooms/'+S.roomCode),{assignments:assignments, status:'dealt'}).then(function(){
-        renderResults();
-        go('s-results');
+        showReveal(resolve(S.assignments[S.myId]));
       });
     }
 
     function endGame() {
       if(roomListener){ roomListener(); roomListener=null; }
       if(S.roomCode && S.mode==='host' && _fb) _fb.remove(_fb.ref(_fb.db,'rooms/'+S.roomCode));
-      S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{}};
+      S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{},hostSeeAll:false};
       go('s-landing');
     }
 
@@ -616,7 +641,7 @@
           _fb.set(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players'), players);
         });
       }
-      S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{}};
+      S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{},hostSeeAll:false};
       go('s-landing');
     }
   </script>
