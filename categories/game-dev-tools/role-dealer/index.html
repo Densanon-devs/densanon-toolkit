@@ -550,8 +550,8 @@
         return;
       }
       if(data.roles) S.roles=data.roles;
-      if(data.status==='dealt' && data.assignments && data.assignments[S.myId]){
-        if(roomListener){roomListener();roomListener=null;}
+      if(data.status==='dealt' && data.assignments && data.assignments[S.myId] && data.dealId!==S.lastDealId){
+        S.lastDealId=data.dealId;
         showReveal(resolve(data.assignments[S.myId]));
       }
     }
@@ -611,7 +611,9 @@
       var assignments={};
       players.forEach(function(p,i){ assignments[p.id]=pool[i]; });
       S.assignments=assignments;
-      _fb.update(_fb.ref(_fb.db,'rooms/'+S.roomCode),{assignments:assignments, status:'dealt'}).then(function(){
+      var dealId=Date.now();
+      S.lastDealId=dealId;
+      _fb.update(_fb.ref(_fb.db,'rooms/'+S.roomCode),{assignments:assignments, status:'dealt', dealId:dealId}).then(function(){
         if(S.hostPlays) {
           showReveal(resolve(S.assignments[S.myId]));
         } else {
