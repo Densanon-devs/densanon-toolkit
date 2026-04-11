@@ -591,13 +591,7 @@
 
     function kick(id) {
       if(!_fb) return;
-      _fb.update(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players/'+id), null).then(function(){
-        return _fb.get(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players'));
-      }).then(function(snap){
-        var players=snap.val()||{};
-        delete players[id];
-        _fb.set(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players'), players);
-      });
+      _fb.remove(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players/'+id));
     }
 
     function dealRoles() {
@@ -663,11 +657,7 @@
     function leaveRoom() {
       if(roomListener){roomListener();roomListener=null;}
       if(S.roomCode && S.myId && S.mode==='player' && _fb){
-        _fb.get(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players')).then(function(snap){
-          var players=snap.val()||{};
-          delete players[S.myId];
-          _fb.set(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players'), players);
-        });
+        _fb.remove(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players/'+S.myId));
       }
       S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{},hostSeeAll:false,hostPlays:true};
       go('s-landing');
