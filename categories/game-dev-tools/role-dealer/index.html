@@ -232,6 +232,10 @@
             <div class="roles-table" id="lobbyRolesTable"></div>
             <div class="role-total" id="lobbyTotal"></div>
           </div>
+          <label class="toggle-row on" id="hostPlaysToggle" onclick="toggleHostPlays()">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span class="toggle-label">Include me in the deal</span>
+          </label>
           <label class="toggle-row" onclick="S.hostSeeAll=!S.hostSeeAll;this.classList.toggle('on',S.hostSeeAll)">
             <span class="toggle-track"><span class="toggle-thumb"></span></span>
             <span class="toggle-label">Let me see all roles after dealing</span>
@@ -248,7 +252,7 @@
           <div class="logo"><h1>ALL ROLES</h1></div>
           <div class="results-list" id="resultsList"></div>
           <div class="rd-btn-group">
-            <button class="rd-btn rd-btn-secondary" onclick="go('s-reveal')">BACK TO MY CARD</button>
+            <button class="rd-btn rd-btn-secondary" id="backToCardBtn" onclick="go('s-reveal')">BACK TO MY CARD</button>
             <button class="rd-btn rd-btn-primary" onclick="dealRoles()">RE-DEAL</button>
             <button class="rd-btn rd-btn-danger" onclick="endGame()">END GAME</button>
           </div>
@@ -343,7 +347,7 @@
       { id:'doctor',    name:'Doctor',    emoji:'\u{1FA7A}', desc:'You can save one player each round from elimination.',  theme:'doctor',    count:0 },
       { id:'sheriff',   name:'Sheriff',   emoji:'\u2B50', desc:'You carry a badge. Use your authority wisely.',           theme:'sheriff',   count:0 },
     ];
-    var S = { mode:null, myId:null, myName:'', roomCode:'', roles:[], players:{}, assignments:{}, hostSeeAll:false };
+    var S = { mode:null, myId:null, myName:'', roomCode:'', roles:[], players:{}, assignments:{}, hostSeeAll:false, hostPlays:true };
     var roomListener = null;
     var _fb = null; // set once Firebase loads
 
@@ -447,12 +451,26 @@
       checkDeal();
     }
 
+    function toggleHostPlays() {
+      S.hostPlays=!S.hostPlays;
+      document.getElementById('hostPlaysToggle').classList.toggle('on',S.hostPlays);
+      checkDeal();
+    }
+
+    function getDealPlayers() {
+      var all=Object.values(S.players||{}).sort(function(a,b){return a.joinedAt-b.joinedAt});
+      if(!S.hostPlays) return all.filter(function(p){return p.id!==S.myId});
+      return all;
+    }
+
     function checkDeal() {
       var w=document.getElementById('dealWarn'), btn=document.getElementById('dealBtn');
-      var n=Object.keys(S.players||{}).length;
+      var n=getDealPlayers().length;
       var fixed=S.roles.filter(function(r){return !r.autoFill}).reduce(function(s,r){return s+r.count},0);
       var hasAuto=S.roles.some(function(r){return r.autoFill});
-      if(n<2){w.textContent='Need at least 2 players.';btn.disabled=true;return;}
+      if(n<1){w.textContent='Need at least 1 player to deal to.';btn.disabled=true;return;}
+      if(!S.hostPlays && n<1){w.textContent='No players to deal to.';btn.disabled=true;return;}
+      if(S.hostPlays && Object.keys(S.players||{}).length<2){w.textContent='Need at least 2 players.';btn.disabled=true;return;}
       if(fixed>n){w.textContent=fixed+' roles but only '+n+' players \u2014 reduce counts.';btn.disabled=true;return;}
       if(!hasAuto&&fixed<n){w.textContent=fixed+' roles for '+n+' players \u2014 add more or enable Innocent.';btn.disabled=true;return;}
       w.textContent='';btn.disabled=false;
@@ -460,13 +478,15 @@
 
     function renderResults() {
       var el=document.getElementById('resultsList'); el.innerHTML='';
-      var players=Object.values(S.players).sort(function(a,b){return a.joinedAt-b.joinedAt});
+      var players=getDealPlayers();
       players.forEach(function(p){
         var role=resolve(S.assignments[p.id]);
         var item=document.createElement('div'); item.className='res-item';
         item.innerHTML='<span class="ri-emoji">'+role.emoji+'</span><span class="ri-name">'+p.name+'</span><span class="ri-badge b-'+role.theme+'">'+role.name.toUpperCase()+'</span>';
         el.appendChild(item);
       });
+      var backBtn=document.getElementById('backToCardBtn');
+      if(backBtn) backBtn.style.display=S.hostPlays?'':'none';
     }
 
     function resolve(roleId) {
@@ -582,7 +602,7 @@
 
     function dealRoles() {
       if(!_fb) return;
-      var players = Object.values(S.players).sort(function(a,b){return a.joinedAt-b.joinedAt});
+      var players = getDealPlayers();
       var n = players.length, pool=[];
       S.roles.forEach(function(r){ if(!r.autoFill) for(var i=0;i<r.count;i++) pool.push(r.id); });
       while(pool.length<n) pool.push('innocent');
@@ -592,14 +612,20 @@
       players.forEach(function(p,i){ assignments[p.id]=pool[i]; });
       S.assignments=assignments;
       _fb.update(_fb.ref(_fb.db,'rooms/'+S.roomCode),{assignments:assignments, status:'dealt'}).then(function(){
-        showReveal(resolve(S.assignments[S.myId]));
+        if(S.hostPlays) {
+          showReveal(resolve(S.assignments[S.myId]));
+        } else {
+          // Host isn't playing — go straight to results (always visible)
+          renderResults();
+          go('s-results');
+        }
       });
     }
 
     function endGame() {
       if(roomListener){ roomListener(); roomListener=null; }
       if(S.roomCode && S.mode==='host' && _fb) _fb.remove(_fb.ref(_fb.db,'rooms/'+S.roomCode));
-      S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{},hostSeeAll:false};
+      S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{},hostSeeAll:false,hostPlays:true};
       go('s-landing');
     }
 
@@ -641,7 +667,7 @@
           _fb.set(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players'), players);
         });
       }
-      S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{},hostSeeAll:false};
+      S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{},hostSeeAll:false,hostPlays:true};
       go('s-landing');
     }
   </script>
