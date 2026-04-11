@@ -67,6 +67,9 @@
     .role-row .r-emoji { font-size:1.25rem; width:28px; text-align:center; flex-shrink:0; }
     .role-row .r-info  { flex:1; min-width:0; }
     .role-row .r-name  { font-size:.98rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .role-row .r-name-input { font-family:'Crimson Text',serif; font-size:.98rem; color:var(--text); background:none; border:none; border-bottom:1px solid transparent; outline:none; width:100%; padding:1px 0; letter-spacing:0; text-align:left; }
+    .role-row .r-name-input:hover { border-bottom-color:var(--border); }
+    .role-row .r-name-input:focus { border-bottom-color:var(--gold); }
     .role-row .r-desc-input { font-family:'Crimson Text',serif; font-size:.8rem; color:var(--muted); background:none; border:none; border-bottom:1px dashed var(--border); outline:none; width:100%; padding:2px 0; letter-spacing:0; text-align:left; margin-top:3px; }
     .role-row .r-desc-input:focus { border-bottom-color:var(--gold); color:var(--text); }
     .counter { display:flex; align-items:center; gap:8px; flex-shrink:0; }
@@ -351,7 +354,8 @@
         row.innerHTML =
           '<span class="r-emoji">'+r.emoji+'</span>'+
           '<div class="r-info">'+
-            '<div class="r-name">'+r.name+'</div>'+
+            '<input class="r-name-input" value="'+r.name.replace(/"/g,'&quot;')+'"'+
+              ' oninput="S.roles['+i+'].name=this.value" maxlength="20" autocomplete="off">'+
             '<input class="r-desc-input" placeholder="Description shown on reveal\u2026"'+
               ' value="'+(r.desc||'').replace(/"/g,'&quot;')+'"'+
               ' oninput="S.roles['+i+'].desc=this.value">'+
