@@ -549,6 +549,18 @@
         setTimeout(function(){go('s-landing')},2500);
         return;
       }
+      // Kicked check — player removed from room
+      if(!data.players || !data.players[S.myId]){
+        if(roomListener){roomListener();roomListener=null;}
+        document.getElementById('waitTitle').textContent='Removed';
+        document.getElementById('waitMsg').textContent='You were removed from the game by the host.';
+        go('s-waiting');
+        setTimeout(function(){
+          S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{},hostSeeAll:false,hostPlays:true};
+          go('s-landing');
+        },3000);
+        return;
+      }
       if(data.roles) S.roles=data.roles;
       if(data.status==='dealt' && data.assignments && data.assignments[S.myId] && data.dealId!==S.lastDealId){
         S.lastDealId=data.dealId;
@@ -572,10 +584,12 @@
       S.players = {};
       S.players[S.myId] = hostPlayer;
 
-      _fb.set(_fb.ref(_fb.db, 'rooms/'+code), {
+      var roomRef=_fb.ref(_fb.db, 'rooms/'+code);
+      _fb.set(roomRef, {
         hostId: S.myId, roles: S.roles, players: S.players,
         assignments: {}, status: 'waiting', createdAt: Date.now(),
       }).then(function(){
+        _fb.onDisconnect(roomRef).remove();
         document.getElementById('lobbyCode').textContent = code;
         renderLobbyRoles();
         go('s-lobby');
@@ -643,9 +657,11 @@
         S.myId='p_'+Date.now()+'_'+Math.random().toString(36).slice(2);
         S.roles=data.roles||[];
 
-        _fb.update(_fb.ref(_fb.db,'rooms/'+code+'/players/'+S.myId),{
+        var playerRef=_fb.ref(_fb.db,'rooms/'+code+'/players/'+S.myId);
+        _fb.update(playerRef,{
           id:S.myId, name:name, joinedAt:Date.now()
         }).then(function(){
+          _fb.onDisconnect(playerRef).remove();
           document.getElementById('waitTitle').textContent="You're in, "+name+"!";
           document.getElementById('waitMsg').textContent='Waiting for the host to deal roles\u2026';
           go('s-waiting');
@@ -667,7 +683,7 @@
   <script type="module">
     // ── FIREBASE (loads async, UI already works above) ─────────────────
     var { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    var { getDatabase, ref, set, get, update, onValue, remove } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+    var { getDatabase, ref, set, get, update, onValue, remove, onDisconnect } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
 
     var app = initializeApp({
       apiKey:            "AIzaSyBJ5aeiCiIjotMqSDUGRO336UDSHWft5_A",
@@ -680,7 +696,7 @@
     });
     var db = getDatabase(app);
 
-    _fb = { db: db, ref: ref, set: set, get: get, update: update, onValue: onValue, remove: remove };
+    _fb = { db: db, ref: ref, set: set, get: get, update: update, onValue: onValue, remove: remove, onDisconnect: onDisconnect };
     document.getElementById('loadingOverlay').classList.add('hidden');
   </script>
 </body>
