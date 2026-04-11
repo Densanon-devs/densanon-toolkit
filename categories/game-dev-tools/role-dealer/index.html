@@ -314,199 +314,173 @@
   <script src="../../../js/page-consistency.js"></script>
   <script>initPage({ depth: 3, activeCategory: 'game-dev-tools', title: 'Role Dealer', breadcrumbs: [{ label: 'Game Dev Tools', href: '../index.html' }, { label: 'Role Dealer' }] });</script>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey:            "AIzaSyBJ5aeiCiIjotMqSDUGRO336UDSHWft5_A",
-      authDomain:        "role-dealer.firebaseapp.com",
-      databaseURL:       "https://role-dealer-default-rtdb.firebaseio.com",
-      projectId:         "role-dealer",
-      storageBucket:     "role-dealer.firebasestorage.app",
-      messagingSenderId: "141493339855",
-      appId:             "1:141493339855:web:095a339d78259270cc19ba"
-    };
-    const app = initializeApp(firebaseConfig);
-    const db  = getDatabase(app);
-
-    document.getElementById('loadingOverlay').classList.add('hidden');
-    go('s-landing');
-
-    const DEFAULTS = [
+  <script>
+    // ── STATE & DEFAULTS (no Firebase needed) ─────────────────────────
+    var DEFAULTS = [
       { id:'murderer',  name:'Murderer',  emoji:'\u{1F52A}', desc:'You are the murderer. Blend in and stay hidden.',       theme:'murderer',  count:1 },
       { id:'innocent',  name:'Innocent',  emoji:'\u{1F607}', desc:'Survive the night. Work together to find the murderer.',theme:'innocent',  count:0, autoFill:true },
-      { id:'detective', name:'Detective', emoji:'\u{1F575}\uFE0F', desc:'Investigate the group and expose the murderer.',        theme:'detective', count:0 },
+      { id:'detective', name:'Detective', emoji:'\u{1F575}\uFE0F', desc:'Investigate the group and expose the murderer.',  theme:'detective', count:0 },
       { id:'doctor',    name:'Doctor',    emoji:'\u{1FA7A}', desc:'You can save one player each round from elimination.',  theme:'doctor',    count:0 },
-      { id:'sheriff',   name:'Sheriff',   emoji:'\u2B50', desc:'You carry a badge. Use your authority wisely.',         theme:'sheriff',   count:0 },
+      { id:'sheriff',   name:'Sheriff',   emoji:'\u2B50', desc:'You carry a badge. Use your authority wisely.',           theme:'sheriff',   count:0 },
     ];
+    var S = { mode:null, myId:null, myName:'', roomCode:'', roles:[], players:{}, assignments:{} };
+    var roomListener = null;
+    var _fb = null; // set once Firebase loads
 
-    let S = { mode:null, myId:null, myName:'', roomCode:'', roles:[], players:{}, assignments:{} };
-    let roomListener = null;
-
-    window.go = function(id) {
-      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    // ── NAVIGATION ────────────────────────────────────────────────────
+    function go(id) {
+      document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
       document.getElementById(id).classList.add('active');
       document.querySelector('.rd-wrap').scrollIntoView({ behavior:'smooth', block:'start' });
     }
 
-    window.initSetup = function() {
-      S.roles = DEFAULTS.map(r=>({...r}));
+    // ── SETUP (offline) ───────────────────────────────────────────────
+    function initSetup() {
+      S.roles = DEFAULTS.map(function(r){return Object.assign({},r)});
       renderSetup();
     }
 
     function renderSetup() {
-      const t = document.getElementById('setupRolesTable');
+      var t = document.getElementById('setupRolesTable');
       t.innerHTML = '';
-      S.roles.forEach((r,i) => {
-        const isDefault = DEFAULTS.some(d=>d.id===r.id);
-        const isAuto    = !!r.autoFill;
-        const row = document.createElement('div');
+      S.roles.forEach(function(r,i) {
+        var isDefault = DEFAULTS.some(function(d){return d.id===r.id});
+        var isAuto    = !!r.autoFill;
+        var row = document.createElement('div');
         row.className = 'role-row';
-        row.innerHTML = `
-          <span class="r-emoji">${r.emoji}</span>
-          <div class="r-info">
-            <div class="r-name">${r.name}</div>
-            <input class="r-desc-input" placeholder="Description shown on reveal\u2026"
-              value="${(r.desc||'').replace(/"/g,'&quot;')}"
-              oninput="S.roles[${i}].desc=this.value">
-          </div>
-          ${isAuto
-            ? `<span style="font-style:italic;color:var(--muted);font-size:.8rem;flex-shrink:0;padding-left:6px;">auto-fills</span>`
-            : `<div class="counter">
-                 <button onclick="adjS(${i},-1)">\u2212</button>
-                 <span class="num">${r.count}</span>
-                 <button onclick="adjS(${i},1)">+</button>
-               </div>`}
-          ${!isAuto && !isDefault
-            ? `<button class="r-remove" onclick="removeS(${i})">\u2715</button>`
-            : `<span style="width:20px;flex-shrink:0;"></span>`}
-        `;
+        row.innerHTML =
+          '<span class="r-emoji">'+r.emoji+'</span>'+
+          '<div class="r-info">'+
+            '<div class="r-name">'+r.name+'</div>'+
+            '<input class="r-desc-input" placeholder="Description shown on reveal\u2026"'+
+              ' value="'+(r.desc||'').replace(/"/g,'&quot;')+'"'+
+              ' oninput="S.roles['+i+'].desc=this.value">'+
+          '</div>'+
+          (isAuto
+            ? '<span style="font-style:italic;color:var(--muted);font-size:.8rem;flex-shrink:0;padding-left:6px;">auto-fills</span>'
+            : '<div class="counter">'+
+                '<button onclick="adjS('+i+',-1)">\u2212</button>'+
+                '<span class="num">'+r.count+'</span>'+
+                '<button onclick="adjS('+i+',1)">+</button>'+
+              '</div>')+
+          (!isAuto && !isDefault
+            ? '<button class="r-remove" onclick="removeS('+i+')">\u2715</button>'
+            : '<span style="width:20px;flex-shrink:0;"></span>');
         t.appendChild(row);
       });
       updateTotal('setupTotal');
     }
 
-    window.adjS = (i,d) => { S.roles[i].count=Math.max(0,S.roles[i].count+d); renderSetup(); };
-    window.removeS = i => { S.roles.splice(i,1); renderSetup(); };
+    function adjS(i,d) { S.roles[i].count=Math.max(0,S.roles[i].count+d); renderSetup(); }
+    function removeS(i) { S.roles.splice(i,1); renderSetup(); }
 
-    window.addRole = function() {
-      const inp=document.getElementById('newRoleName'), name=inp.value.trim();
+    function addRole() {
+      var inp=document.getElementById('newRoleName'), name=inp.value.trim();
       if(!name) return;
-      S.roles.push({id:'c_'+Date.now(),name,emoji:'\u{1F3AD}',desc:'Play your role wisely.',theme:'custom',count:1});
+      S.roles.push({id:'c_'+Date.now(),name:name,emoji:'\u{1F3AD}',desc:'Play your role wisely.',theme:'custom',count:1});
       inp.value=''; renderSetup();
-    };
-
-    function updateTotal(elId) {
-      const el=document.getElementById(elId); if(!el) return;
-      const fixed=S.roles.filter(r=>!r.autoFill).reduce((s,r)=>s+r.count,0);
-      const hasAuto=S.roles.some(r=>r.autoFill);
-      el.className='role-total '+(hasAuto?'ok':'warn');
-      el.textContent=hasAuto
-        ? `${fixed} fixed role${fixed!==1?'s':''} \u00B7 innocent fills the rest`
-        : `${fixed} fixed role${fixed!==1?'s':''} \u00B7 no auto-fill`;
     }
 
-    const genCode = () => { const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<4;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; };
-
-    window.createRoom = async function() {
-      const name=document.getElementById('hostName').value.trim();
-      const err=document.getElementById('setupErr');
-      if(!name){err.textContent='Please enter your name.';return;}
-      const fixed=S.roles.filter(r=>!r.autoFill).reduce((s,r)=>s+r.count,0);
-      if(fixed<1){err.textContent='Add at least 1 role with count > 0.';return;}
-      err.textContent='';
-
-      const code=genCode();
-      S.mode='host'; S.myName=name; S.roomCode=code;
-      S.myId='h_'+Date.now();
-
-      const hostPlayer = { id:S.myId, name:name+' \u{1F451}', joinedAt: Date.now() };
-      S.players = { [S.myId]: hostPlayer };
-
-      await set(ref(db, 'rooms/'+code), {
-        hostId:      S.myId,
-        roles:       S.roles,
-        players:     S.players,
-        assignments: {},
-        status:      'waiting',
-        createdAt:   Date.now(),
-      });
-
-      document.getElementById('lobbyCode').textContent = code;
-      renderLobbyRoles();
-      go('s-lobby');
-      listenRoom(code, handleRoomUpdate_Host);
-    };
+    function updateTotal(elId) {
+      var el=document.getElementById(elId); if(!el) return;
+      var fixed=S.roles.filter(function(r){return !r.autoFill}).reduce(function(s,r){return s+r.count},0);
+      var hasAuto=S.roles.some(function(r){return r.autoFill});
+      el.className='role-total '+(hasAuto?'ok':'warn');
+      el.textContent=hasAuto
+        ? fixed+' fixed role'+(fixed!==1?'s':'')+' \u00B7 innocent fills the rest'
+        : fixed+' fixed role'+(fixed!==1?'s':'')+' \u00B7 no auto-fill';
+    }
 
     function renderLobbyRoles() {
-      const t=document.getElementById('lobbyRolesTable'); t.innerHTML='';
-      S.roles.forEach((r,i)=>{
-        const row=document.createElement('div'); row.className='role-row';
-        row.innerHTML=`
-          <span class="r-emoji">${r.emoji}</span>
-          <div class="r-info"><div class="r-name">${r.name}</div></div>
-          ${r.autoFill
-            ? `<span style="font-style:italic;color:var(--muted);font-size:.8rem;flex-shrink:0;">auto-fills</span>`
-            : `<div class="counter">
-                 <button onclick="adjL(${i},-1)">\u2212</button>
-                 <span class="num">${r.count}</span>
-                 <button onclick="adjL(${i},1)">+</button>
-               </div>`}
-          <span style="width:20px;flex-shrink:0;"></span>
-        `;
+      var t=document.getElementById('lobbyRolesTable'); t.innerHTML='';
+      S.roles.forEach(function(r,i){
+        var row=document.createElement('div'); row.className='role-row';
+        row.innerHTML=
+          '<span class="r-emoji">'+r.emoji+'</span>'+
+          '<div class="r-info"><div class="r-name">'+r.name+'</div></div>'+
+          (r.autoFill
+            ? '<span style="font-style:italic;color:var(--muted);font-size:.8rem;flex-shrink:0;">auto-fills</span>'
+            : '<div class="counter">'+
+                '<button onclick="adjL('+i+',-1)">\u2212</button>'+
+                '<span class="num">'+r.count+'</span>'+
+                '<button onclick="adjL('+i+',1)">+</button>'+
+              '</div>')+
+          '<span style="width:20px;flex-shrink:0;"></span>';
         t.appendChild(row);
       });
       updateTotal('lobbyTotal');
       checkDeal();
     }
 
-    window.adjL = async (i,d) => {
-      S.roles[i].count=Math.max(0,S.roles[i].count+d);
-      await update(ref(db,'rooms/'+S.roomCode),{roles:S.roles});
-      renderLobbyRoles();
-    };
-
     function renderLobbyPlayers(players) {
-      const list=document.getElementById('lobbyPlayerList');
-      const arr=Object.values(players||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
+      var list=document.getElementById('lobbyPlayerList');
+      var arr=Object.values(players||{}).sort(function(a,b){return a.joinedAt-b.joinedAt});
       document.getElementById('playerCntLbl').textContent=arr.length+' joined';
       if(!arr.length){list.innerHTML='<div class="empty-hint">Waiting for players\u2026</div>';return;}
       list.innerHTML='';
-      arr.forEach(p=>{
-        const el=document.createElement('div'); el.className='p-item';
-        el.innerHTML=`<span class="p-name">${p.name}</span>${p.id!==S.myId?`<button class="p-kick" onclick="kick('${p.id}')">\u2715</button>`:''}`;
+      arr.forEach(function(p){
+        var el=document.createElement('div'); el.className='p-item';
+        el.innerHTML='<span class="p-name">'+p.name+'</span>'+(p.id!==S.myId?'<button class="p-kick" onclick="kick(\''+p.id+'\')">\u2715</button>':'');
         list.appendChild(el);
       });
       checkDeal();
     }
 
-    window.kick = async id => {
-      await update(ref(db,'rooms/'+S.roomCode+'/players/'+id), null);
-      const snap = await get(ref(db,'rooms/'+S.roomCode+'/players'));
-      const players = snap.val()||{};
-      delete players[id];
-      await set(ref(db,'rooms/'+S.roomCode+'/players'), players);
-    };
-
     function checkDeal() {
-      const w=document.getElementById('dealWarn'), btn=document.getElementById('dealBtn');
-      const n=Object.keys(S.players||{}).length;
-      const fixed=S.roles.filter(r=>!r.autoFill).reduce((s,r)=>s+r.count,0);
-      const hasAuto=S.roles.some(r=>r.autoFill);
+      var w=document.getElementById('dealWarn'), btn=document.getElementById('dealBtn');
+      var n=Object.keys(S.players||{}).length;
+      var fixed=S.roles.filter(function(r){return !r.autoFill}).reduce(function(s,r){return s+r.count},0);
+      var hasAuto=S.roles.some(function(r){return r.autoFill});
       if(n<2){w.textContent='Need at least 2 players.';btn.disabled=true;return;}
-      if(fixed>n){w.textContent=`${fixed} roles but only ${n} players \u2014 reduce counts.`;btn.disabled=true;return;}
-      if(!hasAuto&&fixed<n){w.textContent=`${fixed} roles for ${n} players \u2014 add more or enable Innocent.`;btn.disabled=true;return;}
+      if(fixed>n){w.textContent=fixed+' roles but only '+n+' players \u2014 reduce counts.';btn.disabled=true;return;}
+      if(!hasAuto&&fixed<n){w.textContent=fixed+' roles for '+n+' players \u2014 add more or enable Innocent.';btn.disabled=true;return;}
       w.textContent='';btn.disabled=false;
+    }
+
+    function renderResults() {
+      var el=document.getElementById('resultsList'); el.innerHTML='';
+      var players=Object.values(S.players).sort(function(a,b){return a.joinedAt-b.joinedAt});
+      players.forEach(function(p){
+        var role=resolve(S.assignments[p.id]);
+        var item=document.createElement('div'); item.className='res-item';
+        item.innerHTML='<span class="ri-emoji">'+role.emoji+'</span><span class="ri-name">'+p.name+'</span><span class="ri-badge b-'+role.theme+'">'+role.name.toUpperCase()+'</span>';
+        el.appendChild(item);
+      });
+    }
+
+    function resolve(roleId) {
+      var r=S.roles.find(function(r){return r.id===roleId});
+      if(r) return r;
+      if(roleId==='innocent') return {id:'innocent',name:'Innocent',emoji:'\u{1F607}',desc:'Survive the night. Work together to find the murderer.',theme:'innocent'};
+      return {id:roleId,name:roleId,emoji:'\u2753',desc:'',theme:'custom'};
+    }
+
+    function showReveal(role) {
+      document.getElementById('flipCard').classList.remove('flipped');
+      var f=document.getElementById('revealFront');
+      f.className='flip-face face-front t-'+(role.theme||'custom');
+      document.getElementById('revealEmoji').textContent=role.emoji||'\u2753';
+      document.getElementById('revealTitle').textContent=(role.name||role.id).toUpperCase();
+      document.getElementById('revealDesc').textContent=role.desc||'';
+      document.getElementById('revealPlayer').textContent=S.myName;
+      go('s-reveal');
+    }
+
+    var genCode = function(){ var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s=''; for(var i=0;i<4;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; };
+
+    function flipCard() { document.getElementById('flipCard').classList.toggle('flipped'); }
+    function hideCard() { document.getElementById('flipCard').classList.remove('flipped'); }
+
+    // ── FIREBASE-DEPENDENT (guarded by _fb) ───────────────────────────
+    function requireFb(err) {
+      if(_fb) return true;
+      if(err) err.textContent='Still connecting\u2026 try again in a moment.';
+      return false;
     }
 
     function listenRoom(code, handler) {
       if(roomListener) roomListener();
-      const r = ref(db,'rooms/'+code);
-      roomListener = onValue(r, snap => {
-        const data = snap.val();
-        handler(data);
-      });
+      roomListener = _fb.onValue(_fb.ref(_fb.db,'rooms/'+code), function(snap){ handler(snap.val()); });
     }
 
     function handleRoomUpdate_Host(data) {
@@ -517,73 +491,12 @@
       renderLobbyRoles();
     }
 
-    window.dealRoles = async function() {
-      const players = Object.values(S.players).sort((a,b)=>a.joinedAt-b.joinedAt);
-      const n = players.length;
-      let pool=[];
-      S.roles.forEach(r=>{ if(!r.autoFill) for(let i=0;i<r.count;i++) pool.push(r.id); });
-      while(pool.length<n) pool.push('innocent');
-      pool=pool.slice(0,n);
-      for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
-      const assignments={};
-      players.forEach((p,i)=>{ assignments[p.id]=pool[i]; });
-      S.assignments=assignments;
-      await update(ref(db,'rooms/'+S.roomCode),{assignments, status:'dealt'});
-      renderResults();
-      go('s-results');
-    };
-
-    function renderResults() {
-      const el=document.getElementById('resultsList'); el.innerHTML='';
-      const players=Object.values(S.players).sort((a,b)=>a.joinedAt-b.joinedAt);
-      players.forEach(p=>{
-        const role=resolve(S.assignments[p.id]);
-        const item=document.createElement('div'); item.className='res-item';
-        item.innerHTML=`<span class="ri-emoji">${role.emoji}</span><span class="ri-name">${p.name}</span><span class="ri-badge b-${role.theme}">${role.name.toUpperCase()}</span>`;
-        el.appendChild(item);
-      });
-    }
-
-    window.endGame = async function() {
-      if(roomListener){ roomListener(); roomListener=null; }
-      if(S.roomCode && S.mode==='host') await remove(ref(db,'rooms/'+S.roomCode));
-      S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{}};
-      go('s-landing');
-    };
-
-    window.joinRoom = async function() {
-      const name=document.getElementById('joinName').value.trim();
-      const code=document.getElementById('joinCode').value.trim().toUpperCase();
-      const err=document.getElementById('joinErr');
-      if(!name){err.textContent='Enter your name.';return;}
-      if(code.length!==4){err.textContent='Enter the 4-letter room code.';return;}
-
-      const snap=await get(ref(db,'rooms/'+code));
-      const data=snap.val();
-      if(!data){err.textContent='Room not found \u2014 check the code.';return;}
-      if(data.status==='dealt'){err.textContent='Game in progress \u2014 ask the host to re-deal.';return;}
-      err.textContent='';
-
-      S.mode='player'; S.myName=name; S.roomCode=code;
-      S.myId='p_'+Date.now()+'_'+Math.random().toString(36).slice(2);
-      S.roles=data.roles||[];
-
-      await update(ref(db,'rooms/'+code+'/players/'+S.myId),{
-        id:S.myId, name, joinedAt:Date.now()
-      });
-
-      document.getElementById('waitTitle').textContent="You're in, "+name+"!";
-      document.getElementById('waitMsg').textContent='Waiting for the host to deal roles\u2026';
-      go('s-waiting');
-      listenRoom(code, handleRoomUpdate_Player);
-    };
-
     function handleRoomUpdate_Player(data) {
       if(!data){
         if(roomListener){roomListener();roomListener=null;}
         document.getElementById('waitTitle').textContent='Game Over';
         document.getElementById('waitMsg').textContent='The host ended the game.';
-        setTimeout(()=>go('s-landing'),2500);
+        setTimeout(function(){go('s-landing')},2500);
         return;
       }
       if(data.roles) S.roles=data.roles;
@@ -593,40 +506,135 @@
       }
     }
 
-    window.leaveRoom = async function() {
+    function createRoom() {
+      var name=document.getElementById('hostName').value.trim();
+      var err=document.getElementById('setupErr');
+      if(!name){err.textContent='Please enter your name.';return;}
+      var fixed=S.roles.filter(function(r){return !r.autoFill}).reduce(function(s,r){return s+r.count},0);
+      if(fixed<1){err.textContent='Add at least 1 role with count > 0.';return;}
+      if(!requireFb(err)) return;
+      err.textContent='';
+
+      var code=genCode();
+      S.mode='host'; S.myName=name; S.roomCode=code;
+      S.myId='h_'+Date.now();
+      var hostPlayer = { id:S.myId, name:name+' \u{1F451}', joinedAt: Date.now() };
+      S.players = {};
+      S.players[S.myId] = hostPlayer;
+
+      _fb.set(_fb.ref(_fb.db, 'rooms/'+code), {
+        hostId: S.myId, roles: S.roles, players: S.players,
+        assignments: {}, status: 'waiting', createdAt: Date.now(),
+      }).then(function(){
+        document.getElementById('lobbyCode').textContent = code;
+        renderLobbyRoles();
+        go('s-lobby');
+        listenRoom(code, handleRoomUpdate_Host);
+      });
+    }
+
+    function adjL(i,d) {
+      S.roles[i].count=Math.max(0,S.roles[i].count+d);
+      if(_fb) _fb.update(_fb.ref(_fb.db,'rooms/'+S.roomCode),{roles:S.roles});
+      renderLobbyRoles();
+    }
+
+    function kick(id) {
+      if(!_fb) return;
+      _fb.update(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players/'+id), null).then(function(){
+        return _fb.get(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players'));
+      }).then(function(snap){
+        var players=snap.val()||{};
+        delete players[id];
+        _fb.set(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players'), players);
+      });
+    }
+
+    function dealRoles() {
+      if(!_fb) return;
+      var players = Object.values(S.players).sort(function(a,b){return a.joinedAt-b.joinedAt});
+      var n = players.length, pool=[];
+      S.roles.forEach(function(r){ if(!r.autoFill) for(var i=0;i<r.count;i++) pool.push(r.id); });
+      while(pool.length<n) pool.push('innocent');
+      pool=pool.slice(0,n);
+      for(var i=pool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=pool[i];pool[i]=pool[j];pool[j]=tmp;}
+      var assignments={};
+      players.forEach(function(p,i){ assignments[p.id]=pool[i]; });
+      S.assignments=assignments;
+      _fb.update(_fb.ref(_fb.db,'rooms/'+S.roomCode),{assignments:assignments, status:'dealt'}).then(function(){
+        renderResults();
+        go('s-results');
+      });
+    }
+
+    function endGame() {
+      if(roomListener){ roomListener(); roomListener=null; }
+      if(S.roomCode && S.mode==='host' && _fb) _fb.remove(_fb.ref(_fb.db,'rooms/'+S.roomCode));
+      S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{}};
+      go('s-landing');
+    }
+
+    function joinRoom() {
+      var name=document.getElementById('joinName').value.trim();
+      var code=document.getElementById('joinCode').value.trim().toUpperCase();
+      var err=document.getElementById('joinErr');
+      if(!name){err.textContent='Enter your name.';return;}
+      if(code.length!==4){err.textContent='Enter the 4-letter room code.';return;}
+      if(!requireFb(err)) return;
+
+      _fb.get(_fb.ref(_fb.db,'rooms/'+code)).then(function(snap){
+        var data=snap.val();
+        if(!data){err.textContent='Room not found \u2014 check the code.';return;}
+        if(data.status==='dealt'){err.textContent='Game in progress \u2014 ask the host to re-deal.';return;}
+        err.textContent='';
+
+        S.mode='player'; S.myName=name; S.roomCode=code;
+        S.myId='p_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+        S.roles=data.roles||[];
+
+        _fb.update(_fb.ref(_fb.db,'rooms/'+code+'/players/'+S.myId),{
+          id:S.myId, name:name, joinedAt:Date.now()
+        }).then(function(){
+          document.getElementById('waitTitle').textContent="You're in, "+name+"!";
+          document.getElementById('waitMsg').textContent='Waiting for the host to deal roles\u2026';
+          go('s-waiting');
+          listenRoom(code, handleRoomUpdate_Player);
+        });
+      });
+    }
+
+    function leaveRoom() {
       if(roomListener){roomListener();roomListener=null;}
-      if(S.roomCode && S.myId && S.mode==='player'){
-        const snap=await get(ref(db,'rooms/'+S.roomCode+'/players'));
-        const players=snap.val()||{};
-        delete players[S.myId];
-        await set(ref(db,'rooms/'+S.roomCode+'/players'), players);
+      if(S.roomCode && S.myId && S.mode==='player' && _fb){
+        _fb.get(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players')).then(function(snap){
+          var players=snap.val()||{};
+          delete players[S.myId];
+          _fb.set(_fb.ref(_fb.db,'rooms/'+S.roomCode+'/players'), players);
+        });
       }
       S={mode:null,myId:null,myName:'',roomCode:'',roles:[],players:{},assignments:{}};
       go('s-landing');
-    };
-
-    function resolve(roleId) {
-      const r=S.roles.find(r=>r.id===roleId);
-      if(r) return r;
-      if(roleId==='innocent') return {id:'innocent',name:'Innocent',emoji:'\u{1F607}',desc:'Survive the night. Work together to find the murderer.',theme:'innocent'};
-      return {id:roleId,name:roleId,emoji:'\u2753',desc:'',theme:'custom'};
     }
+  </script>
 
-    function showReveal(role) {
-      document.getElementById('flipCard').classList.remove('flipped');
-      const f=document.getElementById('revealFront');
-      f.className='flip-face face-front t-'+(role.theme||'custom');
-      document.getElementById('revealEmoji').textContent=role.emoji||'\u2753';
-      document.getElementById('revealTitle').textContent=(role.name||role.id).toUpperCase();
-      document.getElementById('revealDesc').textContent=role.desc||'';
-      document.getElementById('revealPlayer').textContent=S.myName;
-      go('s-reveal');
-    }
+  <script type="module">
+    // ── FIREBASE (loads async, UI already works above) ─────────────────
+    var { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    var { getDatabase, ref, set, get, update, onValue, remove } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
 
-    window.flipCard = () => document.getElementById('flipCard').classList.toggle('flipped');
-    window.hideCard = () => document.getElementById('flipCard').classList.remove('flipped');
+    var app = initializeApp({
+      apiKey:            "AIzaSyBJ5aeiCiIjotMqSDUGRO336UDSHWft5_A",
+      authDomain:        "role-dealer.firebaseapp.com",
+      databaseURL:       "https://role-dealer-default-rtdb.firebaseio.com",
+      projectId:         "role-dealer",
+      storageBucket:     "role-dealer.firebasestorage.app",
+      messagingSenderId: "141493339855",
+      appId:             "1:141493339855:web:095a339d78259270cc19ba"
+    });
+    var db = getDatabase(app);
 
-    window.S = S;
+    _fb = { db: db, ref: ref, set: set, get: get, update: update, onValue: onValue, remove: remove };
+    document.getElementById('loadingOverlay').classList.add('hidden');
   </script>
 </body>
 </html>
