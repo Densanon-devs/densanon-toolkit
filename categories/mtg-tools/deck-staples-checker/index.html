@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTG Commander Staples Checker – Find Missing Cards | Densanon Toolkit</title>
+  <meta name="description" content="Free MTG Commander staples checker. Paste your decklist and find commonly-played cards you might be missing, organized by color identity and priority.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    .panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; }
+    textarea { width: 100%; min-height: 180px; padding: 12px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius); color: var(--color-text); font-family: monospace; font-size: 0.9rem; resize: vertical; }
+    .btn { padding: 10px 24px; background: var(--color-primary); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: 1rem; font-weight: 600; }
+    .btn:hover { opacity: 0.9; }
+    .staple-list { list-style: none; padding: 0; }
+    .staple-item { padding: 10px 0; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
+    .staple-name { font-weight: 600; color: var(--color-text); }
+    .staple-reason { font-size: 0.85rem; color: var(--color-text-muted); }
+    .badge-essential { background: #e53e3e22; color: #e53e3e; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-recommended { background: #ecc94b22; color: #ecc94b; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-suggested { background: #4a556822; color: #a0aec0; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-present { background: #48bb7822; color: #48bb78; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .coverage-bar { height: 8px; background: var(--color-bg); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+    .coverage-fill { height: 100%; background: #48bb78; border-radius: 4px; transition: width 0.3s; }
+    .color-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .color-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--color-border); cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+    .color-btn.active { border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary); }
+    #results { display: none; }
+  </style>
+</head>
+<body>
+  <main class="container" style="max-width:800px;">
+    <h1>Commander Deck Staples Checker</h1>
+    <p style="color:var(--color-text-muted);margin-bottom:24px;">Paste your Commander decklist to find commonly-played staples you might be missing. Checks are based on your deck's color identity.</p>
+
+    <div class="panel">
+      <textarea id="decklist" placeholder="Paste your Commander decklist here...
+
+Example:
+Commander
+1 Atraxa, Praetors' Voice
+
+Mainboard
+1 Sol Ring
+1 Command Tower
+35 Forest"></textarea>
+      <div style="margin-top:12px;">
+        <button class="btn" onclick="checkStaples()">Check Staples</button>
+      </div>
+    </div>
+
+    <div id="results">
+      <div class="panel">
+        <h3>Staple Coverage</h3>
+        <p id="coverage-text" style="color:var(--color-text-muted);font-size:0.9rem;"></p>
+        <div class="coverage-bar"><div class="coverage-fill" id="coverage-bar"></div></div>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin-bottom:16px;">Missing Staples</h3>
+        <ul class="staple-list" id="missing-list"></ul>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin-bottom:16px;">Present Staples</h3>
+        <ul class="staple-list" id="present-list"></ul>
+      </div>
+    </div>
+
+    <section style="margin-top:40px;">
+      <p style="color:var(--color-text-muted);font-size:0.85rem;">Staple recommendations are based on commonly-played cards in Commander. Your deck's specific strategy may warrant different choices. Card data provided by Scryfall. Not affiliated with Wizards of the Coast.</p>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({ depth: 3, activeCategory: 'mtg-tools', title: 'Commander Deck Staples Checker', breadcrumbs: [{ label: 'MTG Deck Tools', href: '../index.html' }, { label: 'Staples Checker' }] });
+
+    const COLORLESS_STAPLES = [
+      { name: 'Sol Ring', reason: 'Best mana rock in the format', priority: 'essential' },
+      { name: 'Arcane Signet', reason: 'Efficient color-fixing rock', priority: 'essential' },
+      { name: 'Command Tower', reason: 'Free color-fixing land', priority: 'essential' },
+      { name: 'Lightning Greaves', reason: 'Haste + protection for commander', priority: 'recommended' },
+      { name: 'Swiftfoot Boots', reason: 'Hexproof + haste for commander', priority: 'suggested' },
+    ];
+
+    const COLOR_STAPLES = {
+      W: [
+        { name: 'Swords to Plowshares', reason: 'Best single-target removal in white', priority: 'essential' },
+        { name: 'Path to Exile', reason: 'Efficient creature exile', priority: 'recommended' },
+        { name: 'Generous Gift', reason: 'Flexible permanent removal', priority: 'recommended' },
+        { name: 'Smothering Tithe', reason: 'Explosive mana generation', priority: 'recommended' },
+      ],
+      U: [
+        { name: 'Counterspell', reason: 'Clean two-mana counter', priority: 'essential' },
+        { name: 'Rhystic Study', reason: 'Consistent card draw engine', priority: 'essential' },
+        { name: 'Cyclonic Rift', reason: 'Best board wipe in blue', priority: 'recommended' },
+        { name: 'Swan Song', reason: 'Efficient one-mana counter', priority: 'recommended' },
+      ],
+      B: [
+        { name: 'Demonic Tutor', reason: 'Best tutor in the format', priority: 'recommended' },
+        { name: 'Toxic Deluge', reason: 'Efficient board wipe', priority: 'recommended' },
+        { name: 'Feed the Swarm', reason: 'Black enchantment removal', priority: 'suggested' },
+      ],
+      R: [
+        { name: 'Chaos Warp', reason: "Red's best permanent removal", priority: 'recommended' },
+        { name: 'Blasphemous Act', reason: 'Efficient creature wipe', priority: 'recommended' },
+        { name: 'Vandalblast', reason: 'One-sided artifact wipe', priority: 'suggested' },
+      ],
+      G: [
+        { name: 'Beast Within', reason: 'Flexible permanent removal', priority: 'essential' },
+        { name: "Nature's Claim", reason: 'Efficient artifact/enchantment removal', priority: 'recommended' },
+        { name: "Kodama's Reach", reason: 'Land ramp + fixing', priority: 'recommended' },
+        { name: 'Cultivate', reason: 'Land ramp + fixing', priority: 'recommended' },
+      ],
+    };
+
+    function parseDeck(text) {
+      const cards = new Set();
+      for (const raw of text.split('\n')) {
+        const line = raw.trim();
+        if (!line || line.startsWith('//') || line.startsWith('#')) continue;
+        if (/^(commander|mainboard|sideboard|companion|maybeboard)\s*:?\s*$/i.test(line)) continue;
+        const cleaned = line.replace(/\s*\([A-Z0-9]+\)\s*\d*\s*$/, '').replace(/\s*\*F\*\s*$/, '');
+        const m = cleaned.match(/^\s*\d+\s*[xX]?\s+(.+?)\s*$/);
+        if (m) cards.add(m[1].toLowerCase());
+        else { const nm = cleaned.match(/^\s*([A-Za-z].+?)\s*$/); if (nm) cards.add(nm[1].toLowerCase()); }
+      }
+      return cards;
+    }
+
+    async function detectColors(deckCards) {
+      // Look up a sample of cards to detect color identity
+      const names = [...deckCards].slice(0, 75);
+      const body = { identifiers: names.map(n => ({ name: n })) };
+      const colors = new Set();
+      try {
+        const resp = await fetch('https://api.scryfall.com/cards/collection', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+        for (const card of (data.data || [])) {
+          for (const c of (card.color_identity || [])) colors.add(c);
+        }
+      } catch (e) { console.warn('Color detection failed:', e); }
+      return colors;
+    }
+
+    async function checkStaples() {
+      const text = document.getElementById('decklist').value;
+      const deckCards = parseDeck(text);
+      if (deckCards.size === 0) { alert('No cards found.'); return; }
+
+      const colors = await detectColors(deckCards);
+
+      // Build applicable staples
+      const applicable = [...COLORLESS_STAPLES];
+      for (const c of colors) {
+        if (COLOR_STAPLES[c]) applicable.push(...COLOR_STAPLES[c]);
+      }
+
+      const missing = [];
+      const present = [];
+      for (const s of applicable) {
+        if (deckCards.has(s.name.toLowerCase())) present.push(s);
+        else missing.push(s);
+      }
+
+      // Sort missing by priority
+      const order = { essential: 0, recommended: 1, suggested: 2 };
+      missing.sort((a, b) => (order[a.priority] || 3) - (order[b.priority] || 3));
+
+      const coverage = present.length / Math.max(1, applicable.length);
+
+      // Render
+      document.getElementById('coverage-text').textContent = `${present.length} of ${applicable.length} staples present (${(coverage * 100).toFixed(0)}%)`;
+      document.getElementById('coverage-bar').style.width = (coverage * 100) + '%';
+
+      const badgeClass = { essential: 'badge-essential', recommended: 'badge-recommended', suggested: 'badge-suggested' };
+
+      document.getElementById('missing-list').innerHTML = missing.length === 0
+        ? '<li style="color:var(--color-text-muted);padding:10px 0;">No missing staples!</li>'
+        : missing.map(s => `<li class="staple-item">
+            <div><span class="staple-name">${s.name}</span><br><span class="staple-reason">${s.reason}</span></div>
+            <span class="${badgeClass[s.priority]}">${s.priority}</span>
+          </li>`).join('');
+
+      document.getElementById('present-list').innerHTML = present.map(s =>
+        `<li class="staple-item"><span class="staple-name">${s.name}</span><span class="badge-present">present</span></li>`
+      ).join('');
+
+      document.getElementById('results').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

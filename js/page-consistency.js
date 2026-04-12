@@ -77,7 +77,10 @@ const TOOLKIT_TOOLS = [
   { name: 'Image Crop', desc: 'Crop images to custom dimensions or auto-trim whitespace borders.', category: 'image-tools', categoryLabel: 'Image Tools', slug: 'image-crop', keywords: 'image crop trim auto whitespace border cut dimensions' },
   { name: 'Color Adjust', desc: 'Adjust image brightness, contrast, saturation, grayscale, and invert.', category: 'image-tools', categoryLabel: 'Image Tools', slug: 'color-adjust', keywords: 'color adjust brightness contrast saturation grayscale invert image filter' },
   { name: 'Image Overlay', desc: 'Composite two images — add watermarks, logos, or overlays with position and opacity control.', category: 'image-tools', categoryLabel: 'Image Tools', slug: 'image-overlay', keywords: 'image overlay watermark composite logo stamp opacity position layer' },
-  { name: 'Image Compress', desc: 'Reduce image file size by adjusting quality and output format.', category: 'image-tools', categoryLabel: 'Image Tools', slug: 'image-compress', keywords: 'image compress reduce file size quality jpeg webp optimize' }
+  { name: 'Image Compress', desc: 'Reduce image file size by adjusting quality and output format.', category: 'image-tools', categoryLabel: 'Image Tools', slug: 'image-compress', keywords: 'image compress reduce file size quality jpeg webp optimize' },
+  { name: 'MTG Hypergeometric Calculator', desc: 'Calculate the probability of drawing specific cards by any turn for any deck size.', category: 'mtg-tools', categoryLabel: 'MTG', slug: 'hypergeometric-calculator', keywords: 'mtg magic gathering hypergeometric probability calculator draw card turn commander modern' },
+  { name: 'MTG Mana Curve Analyzer', desc: 'Paste a decklist and get instant mana curve, color distribution, and deck health analysis.', category: 'mtg-tools', categoryLabel: 'MTG', slug: 'mana-curve-analyzer', keywords: 'mtg magic gathering mana curve analyzer deck analysis color distribution lands' },
+  { name: 'MTG Deck Staples Checker', desc: 'Check your Commander deck for commonly-played staples by color identity.', category: 'mtg-tools', categoryLabel: 'MTG', slug: 'deck-staples-checker', keywords: 'mtg magic gathering commander staples checker edh missing cards sol ring' }
 ];
 
 function initPage(config = {}) {

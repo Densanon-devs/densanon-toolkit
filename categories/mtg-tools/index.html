@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free MTG Deck Tools Online – Analyze, Calculate &amp; Optimize Your Deck | Densanon Toolkit</title>
+  <meta name="description" content="Free online Magic: The Gathering deck tools. Hypergeometric probability calculator, mana curve analyzer, and staples checker — no signup, 100% browser-based.">
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .pro-banner {
+      background: linear-gradient(135deg, #1a1d27 0%, #2a1a2e 100%);
+      border: 1px solid #e53e3e44;
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-top: 40px;
+      text-align: center;
+    }
+    .pro-banner h2 { color: #e53e3e; margin-bottom: 12px; }
+    .pro-banner p { color: var(--color-text-muted); margin-bottom: 16px; }
+    .pro-badge {
+      display: inline-block;
+      background: #e53e3e22;
+      color: #e53e3e;
+      border: 1px solid #e53e3e44;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .pro-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+      text-align: left;
+    }
+    .pro-feature {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .pro-feature h4 { color: var(--color-text); font-size: 0.95rem; margin-bottom: 4px; }
+    .pro-feature p { color: var(--color-text-muted); font-size: 0.85rem; margin: 0; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>MTG Deck Tools</h1>
+      <p>Free deck analysis tools for Magic: The Gathering players. Calculate probabilities, analyze your mana base, and check for missing staples — all in your browser.</p>
+    </div>
+
+    <section style="margin-bottom:32px;">
+      <p style="color:var(--color-text-muted);line-height:1.7;font-size:0.95rem;">These tools help you build better MTG decks by answering the questions that matter: How often will I draw my key card? Is my mana base reliable? Am I missing format staples? Every tool runs entirely in your browser — no signup, no server, no card data stored. Card data provided by Scryfall.</p>
+    </section>
+
+    <div class="tools-grid">
+      <a href="hypergeometric-calculator/index.html" class="tool-card">
+        <h4>Hypergeometric Calculator</h4>
+        <p>Calculate the probability of drawing specific cards by any turn. Answer questions like "What's the chance I see Sol Ring by turn 3?" for any deck size and copy count.</p>
+      </a>
+      <a href="mana-curve-analyzer/index.html" class="tool-card">
+        <h4>Mana Curve Analyzer</h4>
+        <p>Paste a decklist and instantly see your mana curve, color distribution, land count analysis, and mana base health. Supports Commander, Modern, Standard, and more.</p>
+      </a>
+      <a href="deck-staples-checker/index.html" class="tool-card">
+        <h4>Deck Staples Checker</h4>
+        <p>Check your Commander deck for commonly-played staples by color identity. Find out which essential cards you might be missing and why they matter.</p>
+      </a>
+    </div>
+
+    <div class="pro-banner">
+      <span class="pro-badge">Coming Soon</span>
+      <h2>MTG Deck Engine Pro</h2>
+      <p>The full deck laboratory — goldfish simulation, matchup testing, version tracking, and AI-powered recommendations. Available as a downloadable app or online subscription.</p>
+      <div class="pro-features">
+        <div class="pro-feature">
+          <h4>Goldfish Simulation</h4>
+          <p>Run thousands of solo games to measure deck speed and consistency.</p>
+        </div>
+        <div class="pro-feature">
+          <h4>Matchup Gauntlet</h4>
+          <p>Test your deck against 11 archetype opponents and find your weaknesses.</p>
+        </div>
+        <div class="pro-feature">
+          <h4>Version Tracking</h4>
+          <p>Save deck versions, compare changes, and track improvement over time.</p>
+        </div>
+        <div class="pro-feature">
+          <h4>Power Level Rating</h4>
+          <p>1-10 power level with detailed breakdown — perfect for Rule 0 conversations.</p>
+        </div>
+        <div class="pro-feature">
+          <h4>Report Export</h4>
+          <p>Export full analysis as JSON, Markdown, or styled HTML reports.</p>
+        </div>
+        <div class="pro-feature">
+          <h4>Mulligan Practice</h4>
+          <p>Interactive training mode to sharpen your opening hand decisions.</p>
+        </div>
+      </div>
+    </div>
+
+    <section style="margin-top:40px;">
+      <p style="color:var(--color-text-muted);font-size:0.85rem;line-height:1.6;">
+        This tool is not affiliated with or endorsed by Wizards of the Coast. Magic: The Gathering and its logos are trademarks of Wizards of the Coast LLC. Card data provided by <a href="https://scryfall.com" style="color:var(--color-primary);">Scryfall</a>.
+      </p>
+    </section>
+  </main>
+
+  <script src="../../js/page-consistency.js"></script>
+  <script>initPage({ depth: 2, activeCategory: 'mtg-tools', title: 'Free MTG Deck Tools Online', breadcrumbs: [{ label: 'MTG Deck Tools' }] });</script>
+</body>
+</html>

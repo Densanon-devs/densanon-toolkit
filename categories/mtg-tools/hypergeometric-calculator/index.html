@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTG Hypergeometric Calculator – Card Draw Probability | Densanon Toolkit</title>
+  <meta name="description" content="Free MTG hypergeometric calculator. Find the probability of drawing your key cards by any turn. Works for Commander (99 cards), Modern (60 cards), and any deck size.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    .calc-panel {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .input-row {
+      display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; align-items: end;
+    }
+    .input-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
+    .input-group label { font-size: 0.85rem; color: var(--color-text-muted); }
+    .input-group input, .input-group select {
+      padding: 10px 12px; background: var(--color-bg); border: 1px solid var(--color-border);
+      border-radius: var(--radius); color: var(--color-text); font-size: 1rem;
+    }
+    .preset-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .preset-btn {
+      padding: 6px 14px; background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius); color: var(--color-text-muted); cursor: pointer;
+      font-size: 0.85rem; transition: all 0.2s;
+    }
+    .preset-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    #results-table {
+      width: 100%; border-collapse: collapse; margin-top: 16px;
+    }
+    #results-table th, #results-table td {
+      padding: 10px 14px; border: 1px solid var(--color-border); text-align: right;
+    }
+    #results-table th {
+      background: var(--color-surface); color: var(--color-text); font-weight: 600; text-align: center;
+    }
+    #results-table td:first-child { text-align: center; font-weight: 600; }
+    .bar-cell { position: relative; }
+    .bar-fill {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      background: #e53e3e22; border-radius: 2px; transition: width 0.3s;
+    }
+    .bar-text { position: relative; z-index: 1; }
+    .good { color: #48bb78; }
+    .fair { color: #ecc94b; }
+    .low { color: var(--color-text-muted); }
+    .formula { font-size: 0.85rem; color: var(--color-text-muted); margin-top: 16px; font-style: italic; }
+  </style>
+</head>
+<body>
+  <main class="container" style="max-width:800px;">
+    <h1>MTG Hypergeometric Calculator</h1>
+    <p style="color:var(--color-text-muted);margin-bottom:24px;">Calculate the probability of drawing specific cards by any turn. Works for Commander, Modern, Standard, or any deck size.</p>
+
+    <div class="calc-panel">
+      <div class="preset-row">
+        <button class="preset-btn" onclick="setPreset(99,1)">Commander (1 copy)</button>
+        <button class="preset-btn" onclick="setPreset(99,4)">Commander (4 copies)</button>
+        <button class="preset-btn" onclick="setPreset(60,4)">60-card (4 copies)</button>
+        <button class="preset-btn" onclick="setPreset(60,1)">60-card (1 copy)</button>
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label for="deck-size">Deck Size</label>
+          <input type="number" id="deck-size" value="99" min="1" max="500">
+        </div>
+        <div class="input-group">
+          <label for="copies">Copies in Deck</label>
+          <input type="number" id="copies" value="1" min="0" max="99">
+        </div>
+        <div class="input-group">
+          <label for="max-turn">Through Turn</label>
+          <input type="number" id="max-turn" value="10" min="1" max="30">
+        </div>
+        <div class="input-group">
+          <label for="play-draw">On the</label>
+          <select id="play-draw">
+            <option value="play">Play</option>
+            <option value="draw">Draw</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <table id="results-table">
+      <thead>
+        <tr>
+          <th>Turn</th>
+          <th>Cards Seen</th>
+          <th>P(at least 1)</th>
+          <th>P(exactly 0)</th>
+          <th>Expected Copies</th>
+        </tr>
+      </thead>
+      <tbody id="results-body"></tbody>
+    </table>
+
+    <p class="formula">P(X &ge; 1) = 1 - C(N-K, n) / C(N, n) where N = deck size, K = copies, n = cards seen</p>
+
+    <section style="margin-top:40px;">
+      <h2>How to Use</h2>
+      <ul style="color:var(--color-text-muted);line-height:1.8;font-size:0.95rem;padding-left:20px;">
+        <li><strong>Commander singleton</strong> — Set deck to 99, copies to 1, to see how likely you are to draw your key card each turn.</li>
+        <li><strong>Modern 4-of</strong> — Set deck to 60, copies to 4, to check your opening hand odds for a playset.</li>
+        <li><strong>Land drops</strong> — Set copies to your land count (e.g., 36) to check mana consistency.</li>
+        <li><strong>On the play vs draw</strong> — On the play you see 7 cards turn 1 (no draw). On the draw you see 8.</li>
+      </ul>
+      <p style="color:var(--color-text-muted);font-size:0.85rem;margin-top:20px;">Card data provided by Scryfall. Not affiliated with Wizards of the Coast.</p>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({ depth: 3, activeCategory: 'mtg-tools', title: 'MTG Hypergeometric Calculator', breadcrumbs: [{ label: 'MTG Deck Tools', href: '../index.html' }, { label: 'Hypergeometric Calculator' }] });
+
+    // --- Hypergeometric math ---
+    function logComb(n, k) {
+      if (k < 0 || k > n) return -Infinity;
+      if (k === 0 || k === n) return 0;
+      let s = 0;
+      for (let i = 0; i < k; i++) s += Math.log(n - i) - Math.log(i + 1);
+      return s;
+    }
+
+    function hyperPmf(x, N, K, n) {
+      if (x < 0 || x > Math.min(K, n) || x < Math.max(0, n - (N - K))) return 0;
+      const lp = logComb(K, x) + logComb(N - K, n - x) - logComb(N, n);
+      return Math.exp(lp);
+    }
+
+    function cardsSeen(turn, onPlay) {
+      return 7 + (onPlay ? Math.max(0, turn - 1) : turn);
+    }
+
+    function calculate() {
+      const N = parseInt(document.getElementById('deck-size').value) || 1;
+      const K = Math.min(parseInt(document.getElementById('copies').value) || 0, N);
+      const maxTurn = parseInt(document.getElementById('max-turn').value) || 10;
+      const onPlay = document.getElementById('play-draw').value === 'play';
+
+      const tbody = document.getElementById('results-body');
+      tbody.innerHTML = '';
+
+      for (let t = 1; t <= maxTurn; t++) {
+        const n = Math.min(cardsSeen(t, onPlay), N);
+        const pNone = hyperPmf(0, N, K, n);
+        const pAtLeast1 = 1 - pNone;
+        const expected = K > 0 ? (n * K / N) : 0;
+
+        const pct = (pAtLeast1 * 100).toFixed(1);
+        const colorClass = pAtLeast1 >= 0.75 ? 'good' : pAtLeast1 >= 0.5 ? 'fair' : 'low';
+
+        tbody.innerHTML += `<tr>
+          <td>${t}</td>
+          <td>${n}</td>
+          <td class="bar-cell">
+            <div class="bar-fill" style="width:${pAtLeast1 * 100}%"></div>
+            <span class="bar-text ${colorClass}">${pct}%</span>
+          </td>
+          <td>${(pNone * 100).toFixed(1)}%</td>
+          <td>${expected.toFixed(2)}</td>
+        </tr>`;
+      }
+    }
+
+    function setPreset(deck, copies) {
+      document.getElementById('deck-size').value = deck;
+      document.getElementById('copies').value = copies;
+      calculate();
+    }
+
+    document.querySelectorAll('#deck-size, #copies, #max-turn, #play-draw').forEach(el =>
+      el.addEventListener('input', calculate)
+    );
+
+    calculate();
+  </script>
+</body>
+</html>

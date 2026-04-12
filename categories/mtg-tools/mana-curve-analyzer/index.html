@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTG Mana Curve Analyzer – Deck Analysis Tool | Densanon Toolkit</title>
+  <meta name="description" content="Free MTG mana curve analyzer. Paste your decklist and instantly see your mana curve, color distribution, land count, and average mana value. Supports all formats.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    .panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; }
+    textarea { width: 100%; min-height: 200px; padding: 12px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius); color: var(--color-text); font-family: monospace; font-size: 0.9rem; resize: vertical; }
+    .btn { padding: 10px 24px; background: var(--color-primary); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: 1rem; font-weight: 600; }
+    .btn:hover { opacity: 0.9; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .stat-box { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 16px; text-align: center; }
+    .stat-box .value { font-size: 1.5rem; font-weight: 700; color: var(--color-text); }
+    .stat-box .label { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 4px; }
+    .bar-chart { margin: 16px 0; }
+    .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .bar-label { width: 30px; text-align: right; font-size: 0.85rem; color: var(--color-text-muted); }
+    .bar-track { flex: 1; height: 24px; background: var(--color-bg); border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--color-primary); border-radius: 4px; transition: width 0.3s; display: flex; align-items: center; padding-left: 8px; font-size: 0.8rem; color: #fff; font-weight: 600; min-width: fit-content; }
+    .color-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .color-dot { width: 16px; height: 16px; border-radius: 50%; }
+    .color-name { width: 50px; font-size: 0.85rem; color: var(--color-text-muted); }
+    .health-good { color: #48bb78; } .health-fair { color: #ecc94b; } .health-bad { color: #e53e3e; }
+    #results { display: none; }
+  </style>
+</head>
+<body>
+  <main class="container" style="max-width:800px;">
+    <h1>MTG Mana Curve Analyzer</h1>
+    <p style="color:var(--color-text-muted);margin-bottom:24px;">Paste your decklist below and get instant mana curve analysis, color distribution, and deck health checks.</p>
+
+    <div class="panel">
+      <textarea id="decklist" placeholder="Paste your decklist here...
+
+Example:
+1 Sol Ring
+1 Arcane Signet
+1 Command Tower
+36 Forest
+1 Llanowar Elves
+4 Lightning Bolt"></textarea>
+      <div style="margin-top:12px;display:flex;gap:12px;align-items:center;">
+        <button class="btn" onclick="analyze()">Analyze Deck</button>
+        <span id="card-count" style="color:var(--color-text-muted);font-size:0.85rem;"></span>
+      </div>
+    </div>
+
+    <div id="results">
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <div class="panel">
+        <h3 style="margin-bottom:12px;">Mana Curve</h3>
+        <div class="bar-chart" id="curve-chart"></div>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin-bottom:12px;">Color Distribution</h3>
+        <div id="color-chart"></div>
+      </div>
+
+      <div class="panel">
+        <h3 style="margin-bottom:12px;">Deck Health</h3>
+        <div id="health-checks"></div>
+      </div>
+    </div>
+
+    <section style="margin-top:40px;">
+      <h2>Supported Formats</h2>
+      <ul style="color:var(--color-text-muted);line-height:1.8;font-size:0.95rem;padding-left:20px;">
+        <li><strong>Plain text</strong> — "4 Lightning Bolt" or "4x Lightning Bolt"</li>
+        <li><strong>With set codes</strong> — "4 Lightning Bolt (M21) 199" (set code stripped)</li>
+        <li><strong>Section headers</strong> — Commander, Mainboard, Sideboard headers supported</li>
+        <li><strong>Name only</strong> — "Sol Ring" (defaults to 1 copy)</li>
+      </ul>
+      <p style="color:var(--color-text-muted);font-size:0.85rem;margin-top:20px;">Card data provided by Scryfall. Not affiliated with Wizards of the Coast.</p>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({ depth: 3, activeCategory: 'mtg-tools', title: 'MTG Mana Curve Analyzer', breadcrumbs: [{ label: 'MTG Deck Tools', href: '../index.html' }, { label: 'Mana Curve Analyzer' }] });
+
+    const PIP_RE = /\{([WUBRG])\}/g;
+    const GENERIC_RE = /\{(\d+)\}/;
+    const COLOR_NAMES = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green' };
+    const COLOR_HEX = { W: '#f9faf4', U: '#0e68ab', B: '#150b00', R: '#d3202a', G: '#00733e' };
+
+    function parseDeck(text) {
+      const entries = [];
+      let zone = 'mainboard';
+      for (const raw of text.split('\n')) {
+        const line = raw.trim();
+        if (!line || line.startsWith('//') || line.startsWith('#')) continue;
+        if (/^(commander|mainboard|sideboard|companion|maybeboard)\s*:?\s*$/i.test(line)) {
+          zone = line.replace(/[:\s]/g, '').toLowerCase();
+          continue;
+        }
+        const cleaned = line.replace(/\s*\([A-Z0-9]+\)\s*\d*\s*$/, '').replace(/\s*\*F\*\s*$/, '');
+        const m = cleaned.match(/^\s*(\d+)\s*[xX]?\s+(.+?)\s*$/);
+        let qty = 1, name = cleaned;
+        if (m) { qty = parseInt(m[1]); name = m[2]; }
+        else { const nm = cleaned.match(/^\s*([A-Za-z].+?)\s*$/); if (nm) name = nm[1]; else continue; }
+        entries.push({ name, qty, zone });
+      }
+      return entries;
+    }
+
+    async function lookupCards(names) {
+      const unique = [...new Set(names)];
+      const results = {};
+      // Batch via Scryfall collection endpoint (max 75 per request)
+      for (let i = 0; i < unique.length; i += 75) {
+        const batch = unique.slice(i, i + 75);
+        const body = { identifiers: batch.map(n => ({ name: n })) };
+        try {
+          const resp = await fetch('https://api.scryfall.com/cards/collection', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+          });
+          const data = await resp.json();
+          for (const card of (data.data || [])) {
+            results[card.name.toLowerCase()] = card;
+          }
+        } catch (e) { console.warn('Scryfall lookup failed:', e); }
+      }
+      return results;
+    }
+
+    async function analyze() {
+      const text = document.getElementById('decklist').value;
+      const entries = parseDeck(text);
+      const mainEntries = entries.filter(e => e.zone !== 'sideboard' && e.zone !== 'maybeboard');
+
+      if (mainEntries.length === 0) { alert('No cards found in decklist.'); return; }
+
+      document.getElementById('card-count').textContent = 'Looking up cards...';
+      const cardDB = await lookupCards(mainEntries.map(e => e.name));
+      document.getElementById('card-count').textContent = `${mainEntries.reduce((s,e) => s+e.qty, 0)} cards parsed`;
+
+      // Mana curve
+      const curve = {};
+      let lands = 0, nonlands = 0, totalCmc = 0;
+      const colors = { W: 0, U: 0, B: 0, R: 0, G: 0 };
+      const types = {};
+
+      for (const entry of mainEntries) {
+        const card = cardDB[entry.name.toLowerCase()];
+        const isLand = card ? card.type_line.toLowerCase().includes('land') : false;
+        const cmc = card ? (card.cmc || 0) : 0;
+        const manaCost = card ? (card.mana_cost || '') : '';
+
+        if (isLand) { lands += entry.qty; }
+        else {
+          nonlands += entry.qty;
+          totalCmc += cmc * entry.qty;
+          const mv = Math.min(Math.floor(cmc), 7);
+          curve[mv] = (curve[mv] || 0) + entry.qty;
+        }
+
+        // Colors from mana cost
+        const pips = manaCost.match(PIP_RE) || [];
+        for (const p of pips) {
+          const c = p[1];
+          colors[c] = (colors[c] || 0) + entry.qty;
+        }
+
+        // Type distribution
+        if (card) {
+          const tl = card.type_line.toLowerCase();
+          for (const t of ['creature', 'instant', 'sorcery', 'artifact', 'enchantment', 'planeswalker', 'land']) {
+            if (tl.includes(t)) types[t] = (types[t] || 0) + entry.qty;
+          }
+        }
+      }
+
+      const totalCards = lands + nonlands;
+      const avgCmc = nonlands > 0 ? (totalCmc / nonlands).toFixed(2) : '0.00';
+
+      // Render stats
+      const sg = document.getElementById('stats-grid');
+      sg.innerHTML = `
+        <div class="stat-box"><div class="value">${totalCards}</div><div class="label">Total Cards</div></div>
+        <div class="stat-box"><div class="value">${lands}</div><div class="label">Lands</div></div>
+        <div class="stat-box"><div class="value">${nonlands}</div><div class="label">Nonlands</div></div>
+        <div class="stat-box"><div class="value">${avgCmc}</div><div class="label">Avg Mana Value</div></div>
+      `;
+
+      // Render curve
+      const maxCount = Math.max(...Object.values(curve), 1);
+      const cc = document.getElementById('curve-chart');
+      cc.innerHTML = '';
+      for (let mv = 0; mv <= 7; mv++) {
+        const count = curve[mv] || 0;
+        const pct = (count / maxCount * 100).toFixed(0);
+        cc.innerHTML += `<div class="bar-row">
+          <span class="bar-label">${mv < 7 ? mv : '7+'}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%">${count > 0 ? count : ''}</div></div>
+        </div>`;
+      }
+
+      // Render colors
+      const colorDiv = document.getElementById('color-chart');
+      colorDiv.innerHTML = '';
+      for (const [c, count] of Object.entries(colors)) {
+        if (count === 0) continue;
+        colorDiv.innerHTML += `<div class="color-row">
+          <div class="color-dot" style="background:${COLOR_HEX[c]};border:1px solid #555;"></div>
+          <span class="color-name">${COLOR_NAMES[c]}</span>
+          <span style="color:var(--color-text);">${count} cards</span>
+        </div>`;
+      }
+
+      // Health checks
+      const hc = document.getElementById('health-checks');
+      const checks = [];
+      const isCommander = totalCards >= 95;
+      const landTarget = isCommander ? [35, 38] : [22, 26];
+      const cmcTarget = isCommander ? [2.5, 3.5] : [2.0, 3.0];
+
+      if (lands < landTarget[0]) checks.push({ text: `Low land count (${lands}). Recommended: ${landTarget[0]}-${landTarget[1]}.`, cls: 'health-bad' });
+      else if (lands > landTarget[1] + 2) checks.push({ text: `High land count (${lands}). Recommended: ${landTarget[0]}-${landTarget[1]}.`, cls: 'health-fair' });
+      else checks.push({ text: `Land count (${lands}) is in the ideal range.`, cls: 'health-good' });
+
+      const avgNum = parseFloat(avgCmc);
+      if (avgNum > cmcTarget[1] + 0.5) checks.push({ text: `Average mana value (${avgCmc}) is high. May cause slow starts.`, cls: 'health-bad' });
+      else if (avgNum >= cmcTarget[0] && avgNum <= cmcTarget[1]) checks.push({ text: `Average mana value (${avgCmc}) is in the ideal range.`, cls: 'health-good' });
+      else checks.push({ text: `Average mana value (${avgCmc}).`, cls: 'health-fair' });
+
+      hc.innerHTML = checks.map(c => `<p class="${c.cls}" style="margin:6px 0;">${c.cls === 'health-good' ? '&#10003;' : '&#9888;'} ${c.text}</p>`).join('');
+
+      document.getElementById('results').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
