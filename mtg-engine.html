@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTG Deck Engine Pro – Desktop Deck Analysis &amp; Simulation | Densanon Toolkit</title>
+  <meta name="description" content="Complete Magic: The Gathering deck laboratory. Goldfish simulation, matchup gauntlet, version tracking, power level rating. One-time $24.99. Free tools included.">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .mtg-hero {
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+    .mtg-hero h1 {
+      font-size: 2.6rem;
+      margin-bottom: 12px;
+      color: var(--color-text);
+    }
+    .mtg-hero h1 span {
+      color: var(--color-primary);
+    }
+    .mtg-hero .subtitle {
+      font-size: 1.1rem;
+      color: var(--color-text-muted);
+      max-width: 640px;
+      margin: 0 auto 28px;
+      line-height: 1.6;
+    }
+    .mtg-cta-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .mtg-btn {
+      display: inline-block;
+      padding: 12px 28px;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+    .mtg-btn-primary {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .mtg-btn-primary:hover {
+      background: var(--color-primary-hover);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .mtg-btn-outline {
+      background: transparent;
+      color: var(--color-text);
+      border-color: var(--color-border);
+    }
+    .mtg-btn-outline:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+    .mtg-note {
+      color: var(--color-text-muted);
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+
+    .section-divider {
+      border-top: 1px solid var(--color-border);
+      padding: 50px 0;
+    }
+    .section-title {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 32px;
+      color: var(--color-text);
+    }
+    .section-title span {
+      color: var(--color-primary);
+    }
+
+    .mtg-features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .mtg-feature {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .mtg-feature:hover {
+      transform: translateY(-2px);
+      border-color: var(--color-primary);
+    }
+    .mtg-feature .feat-icon {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+    .mtg-feature h3 {
+      font-size: 1.05rem;
+      margin-bottom: 6px;
+      color: var(--color-text);
+    }
+    .mtg-feature p {
+      color: var(--color-text-muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .free-tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .free-tool-card {
+      display: block;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      text-decoration: none;
+      color: var(--color-text);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .free-tool-card:hover {
+      border-color: var(--color-primary);
+      transform: translateY(-2px);
+      color: var(--color-text);
+    }
+    .free-tool-card strong {
+      display: block;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .free-tool-card span {
+      color: var(--color-text-muted);
+      font-size: 0.82rem;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .price-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+    }
+    .price-card.featured {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 24px rgba(229, 62, 62, 0.15);
+    }
+    .price-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+      color: var(--color-text);
+    }
+    .price-amount {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 4px;
+    }
+    .price-amount .once {
+      font-size: 0.82rem;
+      font-weight: 400;
+      color: var(--color-text-muted);
+    }
+    .price-features {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0 20px;
+    }
+    .price-features li {
+      padding: 5px 0;
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+    }
+    .price-features li::before {
+      margin-right: 8px;
+      font-weight: 700;
+    }
+    .price-features .included::before {
+      content: '\2713';
+      color: var(--color-accent-green);
+    }
+    .price-features .locked::before {
+      content: '\2717';
+      color: #666;
+    }
+    .price-card .mtg-btn {
+      display: block;
+      text-align: center;
+      width: 100%;
+    }
+
+    .download-section {
+      text-align: center;
+    }
+    .download-badge {
+      display: inline-block;
+      background: var(--color-accent-green);
+      color: #000;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+    .download-section p {
+      color: var(--color-text-muted);
+      max-width: 500px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+    .download-details {
+      color: var(--color-text-muted);
+      font-size: 0.82rem;
+      margin-top: 12px;
+    }
+    #download-count {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      margin-top: 12px;
+    }
+
+    .legal-footer {
+      padding: 24px 0;
+      border-top: 1px solid var(--color-border);
+      text-align: center;
+    }
+    .legal-footer p {
+      color: var(--color-text-muted);
+      font-size: 0.8rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .legal-footer a {
+      color: var(--color-primary);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="container">
+      <!-- Hero -->
+      <section class="mtg-hero">
+        <h1>MTG Deck <span>Engine Pro</span></h1>
+        <p class="subtitle">
+          A complete deck laboratory for Magic: The Gathering. Goldfish testing, matchup
+          gauntlet, version tracking, power level rating, and more — runs locally,
+          one-time purchase, no subscription, yours forever.
+        </p>
+        <div class="mtg-cta-row">
+          <a href="#download" class="mtg-btn mtg-btn-primary">Download for Windows</a>
+          <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline">Try Free Tools</a>
+          <a href="#pricing" class="mtg-btn mtg-btn-outline">Go Pro</a>
+        </div>
+        <p class="mtg-note">Free tier in your browser &middot; No account required &middot; Runs entirely on your machine</p>
+      </section>
+
+      <!-- Features -->
+      <section class="section-divider">
+        <h2 class="section-title">The complete <span>deck lab</span></h2>
+        <div class="mtg-features-grid">
+          <div class="mtg-feature">
+            <div class="feat-icon">&#127919;</div>
+            <h3>Power Level Rating</h3>
+            <p>1-10 power level with breakdown across speed, interaction, combo potential, mana efficiency, and win conditions. Perfect for Rule 0 conversations.</p>
+          </div>
+          <div class="mtg-feature">
+            <div class="feat-icon">&#128031;</div>
+            <h3>Goldfish Simulation</h3>
+            <p>Run thousands of solo games to measure how consistently your deck executes. Kill turn distribution, mulligan rates, objective pass rates.</p>
+          </div>
+          <div class="mtg-feature">
+            <div class="feat-icon">&#9876;&#65039;</div>
+            <h3>Matchup Gauntlet</h3>
+            <p>Test against 11 archetype opponents (aggro, control, combo, stax, cEDH, and more). See your weighted meta positioning and weak matchups.</p>
+          </div>
+          <div class="mtg-feature">
+            <div class="feat-icon">&#128202;</div>
+            <h3>Version Tracking</h3>
+            <p>Save deck snapshots, compare any two versions, see score deltas and trend analysis. Track your deck's improvement over time.</p>
+          </div>
+          <div class="mtg-feature">
+            <div class="feat-icon">&#127183;</div>
+            <h3>Castability Analysis</h3>
+            <p>Per-card mana base check. Find demanding cards you can't reliably cast on curve and get specific fixes for your mana base.</p>
+          </div>
+          <div class="mtg-feature">
+            <div class="feat-icon">&#128195;</div>
+            <h3>Report Export</h3>
+            <p>Export full analysis as JSON, Markdown, or styled HTML reports. Perfect for sharing builds, getting feedback, or archiving.</p>
+          </div>
+          <div class="mtg-feature">
+            <div class="feat-icon">&#127891;</div>
+            <h3>Mulligan Practice</h3>
+            <p>Interactive training mode. Draw hands, decide keep or mull, and the engine scores your decisions to sharpen your intuition.</p>
+          </div>
+          <div class="mtg-feature">
+            <div class="feat-icon">&#128161;</div>
+            <h3>Smart Recommendations</h3>
+            <p>Detected archetype, missing format staples, synergy detection, and actionable cut/add suggestions tied to your deck's numbers.</p>
+          </div>
+          <div class="mtg-feature">
+            <div class="feat-icon">&#128274;</div>
+            <h3>Fully Local</h3>
+            <p>No cloud, no telemetry, no account. Your decks and analysis stay on your machine. Works offline once card data is downloaded.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Free tools -->
+      <section class="section-divider">
+        <h2 class="section-title">Try the <span>free tools</span> first</h2>
+        <p style="text-align:center;color:var(--color-text-muted);margin-bottom:28px;">
+          The basic deck analysis tools are free in your browser. Try them before going Pro.
+        </p>
+        <div class="free-tools-grid">
+          <a href="categories/mtg-tools/hypergeometric-calculator/" class="free-tool-card">
+            <strong>Hypergeometric Calculator</strong>
+            <span>Card draw probability for any deck size</span>
+          </a>
+          <a href="categories/mtg-tools/mana-curve-analyzer/" class="free-tool-card">
+            <strong>Mana Curve Analyzer</strong>
+            <span>Paste a decklist, get instant analysis</span>
+          </a>
+          <a href="categories/mtg-tools/deck-staples-checker/" class="free-tool-card">
+            <strong>Staples Checker</strong>
+            <span>Find missing Commander staples</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- Pricing -->
+      <section class="section-divider" id="pricing">
+        <h2 class="section-title">Free vs <span>Pro</span></h2>
+        <p style="text-align:center;color:var(--color-text-muted);margin-bottom:28px;">
+          Free tools live in your browser on densanon-toolkit. Pro is a one-time purchase desktop app — yours forever with lifetime updates.
+        </p>
+        <div class="pricing-grid">
+          <div class="price-card">
+            <h3>Free</h3>
+            <div class="price-amount">$0</div>
+            <ul class="price-features">
+              <li class="included">Hypergeometric calculator</li>
+              <li class="included">Mana curve analyzer</li>
+              <li class="included">Staples checker</li>
+              <li class="included">Browser-based</li>
+              <li class="locked">Goldfish simulation</li>
+              <li class="locked">Matchup gauntlet</li>
+              <li class="locked">Version tracking</li>
+            </ul>
+            <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline">Try Free Tools</a>
+          </div>
+          <div class="price-card featured">
+            <h3>Pro</h3>
+            <div class="price-amount">$24.99 <span class="once">one-time</span></div>
+            <ul class="price-features">
+              <li class="included">All free tools, plus</li>
+              <li class="included">Goldfish simulation</li>
+              <li class="included">Matchup gauntlet</li>
+              <li class="included">Version tracking</li>
+              <li class="included">Power level rating</li>
+              <li class="included">Castability analysis</li>
+              <li class="included">Report export</li>
+              <li class="included">Mulligan practice</li>
+              <li class="included">Lifetime updates</li>
+            </ul>
+            <a href="https://buy.stripe.com/REPLACE_WITH_REAL_LINK" class="mtg-btn mtg-btn-primary" id="buy-pro-btn">Buy Pro License</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Download -->
+      <section class="section-divider download-section" id="download">
+        <div class="download-badge">Windows</div>
+        <h2 class="section-title">Get MTG Deck <span>Engine</span></h2>
+        <p>Download the Windows binary. No Python, no install, just unzip and run. Activate Pro with your license key after purchase.</p>
+        <a href="https://github.com/Densanon-devs/densanon-toolkit/releases/latest/download/mtg-engine-windows.zip" class="mtg-btn mtg-btn-primary" id="download-btn">Download Free</a>
+        <p class="download-details">
+          <span id="app-version"></span>~35 MB &middot; Windows 10+ &middot; Runs locally, no internet needed after first sync
+        </p>
+        <p id="download-count"></p>
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--color-border);">
+          <div class="download-badge" style="background:var(--color-text-muted);">Mac / Linux</div>
+          <p style="color:var(--color-text-muted);margin-top:8px;font-size:0.9rem;">
+            Coming soon. Build from source in the meantime — see the <a href="https://github.com/densanon-devs/mtg-deck-engine">GitHub repo</a>.
+          </p>
+        </div>
+      </section>
+
+      <!-- Legal -->
+      <section class="legal-footer">
+        <p>
+          MTG Deck Engine is not affiliated with or endorsed by Wizards of the Coast.
+          Magic: The Gathering and its logos are trademarks of Wizards of the Coast LLC.
+          Card data provided by <a href="https://scryfall.com">Scryfall</a>.
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/page-consistency.js"></script>
+  <script>
+    initPage({ depth: 0, title: 'MTG Deck Engine Pro — Desktop Deck Analysis' });
+
+    // Version display
+    fetch('mtg-engine-version.json')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var el = document.getElementById('app-version');
+        if (el && data.version) el.textContent = 'v' + data.version + ' \u00B7 ';
+      })
+      .catch(function () {});
+
+    // Download counter
+    (function () {
+      var countEl = document.getElementById('download-count');
+      var CACHE_KEY = 'mtg_engine_dl_count';
+      var CACHE_TTL = 3600000;
+
+      function show(count) {
+        if (count > 0) countEl.textContent = count.toLocaleString() + ' downloads';
+      }
+
+      var cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+      if (cached) show(cached.count);
+
+      if (!cached || Date.now() - cached.ts > CACHE_TTL) {
+        fetch('https://api.github.com/repos/densanon-devs/densanon-toolkit/releases')
+          .then(function (r) { return r.json(); })
+          .then(function (releases) {
+            if (!Array.isArray(releases)) return;
+            var total = 0;
+            releases.forEach(function (release) {
+              release.assets.forEach(function (asset) {
+                if (asset.name && asset.name.indexOf('mtg-engine') === 0) {
+                  total += asset.download_count;
+                }
+              });
+            });
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ count: total, ts: Date.now() }));
+            show(total);
+          })
+          .catch(function () {});
+      }
+    })();
+  </script>
+</body>
+</html>
