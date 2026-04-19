@@ -82,6 +82,9 @@ Mainboard
       { name: 'Command Tower', reason: 'Free color-fixing land', priority: 'essential' },
       { name: 'Lightning Greaves', reason: 'Haste + protection for commander', priority: 'recommended' },
       { name: 'Swiftfoot Boots', reason: 'Hexproof + haste for commander', priority: 'suggested' },
+      { name: 'Solemn Simulacrum', reason: 'Body + ramp + cantrip on death', priority: 'suggested' },
+      { name: 'Skullclamp', reason: 'Two-mana draw engine for token decks', priority: 'suggested' },
+      { name: 'Chromatic Lantern', reason: 'Any land taps for any color', priority: 'suggested' },
     ];
 
     const COLOR_STAPLES = {
@@ -90,28 +93,41 @@ Mainboard
         { name: 'Path to Exile', reason: 'Efficient creature exile', priority: 'recommended' },
         { name: 'Generous Gift', reason: 'Flexible permanent removal', priority: 'recommended' },
         { name: 'Smothering Tithe', reason: 'Explosive mana generation', priority: 'recommended' },
+        { name: "Teferi's Protection", reason: 'Phase out your board against wipes', priority: 'recommended' },
+        { name: 'Farewell', reason: 'Definitive, selective board reset', priority: 'suggested' },
       ],
       U: [
         { name: 'Counterspell', reason: 'Clean two-mana counter', priority: 'essential' },
         { name: 'Rhystic Study', reason: 'Consistent card draw engine', priority: 'essential' },
         { name: 'Cyclonic Rift', reason: 'Best board wipe in blue', priority: 'recommended' },
         { name: 'Swan Song', reason: 'Efficient one-mana counter', priority: 'recommended' },
+        { name: 'Mystic Remora', reason: 'One-mana card draw engine', priority: 'recommended' },
+        { name: 'Brainstorm', reason: 'Cheap card selection', priority: 'suggested' },
+        { name: 'Ponder', reason: 'Top-deck sculpting cantrip', priority: 'suggested' },
       ],
       B: [
         { name: 'Demonic Tutor', reason: 'Best tutor in the format', priority: 'recommended' },
         { name: 'Toxic Deluge', reason: 'Efficient board wipe', priority: 'recommended' },
         { name: 'Feed the Swarm', reason: 'Black enchantment removal', priority: 'suggested' },
+        { name: 'Vampiric Tutor', reason: 'Top-of-library tutor', priority: 'recommended' },
+        { name: 'Animate Dead', reason: 'Cheap reanimation staple', priority: 'suggested' },
+        { name: 'Reanimate', reason: 'One-mana graveyard revival', priority: 'suggested' },
       ],
       R: [
         { name: 'Chaos Warp', reason: "Red's best permanent removal", priority: 'recommended' },
         { name: 'Blasphemous Act', reason: 'Efficient creature wipe', priority: 'recommended' },
         { name: 'Vandalblast', reason: 'One-sided artifact wipe', priority: 'suggested' },
+        { name: 'Dockside Extortionist', reason: 'Explosive treasure generator', priority: 'recommended' },
+        { name: "Jeska's Will", reason: 'Burst mana + card draw', priority: 'suggested' },
       ],
       G: [
         { name: 'Beast Within', reason: 'Flexible permanent removal', priority: 'essential' },
         { name: "Nature's Claim", reason: 'Efficient artifact/enchantment removal', priority: 'recommended' },
         { name: "Kodama's Reach", reason: 'Land ramp + fixing', priority: 'recommended' },
         { name: 'Cultivate', reason: 'Land ramp + fixing', priority: 'recommended' },
+        { name: 'Heroic Intervention', reason: 'Protection against wipes and removal', priority: 'recommended' },
+        { name: 'Sylvan Library', reason: 'Card selection + draw engine', priority: 'suggested' },
+        { name: 'Farseek', reason: 'Two-mana dual-fetching ramp', priority: 'suggested' },
       ],
     };
 
@@ -121,7 +137,7 @@ Mainboard
         const line = raw.trim();
         if (!line || line.startsWith('//') || line.startsWith('#')) continue;
         if (/^(commander|mainboard|sideboard|companion|maybeboard)\s*:?\s*$/i.test(line)) continue;
-        const cleaned = line.replace(/\s*\([A-Z0-9]+\)\s*\d*\s*$/, '').replace(/\s*\*F\*\s*$/, '');
+        const cleaned = line.replace(/\s*\([A-Za-z0-9]+\)\s*\d*\s*$/, '').replace(/\s*\*F\*\s*$/, '');
         const m = cleaned.match(/^\s*\d+\s*[xX]?\s+(.+?)\s*$/);
         if (m) cards.add(m[1].toLowerCase());
         else { const nm = cleaned.match(/^\s*([A-Za-z].+?)\s*$/); if (nm) cards.add(nm[1].toLowerCase()); }
@@ -129,29 +145,54 @@ Mainboard
       return cards;
     }
 
+    // Cache color identity per card name so repeated checks don't re-hit Scryfall.
+    const colorCache = {};
+    let checking = false;
+
     async function detectColors(deckCards) {
-      // Look up a sample of cards to detect color identity
-      const names = [...deckCards].slice(0, 75);
-      const body = { identifiers: names.map(n => ({ name: n })) };
+      const names = [...deckCards];
+      const need = names.filter(n => !(n in colorCache));
+      for (let i = 0; i < need.length; i += 75) {
+        const batch = need.slice(i, i + 75);
+        const body = { identifiers: batch.map(n => ({ name: n })) };
+        try {
+          const resp = await fetch('https://api.scryfall.com/cards/collection', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+          });
+          const data = await resp.json();
+          for (const card of (data.data || [])) {
+            colorCache[card.name.toLowerCase()] = card.color_identity || [];
+          }
+          // Any name Scryfall couldn't resolve gets a null sentinel so we skip it next time.
+          for (const n of batch) if (!(n in colorCache)) colorCache[n] = null;
+        } catch (e) { console.warn('Color detection failed:', e); }
+      }
       const colors = new Set();
-      try {
-        const resp = await fetch('https://api.scryfall.com/cards/collection', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-        });
-        const data = await resp.json();
-        for (const card of (data.data || [])) {
-          for (const c of (card.color_identity || [])) colors.add(c);
-        }
-      } catch (e) { console.warn('Color detection failed:', e); }
+      for (const n of names) {
+        const ids = colorCache[n];
+        if (ids) for (const c of ids) colors.add(c);
+      }
       return colors;
     }
 
     async function checkStaples() {
+      if (checking) return;
       const text = document.getElementById('decklist').value;
       const deckCards = parseDeck(text);
       if (deckCards.size === 0) { alert('No cards found.'); return; }
 
-      const colors = await detectColors(deckCards);
+      const btn = document.querySelector('.btn');
+      checking = true;
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      let colors;
+      try {
+        colors = await detectColors(deckCards);
+      } finally {
+        checking = false;
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      }
 
       // Build applicable staples
       const applicable = [...COLORLESS_STAPLES];

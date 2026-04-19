@@ -84,7 +84,9 @@ Example:
   <script>
     initPage({ depth: 3, activeCategory: 'mtg-tools', title: 'MTG Mana Curve Analyzer', breadcrumbs: [{ label: 'MTG Deck Tools', href: '../index.html' }, { label: 'Mana Curve Analyzer' }] });
 
-    const PIP_RE = /\{([WUBRG])\}/g;
+    // Captures anything between braces so hybrid {W/U}, Phyrexian {W/P}, twobrid {2/W},
+    // and colorless {C} are all surfaced — the inner split below extracts the color letters.
+    const PIP_RE = /\{([^}]+)\}/g;
     const GENERIC_RE = /\{(\d+)\}/;
     const COLOR_NAMES = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green' };
     const COLOR_HEX = { W: '#f9faf4', U: '#0e68ab', B: '#150b00', R: '#d3202a', G: '#00733e' };
@@ -99,7 +101,7 @@ Example:
           zone = line.replace(/[:\s]/g, '').toLowerCase();
           continue;
         }
-        const cleaned = line.replace(/\s*\([A-Z0-9]+\)\s*\d*\s*$/, '').replace(/\s*\*F\*\s*$/, '');
+        const cleaned = line.replace(/\s*\([A-Za-z0-9]+\)\s*\d*\s*$/, '').replace(/\s*\*F\*\s*$/, '');
         const m = cleaned.match(/^\s*(\d+)\s*[xX]?\s+(.+?)\s*$/);
         let qty = 1, name = cleaned;
         if (m) { qty = parseInt(m[1]); name = m[2]; }
@@ -109,12 +111,15 @@ Example:
       return entries;
     }
 
+    // Persistent cache across analyses — avoids re-hitting Scryfall for names already resolved.
+    const cardCache = {};
+    let analyzing = false;
+
     async function lookupCards(names) {
-      const unique = [...new Set(names)];
-      const results = {};
-      // Batch via Scryfall collection endpoint (max 75 per request)
-      for (let i = 0; i < unique.length; i += 75) {
-        const batch = unique.slice(i, i + 75);
+      const unique = [...new Set(names.map(n => n.toLowerCase()))];
+      const need = unique.filter(n => !(n in cardCache));
+      for (let i = 0; i < need.length; i += 75) {
+        const batch = need.slice(i, i + 75);
         const body = { identifiers: batch.map(n => ({ name: n })) };
         try {
           const resp = await fetch('https://api.scryfall.com/cards/collection', {
@@ -122,22 +127,50 @@ Example:
           });
           const data = await resp.json();
           for (const card of (data.data || [])) {
-            results[card.name.toLowerCase()] = card;
+            cardCache[card.name.toLowerCase()] = card;
           }
+          // Mark missing names as resolved-to-null so we don't refetch them.
+          for (const n of batch) if (!(n in cardCache)) cardCache[n] = null;
         } catch (e) { console.warn('Scryfall lookup failed:', e); }
       }
+      const results = {};
+      for (const n of unique) if (cardCache[n]) results[n] = cardCache[n];
       return results;
     }
 
+    // Split cards ("Fire // Ice") report summed top-level cmc; the playable curve bucket is the front face.
+    function cardCmc(card) {
+      if (!card) return 0;
+      if (card.layout === 'split' && card.card_faces && card.card_faces.length) return card.card_faces[0].cmc || 0;
+      return card.cmc || 0;
+    }
+    function cardManaCost(card) {
+      if (!card) return '';
+      if (card.layout === 'split' && card.card_faces && card.card_faces.length) return card.card_faces[0].mana_cost || '';
+      return card.mana_cost || '';
+    }
+
     async function analyze() {
+      if (analyzing) return;
       const text = document.getElementById('decklist').value;
       const entries = parseDeck(text);
       const mainEntries = entries.filter(e => e.zone !== 'sideboard' && e.zone !== 'maybeboard');
 
       if (mainEntries.length === 0) { alert('No cards found in decklist.'); return; }
 
+      const btn = document.querySelector('.btn');
+      analyzing = true;
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
       document.getElementById('card-count').textContent = 'Looking up cards...';
-      const cardDB = await lookupCards(mainEntries.map(e => e.name));
+      let cardDB;
+      try {
+        cardDB = await lookupCards(mainEntries.map(e => e.name));
+      } finally {
+        analyzing = false;
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      }
       document.getElementById('card-count').textContent = `${mainEntries.reduce((s,e) => s+e.qty, 0)} cards parsed`;
 
       // Mana curve
@@ -148,9 +181,12 @@ Example:
 
       for (const entry of mainEntries) {
         const card = cardDB[entry.name.toLowerCase()];
-        const isLand = card ? card.type_line.toLowerCase().includes('land') : false;
-        const cmc = card ? (card.cmc || 0) : 0;
-        const manaCost = card ? (card.mana_cost || '') : '';
+        // Match only against the supertypes+types portion (before the em dash) so subtypes
+        // like "Creature — Illusion Island" on Mistform Island don't register as a land.
+        const typesPart = (card && card.type_line) ? card.type_line.split(' — ')[0].toLowerCase() : '';
+        const isLand = typesPart.includes('land');
+        const cmc = cardCmc(card);
+        const manaCost = cardManaCost(card);
 
         if (isLand) { lands += entry.qty; }
         else {
@@ -160,18 +196,19 @@ Example:
           curve[mv] = (curve[mv] || 0) + entry.qty;
         }
 
-        // Colors from mana cost
+        // Colors from mana cost — handles {W}, {W/U}, {W/P}, {2/W}, {C}.
         const pips = manaCost.match(PIP_RE) || [];
         for (const p of pips) {
-          const c = p[1];
-          colors[c] = (colors[c] || 0) + entry.qty;
+          const inner = p.slice(1, -1);
+          for (const c of inner.split('/')) {
+            if (COLOR_NAMES[c]) colors[c] = (colors[c] || 0) + entry.qty;
+          }
         }
 
-        // Type distribution
-        if (card) {
-          const tl = card.type_line.toLowerCase();
-          for (const t of ['creature', 'instant', 'sorcery', 'artifact', 'enchantment', 'planeswalker', 'land']) {
-            if (tl.includes(t)) types[t] = (types[t] || 0) + entry.qty;
+        // Type distribution (uses the pre-em-dash portion for the same reason as isLand).
+        if (typesPart) {
+          for (const t of ['creature', 'instant', 'sorcery', 'artifact', 'enchantment', 'planeswalker', 'battle', 'land']) {
+            if (typesPart.includes(t)) types[t] = (types[t] || 0) + entry.qty;
           }
         }
       }
