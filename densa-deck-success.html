@@ -185,21 +185,45 @@
           </div>
 
           <div class="instructions">
-            <h3>How to activate</h3>
+            <h3>How to set up Densa Deck (first time)</h3>
+            <p style="color:var(--color-text-muted);margin:0 0 10px;">
+              This is a one-time setup that takes about 10 minutes. After that, the app launches instantly and runs fully offline.
+            </p>
             <ol>
-              <li>Download Densa Deck for Windows (link above) — v0.1.0 ships as a portable ZIP.</li>
-              <li>Extract the ZIP anywhere convenient (Documents, Desktop, etc.).</li>
-              <li>Inside the extracted <code>densa-deck\</code> folder, double-click <code>densa-deck.exe</code>. The app launches directly — no install step.</li>
-              <li>In the app, open <strong>Settings &rarr; Activate Pro license</strong>.</li>
-              <li>Paste your key (above) and click <strong>Activate</strong>.</li>
-              <li>The tier badge in the top-right should flip to <strong>Pro</strong>. Save, Goldfish, Gauntlet, and Coach now unlock.</li>
+              <li>
+                <strong>Download the ZIP</strong> using the button above. The file is about 26 MB.
+              </li>
+              <li>
+                <strong>Extract it properly.</strong> Right-click <code>Densa-Deck-0.1.0-windows.zip</code> → <strong>Extract All...</strong> → pick a permanent location (Documents works well). Do <strong>not</strong> run the app from inside the ZIP preview — any data it saves will vanish when you close the window.
+              </li>
+              <li>
+                <strong>Find <code>densa-deck.exe</code>.</strong> Open the extracted <code>densa-deck\</code> folder. You'll see ~35 files; the one you want is <code>densa-deck.exe</code> (plain black-box icon labeled "densa-deck"). Ignore the <code>_internal\</code> folder — those are dependencies, don't open anything inside it.
+              </li>
+              <li>
+                <strong>Double-click <code>densa-deck.exe</code>.</strong> The app launches. A first-run walkthrough pops up — you can follow it or skip to step 5.
+              </li>
+              <li>
+                <strong>Install the card database.</strong> Open the <strong>Settings</strong> tab → click <strong>Install card database</strong>. This downloads ~250 MB of Scryfall card data (5–10 minutes on a normal connection). You only do this once.
+              </li>
+              <li>
+                <strong>Activate your Pro license.</strong> Still on the Settings tab, paste the key from above into <strong>Activate Pro license</strong> → click <strong>Activate</strong>. The tier badge in the top-right flips to <strong>Pro</strong> — Save, Goldfish, Gauntlet, and AI Coach are now unlocked.
+              </li>
+              <li>
+                <strong>(Optional) Install the AI analyst model.</strong> If you want executive-summary narration + the AI Coach chat, click <strong>Download analyst model</strong> in Settings. Adds ~1.8 GB for the Qwen 2.5 3B model. Skip this if you just want the deck-analysis numbers.
+              </li>
+              <li>
+                <strong>Start analyzing.</strong> Go to the <strong>Analyze</strong> tab, paste a decklist, click <strong>Analyze</strong>.
+              </li>
             </ol>
             <p class="save-warning">
               <strong>Save this key!</strong> It can be re-derived from your Stripe receipt if needed,
               but it's easier to bookmark this page or copy the key to a password manager now.
             </p>
             <p class="save-warning" style="margin-top:10px;background:rgba(74,144,226,0.08);border-left-color:var(--color-accent);">
-              <strong>Note:</strong> v0.1.0 is the portable ZIP release &mdash; double-click <code>densa-deck.exe</code> to launch. The one-click Windows installer (with Start Menu + Desktop shortcuts) ships in v0.1.1. You can use your license key with both.
+              <strong>Disk space:</strong> plan for ~1.5 GB free on the drive you extract to (card database + optional AI model + room for version history). The app itself is only 25 MB; the data is where the space goes.
+            </p>
+            <p class="save-warning" style="margin-top:10px;background:rgba(74,144,226,0.08);border-left-color:var(--color-accent);">
+              <strong>Note:</strong> v0.1.0 is the portable ZIP release &mdash; no installer wizard. The one-click Windows installer (with Start Menu + Desktop shortcuts) ships in a later version. Your license key works with both.
             </p>
           </div>
 
