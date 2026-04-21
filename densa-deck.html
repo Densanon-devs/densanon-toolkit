@@ -293,6 +293,30 @@
     .mtg-btn.mtg-btn-disabled:hover {
       transform: none;
     }
+
+    /* FAQ <details> styling: hide the default triangle, add our own
+       caret so it matches the dark theme. Open state gets a subtle left
+       border highlight to signal "expanded". */
+    .faq-item summary {
+      list-style: none;
+      position: relative;
+      padding-right: 24px;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+      content: '+';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-text-muted);
+      font-size: 1.3rem;
+      font-weight: 400;
+    }
+    .faq-item[open] summary::after { content: '\2212'; }
+    .faq-item[open] {
+      border-left-color: var(--color-accent-green);
+    }
   </style>
 </head>
 <body>
@@ -319,6 +343,15 @@
           <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline">Try Free Tools Now</a>
         </div>
         <p class="mtg-note">Free browser tools available today &middot; Pro desktop app launching after Stripe + installer signing go live</p>
+        <p class="mtg-note" style="margin-top:16px;">
+          <a href="#requirements" style="color:var(--color-text-muted);margin:0 10px;">Requirements</a>
+          &middot;
+          <a href="#privacy" style="color:var(--color-text-muted);margin:0 10px;">Privacy</a>
+          &middot;
+          <a href="#faq" style="color:var(--color-text-muted);margin:0 10px;">FAQ</a>
+          &middot;
+          <a href="#already-purchased" style="color:var(--color-text-muted);margin:0 10px;">Already bought?</a>
+        </p>
       </section>
 
       <!-- Features -->
@@ -491,6 +524,134 @@
               Coming soon. Build from source in the meantime — see the <a href="https://github.com/densanon-devs/densa-deck">GitHub repo</a>.
             </p>
           </div>
+        </div>
+      </section>
+
+      <!-- System requirements + privacy (pre-purchase reassurance) -->
+      <section class="section-divider" id="requirements">
+        <h2 class="section-title">System <span>requirements</span></h2>
+        <div class="mtg-features-grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));">
+          <div class="mtg-feature">
+            <div class="feat-icon">&#128187;</div>
+            <h3>Windows 10+</h3>
+            <p>64-bit Windows 10 or 11. macOS and Linux are planned for a later release.</p>
+          </div>
+          <div class="mtg-feature">
+            <div class="feat-icon">&#128190;</div>
+            <h3>~1.5 GB disk</h3>
+            <p>25 MB app, ~500 MB–1 GB for the Scryfall card database, ~1.8 GB optional for the AI analyst model.</p>
+          </div>
+          <div class="mtg-feature">
+            <div class="feat-icon">&#128266;</div>
+            <h3>Internet (once)</h3>
+            <p>Needed for the initial card-data download. Everything runs offline afterward — no cloud, no account.</p>
+          </div>
+          <div class="mtg-feature">
+            <div class="feat-icon">&#128421;&#65039;</div>
+            <h3>Optional: GPU</h3>
+            <p>CUDA-capable NVIDIA card makes the AI Coach ~10× faster. CPU-only works for everything except coach-repl performance.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Privacy (pre-purchase trust) -->
+      <section class="section-divider" id="privacy">
+        <h2 class="section-title">Privacy &amp; <span>your data</span></h2>
+        <div style="max-width:760px;margin:0 auto;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:24px;">
+          <p style="margin:0 0 14px;color:var(--color-text);line-height:1.7;">
+            <strong>Your decks never leave your machine.</strong> Densa Deck is a local desktop app, not a web service. All analysis, simulation, and AI coaching runs on your own CPU/GPU.
+          </p>
+          <ul style="margin:0;padding-left:20px;color:var(--color-text-muted);line-height:1.8;">
+            <li><strong>No account, no login.</strong> Your license key is validated offline.</li>
+            <li><strong>No telemetry.</strong> The app never phones home during normal use. The only network calls are: card-database fetch from Scryfall (once at setup), optional AI model download from Hugging Face (once if you opt in), and an optional check for updates against <code>toolkit.densanon.com</code>.</li>
+            <li><strong>Decklists, analysis results, saved versions, and coach conversations</strong> live in <code>%USERPROFILE%\.densa-deck\</code> on your machine. Delete the folder to wipe everything.</li>
+            <li><strong>Stripe processes the payment.</strong> We receive the Stripe session ID (used to derive your license key deterministically) and your email — nothing else. Your card number never touches our servers because we don't have servers.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="section-divider" id="faq">
+        <h2 class="section-title">Frequently <span>asked</span></h2>
+        <div style="max-width:760px;margin:0 auto;">
+
+          <details class="faq-item" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;">
+            <summary style="cursor:pointer;font-weight:600;color:var(--color-text);">What happens if I lose my license key?</summary>
+            <p style="margin:12px 0 0;color:var(--color-text-muted);line-height:1.7;">
+              Your Stripe receipt (the email Stripe sent after checkout) contains a link back to the receipt page. The license key is deterministically derived from your Stripe session ID, so if you can get to the success page URL from your browser history OR Stripe receipt, the same key re-appears. If neither of those works, email <a href="mailto:admin@densanon.com" style="color:var(--color-accent-green);">admin@densanon.com</a> with your Stripe receipt and we'll resend it within 48 hours.
+            </p>
+          </details>
+
+          <details class="faq-item" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;">
+            <summary style="cursor:pointer;font-weight:600;color:var(--color-text);">Can I use one license on multiple machines?</summary>
+            <p style="margin:12px 0 0;color:var(--color-text-muted);line-height:1.7;">
+              Yes. Your license key is the same on every machine — there's no per-device lockout and no seat limit. Install Densa Deck on your desktop, laptop, and anywhere else you'd like to use it. We trust you not to share the key publicly.
+            </p>
+          </details>
+
+          <details class="faq-item" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;">
+            <summary style="cursor:pointer;font-weight:600;color:var(--color-text);">How do updates work?</summary>
+            <p style="margin:12px 0 0;color:var(--color-text-muted);line-height:1.7;">
+              The app checks for new versions when it launches and shows a banner if one's available. Click the banner to go to the download page. Extract the new ZIP to the same folder (replacing the old files) — your card database, saved decks, coach sessions, and license key stay intact (they live in <code>%USERPROFILE%\.densa-deck\</code>, outside the app folder).
+            </p>
+          </details>
+
+          <details class="faq-item" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;">
+            <summary style="cursor:pointer;font-weight:600;color:var(--color-text);">What's your refund policy?</summary>
+            <p style="margin:12px 0 0;color:var(--color-text-muted);line-height:1.7;">
+              Full refund within 14 days, no questions asked. The 3 free browser tools on this site are meant to give you a feel for the ranking + analysis quality before buying — if the Pro app still doesn't click for you, email <a href="mailto:admin@densanon.com" style="color:var(--color-accent-green);">admin@densanon.com</a> with your Stripe receipt and we'll refund via Stripe.
+            </p>
+          </details>
+
+          <details class="faq-item" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;">
+            <summary style="cursor:pointer;font-weight:600;color:var(--color-text);">What formats does it support?</summary>
+            <p style="margin:12px 0 0;color:var(--color-text-muted);line-height:1.7;">
+              Primary focus: <strong>Commander / EDH</strong> (100-card singleton). Also works for Modern, Legacy, Vintage, Standard, Pioneer, and Pauper — the static analysis and goldfish engines are format-aware, and the staples checker has a Commander staples list built in. Format-specific features (bans, legality) respect each format's rules.
+            </p>
+          </details>
+
+          <details class="faq-item" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;">
+            <summary style="cursor:pointer;font-weight:600;color:var(--color-text);">The Windows "SmartScreen" warning — is this safe?</summary>
+            <p style="margin:12px 0 0;color:var(--color-text-muted);line-height:1.7;">
+              Yes. The binary isn't yet signed with a paid code-signing certificate (those cost $120–$700/year; we're adding one once sales justify it). Windows treats any unsigned app as suspicious by default. Click <strong>More info → Run anyway</strong> to proceed. You can verify the file's SHA-256 hash against the value published on the <a href="https://github.com/densanon-devs/densa-deck/releases/latest" style="color:var(--color-accent-green);">GitHub release page</a> if you want extra assurance.
+            </p>
+          </details>
+
+          <details class="faq-item" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;">
+            <summary style="cursor:pointer;font-weight:600;color:var(--color-text);">How do I uninstall?</summary>
+            <p style="margin:12px 0 0;color:var(--color-text-muted);line-height:1.7;">
+              v0.1.0 is a portable ZIP — no Windows uninstaller. Just delete the <code>densa-deck\</code> folder you extracted. To also wipe your card database, saved decks, and license key, delete <code>%USERPROFILE%\.densa-deck\</code>. That's everything Densa Deck ever wrote to your machine.
+            </p>
+          </details>
+
+          <details class="faq-item" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;">
+            <summary style="cursor:pointer;font-weight:600;color:var(--color-text);">Is this an official Wizards of the Coast product?</summary>
+            <p style="margin:12px 0 0;color:var(--color-text-muted);line-height:1.7;">
+              No. Densa Deck is an independent tool built by Densanon LLC. It's not affiliated with, endorsed by, or sponsored by Wizards of the Coast LLC. All card data is fetched from <a href="https://scryfall.com" style="color:var(--color-accent-green);">Scryfall</a>, which publishes it under agreement with Wizards. No card images are hosted by us — we hotlink to Scryfall for any image display.
+            </p>
+          </details>
+
+          <details class="faq-item" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;">
+            <summary style="cursor:pointer;font-weight:600;color:var(--color-text);">How do I get support?</summary>
+            <p style="margin:12px 0 0;color:var(--color-text-muted);line-height:1.7;">
+              Email <a href="mailto:admin@densanon.com" style="color:var(--color-accent-green);">admin@densanon.com</a> — include your Stripe receipt (or order ID) if it's a license issue, and your Windows version + a short description of what you tried if it's an install issue. Response within 48 hours.
+            </p>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- Already purchased? -->
+      <section class="section-divider" id="already-purchased">
+        <div style="max-width:760px;margin:0 auto;background:var(--color-surface);border:1px solid var(--color-accent);border-radius:var(--radius);padding:20px 24px;">
+          <h3 style="margin:0 0 12px;">Already purchased and need to re-install?</h3>
+          <ol style="margin:0;padding-left:20px;color:var(--color-text-muted);line-height:1.8;">
+            <li>Download the ZIP from the <a href="https://github.com/densanon-devs/densa-deck/releases/latest" style="color:var(--color-accent-green);">GitHub releases page</a></li>
+            <li>Extract it (right-click → Extract All)</li>
+            <li>Double-click <code>densa-deck.exe</code> in the extracted folder</li>
+            <li>In the app: <strong>Settings → Install card database</strong>, then paste your license key into <strong>Activate Pro license</strong></li>
+            <li>Lost your key? Find your Stripe receipt email and click through to the receipt page, or <a href="mailto:admin@densanon.com" style="color:var(--color-accent-green);">email support</a></li>
+          </ol>
         </div>
       </section>
 
