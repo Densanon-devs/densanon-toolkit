@@ -253,13 +253,61 @@
     .legal-footer a {
       color: var(--color-primary);
     }
+
+    /* Coming-soon gate — shown as a page-wide banner + badges while the
+       paid product is pre-launch. Replaces dead-end CTAs with clear
+       "not yet" signals so visitors don't click into broken flows. */
+    .coming-soon-banner {
+      background: #2a1e13;
+      color: #f0c040;
+      border-bottom: 1px solid #4a3820;
+      padding: 12px 24px;
+      text-align: center;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .coming-soon-banner strong {
+      color: #ffd700;
+    }
+
+    .cs-badge {
+      display: inline-block;
+      background: #f0c040;
+      color: #000;
+      padding: 4px 14px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .mtg-btn.mtg-btn-disabled {
+      background: var(--color-border);
+      color: var(--color-text-muted);
+      cursor: not-allowed;
+      pointer-events: none;
+      opacity: 0.8;
+    }
+    .mtg-btn.mtg-btn-disabled:hover {
+      transform: none;
+    }
   </style>
 </head>
 <body>
   <main>
+    <!-- Hard "Coming Soon" notice. Shown until Stripe checkout + first
+         release are live. Visible at the top of every scroll position so
+         visitors don't miss it on their way down to the features/pricing. -->
+    <div class="coming-soon-banner">
+      <strong>Coming Soon.</strong> Densa Deck Pro is in final polish — the free browser tools below are live today; the paid desktop app launches shortly. Preview the feature set on this page, then bookmark and check back.
+    </div>
+
     <div class="container">
       <!-- Hero -->
       <section class="mtg-hero">
+        <span class="cs-badge">Launching Soon</span>
         <h1>Densa <span>Deck Pro</span></h1>
         <p class="subtitle">
           A complete deck laboratory for Magic: The Gathering. Goldfish testing, matchup
@@ -267,11 +315,10 @@
           one-time purchase, no subscription, yours forever.
         </p>
         <div class="mtg-cta-row">
-          <a href="#download" class="mtg-btn mtg-btn-primary">Download for Windows</a>
-          <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline">Try Free Tools</a>
-          <a href="#pricing" class="mtg-btn mtg-btn-outline">Go Pro</a>
+          <span class="mtg-btn mtg-btn-disabled" aria-disabled="true" title="Desktop download will be available at launch">Download — Coming Soon</span>
+          <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline">Try Free Tools Now</a>
         </div>
-        <p class="mtg-note">Free tier in your browser &middot; No account required &middot; Runs entirely on your machine</p>
+        <p class="mtg-note">Free browser tools available today &middot; Pro desktop app launching after Stripe + installer signing go live</p>
       </section>
 
       <!-- Features -->
@@ -383,27 +430,30 @@
               <li class="included">Mulligan practice</li>
               <li class="included">Lifetime updates</li>
             </ul>
-            <a href="https://buy.stripe.com/REPLACE_WITH_REAL_LINK" class="mtg-btn mtg-btn-primary" id="buy-pro-btn">Buy Pro License</a>
+            <span class="mtg-btn mtg-btn-disabled" aria-disabled="true" id="buy-pro-btn" title="Checkout opens at launch">Buy Pro — Coming Soon</span>
           </div>
         </div>
       </section>
 
-      <!-- Download -->
+      <!-- Download placeholder — the real installer link replaces this once
+           the first GitHub Release is cut on densanon-devs/densa-deck and
+           Stripe checkout is wired. Until then, no download button — we'd
+           rather a visitor see "Coming Soon" than click a dead link. -->
       <section class="section-divider download-section" id="download">
-        <div class="download-badge">Windows</div>
+        <div class="download-badge" style="background:var(--color-text-muted);color:#000;">Coming Soon</div>
         <h2 class="section-title">Get <span>Densa Deck</span></h2>
-        <p>Download the Windows binary. No Python, no install, just unzip and run. Activate Pro with your license key after purchase.</p>
-        <a href="https://github.com/Densanon-devs/densanon-toolkit/releases/latest/download/Densa-Deck-Setup.zip" class="mtg-btn mtg-btn-primary" id="download-btn">Download Free</a>
-        <p class="download-details">
-          <span id="app-version"></span>~35 MB &middot; Windows 10+ &middot; Runs locally, no internet needed after first sync
+        <p>
+          The Windows installer drops as soon as Stripe checkout and the
+          code-signed installer are in place. Pre-launch pricing is locked at
+          <strong>$24.99 one-time</strong> with lifetime updates; no
+          subscription, no account, all analysis runs locally.
         </p>
-        <p id="download-count"></p>
-        <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--color-border);">
-          <div class="download-badge" style="background:var(--color-text-muted);">Mac / Linux</div>
-          <p style="color:var(--color-text-muted);margin-top:8px;font-size:0.9rem;">
-            Coming soon. Build from source in the meantime — see the <a href="https://github.com/densanon-devs/mtg-deck-engine">GitHub repo</a>.
-          </p>
-        </div>
+        <p class="download-details">
+          Windows 10+ at launch &middot; macOS + Linux tracked after v1.0 &middot; Runs 100% offline after first sync
+        </p>
+        <p class="download-details" style="margin-top:20px;">
+          <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline" style="display:inline-block">Try the free browser tools now</a>
+        </p>
       </section>
 
       <!-- Legal -->
@@ -419,49 +469,12 @@
 
   <script src="js/page-consistency.js"></script>
   <script>
-    initPage({ depth: 0, title: 'Densa Deck Pro — Desktop Deck Analysis' });
+    initPage({ depth: 0, title: 'Densa Deck Pro — Coming Soon' });
 
-    // Version display
-    fetch('densa-deck-version.json')
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        var el = document.getElementById('app-version');
-        if (el && data.version) el.textContent = 'v' + data.version + ' \u00B7 ';
-      })
-      .catch(function () {});
-
-    // Download counter
-    (function () {
-      var countEl = document.getElementById('download-count');
-      var CACHE_KEY = 'mtg_engine_dl_count';
-      var CACHE_TTL = 3600000;
-
-      function show(count) {
-        if (count > 0) countEl.textContent = count.toLocaleString() + ' downloads';
-      }
-
-      var cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-      if (cached) show(cached.count);
-
-      if (!cached || Date.now() - cached.ts > CACHE_TTL) {
-        fetch('https://api.github.com/repos/densanon-devs/densanon-toolkit/releases')
-          .then(function (r) { return r.json(); })
-          .then(function (releases) {
-            if (!Array.isArray(releases)) return;
-            var total = 0;
-            releases.forEach(function (release) {
-              release.assets.forEach(function (asset) {
-                if (asset.name && asset.name.indexOf("Densa-Deck") === 0) {
-                  total += asset.download_count;
-                }
-              });
-            });
-            localStorage.setItem(CACHE_KEY, JSON.stringify({ count: total, ts: Date.now() }));
-            show(total);
-          })
-          .catch(function () {});
-      }
-    })();
+    // Version display + download counter intentionally removed while the
+    // product is pre-launch: there's no release to query and no version
+    // to show. Both will come back once the first GitHub Release exists
+    // on densanon-devs/densa-deck and the Stripe checkout link is live.
   </script>
 </body>
 </html>
