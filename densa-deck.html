@@ -559,14 +559,19 @@
       }
 
       function findInstallerAsset(release) {
+        // Prefer the signed installer (.exe) when it exists; fall back to the
+        // portable ZIP that v0.1.0 ships while the Inno Setup installer is
+        // still being set up. Both are recognized so the launch state flips
+        // on either asset type.
         if (!release || !Array.isArray(release.assets)) return null;
+        var exe = null, zip = null;
         for (var i = 0; i < release.assets.length; i++) {
           var a = release.assets[i];
-          if (a.name && a.name.indexOf('Densa-Deck-Setup') === 0 && /\.exe$/i.test(a.name)) {
-            return a;
-          }
+          if (!a.name) continue;
+          if (/^Densa-Deck-Setup.*\.exe$/i.test(a.name)) exe = a;
+          else if (/^Densa-Deck.*\.zip$/i.test(a.name)) zip = a;
         }
-        return null;
+        return exe || zip;
       }
 
       function applyCache() {

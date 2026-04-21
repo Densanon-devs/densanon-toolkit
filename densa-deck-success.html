@@ -187,16 +187,36 @@
           <div class="instructions">
             <h3>How to activate</h3>
             <ol>
-              <li>Download Densa Deck for Windows (link above)</li>
-              <li>Unzip the archive anywhere on your machine</li>
-              <li>Open a terminal in the extracted folder</li>
-              <li>Run: <code>densa-deck license activate YOUR-KEY</code></li>
-              <li>Verify with <code>densa-deck info</code> — should show "Tier: Pro"</li>
-              <li>All Pro features are now unlocked!</li>
+              <li>Download Densa Deck for Windows (link above) — v0.1.0 ships as a portable ZIP.</li>
+              <li>Extract the ZIP anywhere convenient (Documents, Desktop, etc.).</li>
+              <li>Inside the extracted <code>densa-deck\</code> folder, double-click <code>densa-deck.exe</code>. The app launches directly — no install step.</li>
+              <li>In the app, open <strong>Settings &rarr; Activate Pro license</strong>.</li>
+              <li>Paste your key (above) and click <strong>Activate</strong>.</li>
+              <li>The tier badge in the top-right should flip to <strong>Pro</strong>. Save, Goldfish, Gauntlet, and Coach now unlock.</li>
             </ol>
             <p class="save-warning">
               <strong>Save this key!</strong> It can be re-derived from your Stripe receipt if needed,
               but it's easier to bookmark this page or copy the key to a password manager now.
+            </p>
+            <p class="save-warning" style="margin-top:10px;background:rgba(74,144,226,0.08);border-left-color:var(--color-accent);">
+              <strong>Note:</strong> v0.1.0 is the portable ZIP release &mdash; double-click <code>densa-deck.exe</code> to launch. The one-click Windows installer (with Start Menu + Desktop shortcuts) ships in v0.1.1. You can use your license key with both.
+            </p>
+          </div>
+
+          <div class="instructions" style="margin-top:16px;">
+            <h3>&#9888;&#65039; If Windows shows a security warning</h3>
+            <p style="color:var(--color-text-muted);margin:0 0 8px;">
+              Windows SmartScreen may show a blue <em>"Microsoft Defender SmartScreen prevented an unrecognized app from starting"</em> dialog when you run the installer. This happens because Densa Deck isn't yet signed with a paid code-signing certificate &mdash; we're adding one once sales volume supports it.
+            </p>
+            <p style="color:var(--color-text-muted);margin:0 0 8px;">
+              <strong>To continue:</strong> click <strong>More info</strong> at the top of the dialog, then <strong>Run anyway</strong>. The installer is safe; you can verify the file's SHA-256 hash against the one published on the <a href="https://github.com/densanon-devs/densa-deck/releases/latest" style="color:var(--color-accent-green);">GitHub release page</a>.
+            </p>
+          </div>
+
+          <div class="instructions" style="margin-top:16px;">
+            <h3>If the download button leads to a "Coming Soon" page</h3>
+            <p style="color:var(--color-text-muted);margin:0;">
+              The public release is still being packaged. Your license key is already valid and will work as soon as the installer ships &mdash; save the key above, and either bookmark this page or email a copy to yourself. Follow-up will include a direct download link. If it's been more than 48 hours, contact <a href="mailto:admin@densanon.com" style="color:var(--color-accent-green);">admin@densanon.com</a> with your Stripe receipt.
             </p>
           </div>
         </div>
