@@ -431,6 +431,17 @@
               <li class="included">Lifetime updates</li>
             </ul>
             <span class="mtg-btn mtg-btn-disabled" aria-disabled="true" id="buy-pro-btn" title="Checkout opens at launch">Buy Pro — Coming Soon</span>
+            <!-- Internal test path — reveals a Stripe test-mode checkout
+                 button when the page URL has `?test=1`. Lets you drive the
+                 full buy -> redirect -> activate loop end-to-end before
+                 publishing the live link. Real visitors without the query
+                 param see only the disabled "Coming Soon" span above. -->
+            <a id="stripe-test-link"
+               href="https://buy.stripe.com/test_3cI7sN9XF77Le5zfR1dMI01"
+               class="mtg-btn mtg-btn-outline"
+               style="display:none; margin-top:10px; border-color:#f0c040; color:#f0c040;">
+               Test checkout (Stripe test mode)
+            </a>
           </div>
         </div>
       </section>
@@ -475,6 +486,26 @@
     // product is pre-launch: there's no release to query and no version
     // to show. Both will come back once the first GitHub Release exists
     // on densanon-devs/densa-deck and the Stripe checkout link is live.
+
+    // Internal test-mode toggle: visit with `?test=1` to reveal the
+    // Stripe test checkout button. Without the flag, regular visitors
+    // only see the "Coming Soon" state. Intentionally undocumented on
+    // the page itself — this is a dev convenience, not a public path.
+    (function () {
+      if (new URLSearchParams(window.location.search).has('test')) {
+        var t = document.getElementById('stripe-test-link');
+        if (t) t.style.display = 'inline-block';
+        var body = document.querySelector('.coming-soon-banner');
+        if (body) {
+          body.innerHTML = '<strong>Stripe Test Mode.</strong> ' +
+            'The checkout button below opens the test-mode Payment Link. ' +
+            'Use card 4242 4242 4242 4242. Nothing is charged.';
+          body.style.background = '#1e2a13';
+          body.style.color = '#8fe388';
+          body.style.borderBottomColor = '#20482a';
+        }
+      }
+    })();
   </script>
 </body>
 </html>
