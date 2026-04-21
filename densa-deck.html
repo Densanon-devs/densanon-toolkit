@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MTG Deck Engine Pro – Desktop Deck Analysis &amp; Simulation | Densanon Toolkit</title>
+  <title>Densa Deck Pro – Desktop Deck Analysis &amp; Simulation | Densanon Toolkit</title>
   <meta name="description" content="Complete Magic: The Gathering deck laboratory. Goldfish simulation, matchup gauntlet, version tracking, power level rating. One-time $24.99. Free tools included.">
   <link rel="stylesheet" href="css/style.css">
   <style>
@@ -260,7 +260,7 @@
     <div class="container">
       <!-- Hero -->
       <section class="mtg-hero">
-        <h1>MTG Deck <span>Engine Pro</span></h1>
+        <h1>Densa <span>Deck Pro</span></h1>
         <p class="subtitle">
           A complete deck laboratory for Magic: The Gathering. Goldfish testing, matchup
           gauntlet, version tracking, power level rating, and more — runs locally,
@@ -391,9 +391,9 @@
       <!-- Download -->
       <section class="section-divider download-section" id="download">
         <div class="download-badge">Windows</div>
-        <h2 class="section-title">Get MTG Deck <span>Engine</span></h2>
+        <h2 class="section-title">Get <span>Densa Deck</span></h2>
         <p>Download the Windows binary. No Python, no install, just unzip and run. Activate Pro with your license key after purchase.</p>
-        <a href="https://github.com/Densanon-devs/densanon-toolkit/releases/latest/download/mtg-engine-windows.zip" class="mtg-btn mtg-btn-primary" id="download-btn">Download Free</a>
+        <a href="https://github.com/Densanon-devs/densanon-toolkit/releases/latest/download/Densa-Deck-Setup.zip" class="mtg-btn mtg-btn-primary" id="download-btn">Download Free</a>
         <p class="download-details">
           <span id="app-version"></span>~35 MB &middot; Windows 10+ &middot; Runs locally, no internet needed after first sync
         </p>
@@ -409,7 +409,7 @@
       <!-- Legal -->
       <section class="legal-footer">
         <p>
-          MTG Deck Engine is not affiliated with or endorsed by Wizards of the Coast.
+          Densa Deck is not affiliated with or endorsed by Wizards of the Coast.
           Magic: The Gathering and its logos are trademarks of Wizards of the Coast LLC.
           Card data provided by <a href="https://scryfall.com">Scryfall</a>.
         </p>
@@ -419,10 +419,10 @@
 
   <script src="js/page-consistency.js"></script>
   <script>
-    initPage({ depth: 0, title: 'MTG Deck Engine Pro — Desktop Deck Analysis' });
+    initPage({ depth: 0, title: 'Densa Deck Pro — Desktop Deck Analysis' });
 
     // Version display
-    fetch('mtg-engine-version.json')
+    fetch('densa-deck-version.json')
       .then(function (r) { return r.json(); })
       .then(function (data) {
         var el = document.getElementById('app-version');
@@ -451,7 +451,7 @@
             var total = 0;
             releases.forEach(function (release) {
               release.assets.forEach(function (asset) {
-                if (asset.name && asset.name.indexOf('mtg-engine') === 0) {
+                if (asset.name && asset.name.indexOf("Densa-Deck") === 0) {
                   total += asset.download_count;
                 }
               });

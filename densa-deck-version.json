@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
   "releaseDate": "2026-04-12",
-  "downloadUrl": "https://github.com/Densanon-devs/densanon-toolkit/releases/latest/download/mtg-engine-windows.zip",
+  "downloadUrl": "https://github.com/Densanon-devs/densanon-toolkit/releases/latest/download/Densa-Deck-Setup.zip",
   "changelog": [
     "Initial release",
     "Static analysis with mana curve, color sources, scoring, recommendations",

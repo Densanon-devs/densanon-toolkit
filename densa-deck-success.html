@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payment Successful — MTG Deck Engine Pro | Densanon Toolkit</title>
-  <meta name="description" content="Your MTG Deck Engine Pro license key is ready.">
+  <title>Payment Successful — Densa Deck Pro | Densanon Toolkit</title>
+  <meta name="description" content="Your Densa Deck Pro license key is ready.">
   <meta name="robots" content="noindex, nofollow">
   <link rel="stylesheet" href="css/style.css">
   <style>
@@ -163,7 +163,7 @@
       <section class="success-hero">
         <h1>Payment <span>Successful</span></h1>
         <p class="subtitle">
-          Thank you for purchasing MTG Deck Engine Pro! Your license key is below.
+          Thank you for purchasing Densa Deck Pro! Your license key is below.
         </p>
 
         <!-- Loading -->
@@ -181,17 +181,17 @@
           </div>
 
           <div class="download-cta">
-            <a href="mtg-engine.html#download" class="download-btn">Download MTG Deck Engine</a>
+            <a href="densa-deck.html#download" class="download-btn">Download Densa Deck</a>
           </div>
 
           <div class="instructions">
             <h3>How to activate</h3>
             <ol>
-              <li>Download MTG Deck Engine for Windows (link above)</li>
+              <li>Download Densa Deck for Windows (link above)</li>
               <li>Unzip the archive anywhere on your machine</li>
               <li>Open a terminal in the extracted folder</li>
-              <li>Run: <code>mtg-engine license activate YOUR-KEY</code></li>
-              <li>Verify with <code>mtg-engine info</code> — should show "Tier: Pro"</li>
+              <li>Run: <code>densa-deck license activate YOUR-KEY</code></li>
+              <li>Verify with <code>densa-deck info</code> — should show "Tier: Pro"</li>
               <li>All Pro features are now unlocked!</li>
             </ol>
             <p class="save-warning">
@@ -217,14 +217,14 @@
 
   <script src="js/page-consistency.js"></script>
   <script>
-    initPage({ depth: 0, title: 'Payment Successful — MTG Deck Engine Pro' });
+    initPage({ depth: 0, title: 'Payment Successful — Densa Deck Pro' });
   </script>
   <script>
     (function () {
       // CRITICAL: This salt and algorithm must match exactly with
       // src/mtg_deck_engine/licensing.py in the densanon-devs/mtg-deck-engine repo.
       // Changing the salt or hash function will break all existing license keys.
-      var LICENSE_SALT = 'MTG-Deck-Engine-pro-v1';
+      var LICENSE_SALT = 'Densa-Deck-pro-v1';
 
       function hashKey(key) {
         var input = LICENSE_SALT + ':' + key.trim().toLowerCase();
@@ -246,7 +246,7 @@
         var checkHash = hashKey(checkInput);
         while (checkHash.length < 4) checkHash += '0';
         var p3 = checkHash.slice(0, 4).toUpperCase();
-        return 'MTG-' + p1 + '-' + p2 + '-' + p3;
+        return 'DD-' + p1 + '-' + p2 + '-' + p3;
       }
 
       var params = new URLSearchParams(window.location.search);
