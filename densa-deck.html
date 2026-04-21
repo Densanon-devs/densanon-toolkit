@@ -430,12 +430,19 @@
               <li class="included">Mulligan practice</li>
               <li class="included">Lifetime updates</li>
             </ul>
-            <span class="mtg-btn mtg-btn-disabled" aria-disabled="true" id="buy-pro-btn" title="Checkout opens at launch">Buy Pro — Coming Soon</span>
-            <!-- Internal test path — reveals a Stripe test-mode checkout
-                 button when the page URL has `?test=1`. Lets you drive the
-                 full buy -> redirect -> activate loop end-to-end before
-                 publishing the live link. Real visitors without the query
-                 param see only the disabled "Coming Soon" span above. -->
+            <!-- Buy button has two states, flipped by JS after the
+                 GitHub release check below runs. `#buy-pro-disabled` shows
+                 by default (before the check); `#buy-pro-live` replaces it
+                 when a valid installer release exists. -->
+            <span class="mtg-btn mtg-btn-disabled" aria-disabled="true" id="buy-pro-disabled" title="Checkout opens when the installer is released">Buy Pro — Coming Soon</span>
+            <a id="buy-pro-live"
+               href="https://buy.stripe.com/7sYdRb2vG8Psd5LbH79sk02"
+               class="mtg-btn mtg-btn-primary"
+               style="display:none;">Buy Pro License — $24.99</a>
+            <!-- Internal test path kept for QA via ?test=1 — routes to the
+                 Stripe test-mode Payment Link even before the public release
+                 exists, so the buy -> redirect -> activate loop stays
+                 testable without pushing a release. -->
             <a id="stripe-test-link"
                href="https://buy.stripe.com/test_3cI7sN9XF77Le5zfR1dMI01"
                class="mtg-btn mtg-btn-outline"
@@ -446,25 +453,45 @@
         </div>
       </section>
 
-      <!-- Download placeholder — the real installer link replaces this once
-           the first GitHub Release is cut on densanon-devs/densa-deck and
-           Stripe checkout is wired. Until then, no download button — we'd
-           rather a visitor see "Coming Soon" than click a dead link. -->
+      <!-- Download section: two states flipped by the release-check JS below.
+           `#download-pre-release` shows before a release exists; the
+           `#download-live` block reveals itself when the GitHub API returns
+           a valid installer asset. Both states carry the live Stripe link
+           as an upstream hook, but the download button only lights up when
+           there's actually something to download. -->
       <section class="section-divider download-section" id="download">
-        <div class="download-badge" style="background:var(--color-text-muted);color:#000;">Coming Soon</div>
-        <h2 class="section-title">Get <span>Densa Deck</span></h2>
-        <p>
-          The Windows installer drops as soon as Stripe checkout and the
-          code-signed installer are in place. Pre-launch pricing is locked at
-          <strong>$24.99 one-time</strong> with lifetime updates; no
-          subscription, no account, all analysis runs locally.
-        </p>
-        <p class="download-details">
-          Windows 10+ at launch &middot; macOS + Linux tracked after v1.0 &middot; Runs 100% offline after first sync
-        </p>
-        <p class="download-details" style="margin-top:20px;">
-          <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline" style="display:inline-block">Try the free browser tools now</a>
-        </p>
+        <div id="download-pre-release">
+          <div class="download-badge" style="background:var(--color-text-muted);color:#000;">Coming Soon</div>
+          <h2 class="section-title">Get <span>Densa Deck</span></h2>
+          <p>
+            The Windows installer is in final packaging. Pricing is locked at
+            <strong>$24.99 one-time</strong> with lifetime updates; no
+            subscription, no account, all analysis runs locally.
+          </p>
+          <p class="download-details">
+            Windows 10+ at launch &middot; macOS + Linux tracked after v1.0 &middot; Runs 100% offline after first sync
+          </p>
+          <p class="download-details" style="margin-top:20px;">
+            <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline" style="display:inline-block">Try the free browser tools now</a>
+          </p>
+        </div>
+
+        <div id="download-live" style="display:none;">
+          <div class="download-badge">Windows</div>
+          <h2 class="section-title">Get <span>Densa Deck</span></h2>
+          <p>Windows installer. No Python, no extra setup — double-click to install. Activate Pro with your license key from Settings after first launch.</p>
+          <a id="download-btn" href="#" class="mtg-btn mtg-btn-primary">Download for Windows</a>
+          <p class="download-details">
+            <span id="app-version"></span>Windows 10+ &middot; Runs locally, no internet needed after first sync
+          </p>
+          <p id="download-count"></p>
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--color-border);">
+            <div class="download-badge" style="background:var(--color-text-muted);">Mac / Linux</div>
+            <p style="color:var(--color-text-muted);margin-top:8px;font-size:0.9rem;">
+              Coming soon. Build from source in the meantime — see the <a href="https://github.com/densanon-devs/densa-deck">GitHub repo</a>.
+            </p>
+          </div>
+        </div>
       </section>
 
       <!-- Legal -->
@@ -480,17 +507,107 @@
 
   <script src="js/page-consistency.js"></script>
   <script>
-    initPage({ depth: 0, title: 'Densa Deck Pro — Coming Soon' });
+    initPage({ depth: 0, title: 'Densa Deck Pro' });
 
-    // Version display + download counter intentionally removed while the
-    // product is pre-launch: there's no release to query and no version
-    // to show. Both will come back once the first GitHub Release exists
-    // on densanon-devs/densa-deck and the Stripe checkout link is live.
+    // Release availability check — drives the launch state of the page.
+    // Hits the GitHub Releases API on densanon-devs/densa-deck and looks
+    // for a Densa-Deck-Setup-*.exe asset. When one exists we flip the
+    // Buy + Download buttons into live mode; otherwise we keep the
+    // Coming Soon banner + disabled buttons. Result is cached 10 min in
+    // localStorage to keep page loads snappy (and not chew through
+    // GitHub's unauth'd 60/hr rate limit for frequent visitors).
+    (function () {
+      var CACHE_KEY = 'densa_deck_release';
+      var CACHE_TTL = 10 * 60 * 1000;
 
-    // Internal test-mode toggle: visit with `?test=1` to reveal the
-    // Stripe test checkout button. Without the flag, regular visitors
-    // only see the "Coming Soon" state. Intentionally undocumented on
-    // the page itself — this is a dev convenience, not a public path.
+      function flipToLive(asset, tagName) {
+        var banner = document.querySelector('.coming-soon-banner');
+        if (banner) banner.style.display = 'none';
+
+        var heroBadge = document.querySelector('.cs-badge');
+        if (heroBadge) heroBadge.style.display = 'none';
+
+        var heroDownload = document.querySelector('.mtg-hero .mtg-btn-disabled');
+        if (heroDownload) {
+          heroDownload.outerHTML = '<a href="#download" class="mtg-btn mtg-btn-primary">Download for Windows</a>';
+        }
+
+        var buyDisabled = document.getElementById('buy-pro-disabled');
+        var buyLive = document.getElementById('buy-pro-live');
+        if (buyDisabled) buyDisabled.style.display = 'none';
+        if (buyLive) buyLive.style.display = 'inline-block';
+
+        var dlPre = document.getElementById('download-pre-release');
+        var dlLive = document.getElementById('download-live');
+        if (dlPre) dlPre.style.display = 'none';
+        if (dlLive) dlLive.style.display = 'block';
+
+        var dlBtn = document.getElementById('download-btn');
+        if (dlBtn && asset && asset.browser_download_url) {
+          dlBtn.setAttribute('href', asset.browser_download_url);
+        }
+
+        var versionEl = document.getElementById('app-version');
+        if (versionEl && tagName) {
+          versionEl.textContent = tagName.replace(/^v/, 'v') + ' \u00B7 ';
+        }
+
+        var countEl = document.getElementById('download-count');
+        if (countEl && asset && typeof asset.download_count === 'number' && asset.download_count > 0) {
+          countEl.textContent = asset.download_count.toLocaleString() + ' downloads';
+        }
+      }
+
+      function findInstallerAsset(release) {
+        if (!release || !Array.isArray(release.assets)) return null;
+        for (var i = 0; i < release.assets.length; i++) {
+          var a = release.assets[i];
+          if (a.name && a.name.indexOf('Densa-Deck-Setup') === 0 && /\.exe$/i.test(a.name)) {
+            return a;
+          }
+        }
+        return null;
+      }
+
+      function applyCache() {
+        var raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return false;
+        try {
+          var cached = JSON.parse(raw);
+          if (!cached || !cached.ts) return false;
+          if (cached.asset) flipToLive(cached.asset, cached.tag);
+          return Date.now() - cached.ts < CACHE_TTL;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function fetchFresh() {
+        fetch('https://api.github.com/repos/densanon-devs/densa-deck/releases/latest')
+          .then(function (r) {
+            if (!r.ok) return null;  // 404 when no releases yet — stay in Coming Soon
+            return r.json();
+          })
+          .then(function (release) {
+            var asset = findInstallerAsset(release);
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+              asset: asset,
+              tag: release && release.tag_name,
+              ts: Date.now(),
+            }));
+            if (asset) flipToLive(asset, release && release.tag_name);
+          })
+          .catch(function () { /* offline or API down — stay in Coming Soon */ });
+      }
+
+      var cacheIsFresh = applyCache();
+      if (!cacheIsFresh) fetchFresh();
+    })();
+
+    // Internal QA test-mode toggle — visit with `?test=1` to reveal the
+    // Stripe test-mode checkout button and swap the banner to a green
+    // test-mode notice. Works independently of the release check so you
+    // can exercise the buy -> redirect -> activate loop before shipping.
     (function () {
       if (new URLSearchParams(window.location.search).has('test')) {
         var t = document.getElementById('stripe-test-link');
@@ -503,6 +620,7 @@
           body.style.background = '#1e2a13';
           body.style.color = '#8fe388';
           body.style.borderBottomColor = '#20482a';
+          body.style.display = 'block';
         }
       }
     })();
