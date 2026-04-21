@@ -1,16 +1,17 @@
 {
   "version": "0.1.0",
-  "releaseDate": "2026-04-12",
-  "downloadUrl": "https://github.com/Densanon-devs/densanon-toolkit/releases/latest/download/Densa-Deck-Setup.zip",
+  "releaseDate": "2026-04-19",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.0.exe",
   "changelog": [
-    "Initial release",
-    "Static analysis with mana curve, color sources, scoring, recommendations",
-    "Goldfish simulation with mulligan AI and objective tests",
-    "Matchup gauntlet against 11 archetype profiles",
-    "Version tracking and trend analysis",
-    "Power level rating with breakdown",
-    "Castability analysis and staples checker",
-    "Report export (JSON, Markdown, HTML)",
-    "Mulligan practice mode"
+    "Initial Densa Deck release",
+    "Free tier: deck parser, static analysis, mana curve, role counts, rule-engine recommendations",
+    "Pro tier: power level 1-10 with 6-axis breakdown, castability analysis, staples checker",
+    "Pro simulations: goldfish (thousands of solo games) and matchup gauntlet (11 archetypes)",
+    "Pro deck lab: version tracking, per-version diff, score deltas over time",
+    "Pro AI analyst: executive summary + cut suggestions, hallucination-proof via tag-constrained emission",
+    "Pro AI coach: conversational REPL bound to your saved decks",
+    "Report export in JSON, Markdown, and HTML",
+    "Mulligan practice mode",
+    "Desktop app with first-run tour, in-app setup (card database + analyst model download), one-click license activation via densa-deck:// deep link"
   ]
 }
