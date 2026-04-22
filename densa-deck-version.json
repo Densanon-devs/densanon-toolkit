@@ -1,10 +1,11 @@
 {
-  "version": "0.1.2",
+  "version": "0.1.3",
   "releaseDate": "2026-04-22",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.2.exe",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.3.exe",
   "changelog": [
-    "Fix: optional AI analyst model now loads after download (llama-cpp-python is bundled in the desktop build)",
-    "Fix: Settings status card no longer shows 'Not installed' when the GGUF is present but the runtime can't load it",
-    "Size bump: installer is now ~40 MB (was 23 MB) because the llama.cpp runtime DLLs ship inside the bundle"
+    "Fix: the optional AI analyst model now actually loads after download",
+    "Under the hood: numpy and llama-cpp-python's other runtime deps (jinja2, diskcache, typing_extensions, markupsafe) are now bundled so `import llama_cpp` succeeds in the frozen build",
+    "CLI: `densa-deck analyst show` now reports llama-cpp-python import status alongside the model-file check",
+    "Size bump: installer ~50 MB, ZIP ~60 MB (numpy is ~50 MB on its own)"
   ]
 }
