@@ -1,9 +1,10 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "releaseDate": "2026-04-22",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.1.exe",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.2.exe",
   "changelog": [
-    "Fix: card database install no longer crashes with 'SQLite objects created in a thread' on first-run setup",
-    "Under the hood: CardDatabase and VersionStore now use thread-local SQLite connections so background ingests and UI queries don't stomp on each other"
+    "Fix: optional AI analyst model now loads after download (llama-cpp-python is bundled in the desktop build)",
+    "Fix: Settings status card no longer shows 'Not installed' when the GGUF is present but the runtime can't load it",
+    "Size bump: installer is now ~40 MB (was 23 MB) because the llama.cpp runtime DLLs ship inside the bundle"
   ]
 }
