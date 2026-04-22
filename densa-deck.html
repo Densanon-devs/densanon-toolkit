@@ -343,46 +343,6 @@
       color: var(--color-primary);
     }
 
-    /* Coming-soon gate — shown as a page-wide banner + badges while the
-       paid product is pre-launch. Replaces dead-end CTAs with clear
-       "not yet" signals so visitors don't click into broken flows. */
-    .coming-soon-banner {
-      background: #2a1e13;
-      color: #f0c040;
-      border-bottom: 1px solid #4a3820;
-      padding: 12px 24px;
-      text-align: center;
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-    .coming-soon-banner strong {
-      color: #ffd700;
-    }
-
-    .cs-badge {
-      display: inline-block;
-      background: #f0c040;
-      color: #000;
-      padding: 4px 14px;
-      border-radius: 12px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 16px;
-    }
-
-    .mtg-btn.mtg-btn-disabled {
-      background: var(--color-border);
-      color: var(--color-text-muted);
-      cursor: not-allowed;
-      pointer-events: none;
-      opacity: 0.8;
-    }
-    .mtg-btn.mtg-btn-disabled:hover {
-      transform: none;
-    }
-
     /* FAQ <details> styling: hide the default triangle, add our own
        caret so it matches the dark theme. Open state gets a subtle left
        border highlight to signal "expanded". */
@@ -410,18 +370,10 @@
 </head>
 <body>
   <main>
-    <!-- Hard "Coming Soon" notice. Shown until Stripe checkout + first
-         release are live. Visible at the top of every scroll position so
-         visitors don't miss it on their way down to the features/pricing. -->
-    <div class="coming-soon-banner">
-      <strong>Coming Soon.</strong> Densa Deck Pro is in final polish — the free browser tools below are live today; the paid desktop app launches shortly. Preview the feature set on this page, then bookmark and check back.
-    </div>
-
     <div class="container">
       <!-- Hero -->
       <section class="mtg-hero">
         <img class="brand-mark" src="images/densa-deck-logo.png" alt="Densa Deck">
-        <span class="cs-badge">Launching Soon</span>
         <h1>Densa <span>Deck Pro</span></h1>
         <p class="subtitle">
           The complete deck laboratory for Magic: The Gathering. Goldfish simulation,
@@ -430,10 +382,10 @@
           Runs offline forever.</strong>
         </p>
         <div class="mtg-cta-row">
-          <span class="mtg-btn mtg-btn-disabled" aria-disabled="true" title="Desktop download will be available at launch">Download — Coming Soon</span>
-          <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline">Try Free Tools Now</a>
+          <a href="#pricing" class="mtg-btn mtg-btn-primary">Get Densa Deck Pro &mdash; $39.99 launch</a>
+          <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline">Try Free Tools</a>
         </div>
-        <p class="mtg-note">Free browser tools available today &middot; Pro desktop app launching after Stripe + installer signing go live</p>
+        <p class="mtg-note">Windows 10+ &middot; One-time purchase &middot; Runs fully offline after first sync</p>
         <p class="mtg-note" style="margin-top:16px;">
           <a href="#requirements" style="color:var(--color-text-muted);margin:0 10px;">Requirements</a>
           &middot;
@@ -558,15 +510,9 @@
               <li class="included">Mulligan practice</li>
               <li class="included">Lifetime updates</li>
             </ul>
-            <!-- Buy button has two states, flipped by JS after the
-                 GitHub release check below runs. `#buy-pro-disabled` shows
-                 by default (before the check); `#buy-pro-live` replaces it
-                 when a valid installer release exists. -->
-            <span class="mtg-btn mtg-btn-disabled" aria-disabled="true" id="buy-pro-disabled" title="Checkout opens when the installer is released">Buy Pro — Coming Soon</span>
             <a id="buy-pro-live"
                href="https://buy.stripe.com/cNieVffis2r48Pv6mN9sk04"
-               class="mtg-btn mtg-btn-primary"
-               style="display:none;">Buy Pro License &mdash; $39.99</a>
+               class="mtg-btn mtg-btn-primary">Buy Pro License &mdash; $39.99</a>
             <!-- Internal test path kept for QA via ?test=1 — routes to the
                  Stripe test-mode Payment Link even before the public release
                  exists, so the buy -> redirect -> activate loop stays
@@ -655,44 +601,27 @@
         </p>
       </section>
 
-      <!-- Download section: two states flipped by the release-check JS below.
-           `#download-pre-release` shows before a release exists; the
-           `#download-live` block reveals itself when the GitHub API returns
-           a valid installer asset. Both states carry the live Stripe link
-           as an upstream hook, but the download button only lights up when
-           there's actually something to download. -->
+      <!-- Download section: always live now that v0.1.0 is out. The JS
+           below enhances the download button with the freshest asset URL
+           + version + download count from the GitHub Releases API, but the
+           hard-coded direct URL works as a fallback if the API is down. -->
       <section class="section-divider download-section" id="download">
-        <div id="download-pre-release">
-          <div class="download-badge" style="background:var(--color-text-muted);color:#000;">Coming Soon</div>
-          <h2 class="section-title">Get <span>Densa Deck</span></h2>
-          <p>
-            The Windows installer is in final packaging. Pricing is
-            <strong>$49.99 one-time</strong> (<strong>$39.99 launch week</strong> with code <code>LAUNCH</code> through May 1) with lifetime updates; no
-            subscription, no account, all analysis runs locally.
+        <div class="download-badge">Windows</div>
+        <h2 class="section-title">Get <span>Densa Deck</span></h2>
+        <p>Windows installer. No Python, no extra setup &mdash; double-click to install. Activate Pro with your license key from Settings after first launch. A portable ZIP is also available on the release page for users who prefer no-installer distribution.</p>
+        <a id="download-btn" href="https://github.com/densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.0.exe" class="mtg-btn mtg-btn-primary">Download for Windows</a>
+        <p class="download-details">
+          <span id="app-version"></span>Windows 10+ &middot; Runs locally, no internet needed after first sync
+        </p>
+        <p id="download-count"></p>
+        <p class="download-details" style="margin-top:14px;font-size:0.82rem;">
+          <a href="https://github.com/densanon-devs/densa-deck/releases/latest" style="color:var(--color-text-muted);">All downloads (ZIP + installer)</a>
+        </p>
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--color-border);">
+          <div class="download-badge" style="background:var(--color-text-muted);">Mac / Linux</div>
+          <p style="color:var(--color-text-muted);margin-top:8px;font-size:0.9rem;">
+            Planned for a later release. Build from source in the meantime &mdash; see the <a href="https://github.com/densanon-devs/densa-deck">GitHub repo</a>.
           </p>
-          <p class="download-details">
-            Windows 10+ at launch &middot; macOS + Linux tracked after v1.0 &middot; Runs 100% offline after first sync
-          </p>
-          <p class="download-details" style="margin-top:20px;">
-            <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline" style="display:inline-block">Try the free browser tools now</a>
-          </p>
-        </div>
-
-        <div id="download-live" style="display:none;">
-          <div class="download-badge">Windows</div>
-          <h2 class="section-title">Get <span>Densa Deck</span></h2>
-          <p>Windows installer. No Python, no extra setup — double-click to install. Activate Pro with your license key from Settings after first launch.</p>
-          <a id="download-btn" href="#" class="mtg-btn mtg-btn-primary">Download for Windows</a>
-          <p class="download-details">
-            <span id="app-version"></span>Windows 10+ &middot; Runs locally, no internet needed after first sync
-          </p>
-          <p id="download-count"></p>
-          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--color-border);">
-            <div class="download-badge" style="background:var(--color-text-muted);">Mac / Linux</div>
-            <p style="color:var(--color-text-muted);margin-top:8px;font-size:0.9rem;">
-              Coming soon. Build from source in the meantime — see the <a href="https://github.com/densanon-devs/densa-deck">GitHub repo</a>.
-            </p>
-          </div>
         </div>
       </section>
 
@@ -842,39 +771,17 @@
   <script>
     initPage({ depth: 0, title: 'Densa Deck Pro' });
 
-    // Release availability check — drives the launch state of the page.
-    // Hits the GitHub Releases API on densanon-devs/densa-deck and looks
-    // for a Densa-Deck-Setup-*.exe asset. When one exists we flip the
-    // Buy + Download buttons into live mode; otherwise we keep the
-    // Coming Soon banner + disabled buttons. Result is cached 10 min in
-    // localStorage to keep page loads snappy (and not chew through
-    // GitHub's unauth'd 60/hr rate limit for frequent visitors).
+    // Release enhancement: the download button has a hard-coded direct URL
+    // that always works. This script just upgrades it with the freshest
+    // asset URL from the GitHub Releases API (so filename changes on new
+    // versions don't 404) and fills in the version + download count.
+    // Result cached 10 min in localStorage to keep page loads snappy and
+    // not chew through GitHub's 60/hr unauth'd rate limit for visitors.
     (function () {
       var CACHE_KEY = 'densa_deck_release';
       var CACHE_TTL = 10 * 60 * 1000;
 
-      function flipToLive(asset, tagName) {
-        var banner = document.querySelector('.coming-soon-banner');
-        if (banner) banner.style.display = 'none';
-
-        var heroBadge = document.querySelector('.cs-badge');
-        if (heroBadge) heroBadge.style.display = 'none';
-
-        var heroDownload = document.querySelector('.mtg-hero .mtg-btn-disabled');
-        if (heroDownload) {
-          heroDownload.outerHTML = '<a href="#download" class="mtg-btn mtg-btn-primary">Download for Windows</a>';
-        }
-
-        var buyDisabled = document.getElementById('buy-pro-disabled');
-        var buyLive = document.getElementById('buy-pro-live');
-        if (buyDisabled) buyDisabled.style.display = 'none';
-        if (buyLive) buyLive.style.display = 'inline-block';
-
-        var dlPre = document.getElementById('download-pre-release');
-        var dlLive = document.getElementById('download-live');
-        if (dlPre) dlPre.style.display = 'none';
-        if (dlLive) dlLive.style.display = 'block';
-
+      function apply(asset, tagName) {
         var dlBtn = document.getElementById('download-btn');
         if (dlBtn && asset && asset.browser_download_url) {
           dlBtn.setAttribute('href', asset.browser_download_url);
@@ -892,10 +799,7 @@
       }
 
       function findInstallerAsset(release) {
-        // Prefer the signed installer (.exe) when it exists; fall back to the
-        // portable ZIP that v0.1.0 ships while the Inno Setup installer is
-        // still being set up. Both are recognized so the launch state flips
-        // on either asset type.
+        // Prefer the installer (.exe); fall back to the portable ZIP.
         if (!release || !Array.isArray(release.assets)) return null;
         var exe = null, zip = null;
         for (var i = 0; i < release.assets.length; i++) {
@@ -913,7 +817,7 @@
         try {
           var cached = JSON.parse(raw);
           if (!cached || !cached.ts) return false;
-          if (cached.asset) flipToLive(cached.asset, cached.tag);
+          if (cached.asset) apply(cached.asset, cached.tag);
           return Date.now() - cached.ts < CACHE_TTL;
         } catch (e) {
           return false;
@@ -922,10 +826,7 @@
 
       function fetchFresh() {
         fetch('https://api.github.com/repos/densanon-devs/densa-deck/releases/latest')
-          .then(function (r) {
-            if (!r.ok) return null;  // 404 when no releases yet — stay in Coming Soon
-            return r.json();
-          })
+          .then(function (r) { return r.ok ? r.json() : null; })
           .then(function (release) {
             var asset = findInstallerAsset(release);
             localStorage.setItem(CACHE_KEY, JSON.stringify({
@@ -933,9 +834,9 @@
               tag: release && release.tag_name,
               ts: Date.now(),
             }));
-            if (asset) flipToLive(asset, release && release.tag_name);
+            if (asset) apply(asset, release && release.tag_name);
           })
-          .catch(function () { /* offline or API down — stay in Coming Soon */ });
+          .catch(function () { /* stale cache / hard-coded URL still works */ });
       }
 
       var cacheIsFresh = applyCache();
@@ -943,23 +844,12 @@
     })();
 
     // Internal QA test-mode toggle — visit with `?test=1` to reveal the
-    // Stripe test-mode checkout button and swap the banner to a green
-    // test-mode notice. Works independently of the release check so you
-    // can exercise the buy -> redirect -> activate loop before shipping.
+    // Stripe test-mode checkout button. Works alongside the live link so
+    // you can exercise the buy -> redirect -> activate loop without charging.
     (function () {
       if (new URLSearchParams(window.location.search).has('test')) {
         var t = document.getElementById('stripe-test-link');
         if (t) t.style.display = 'inline-block';
-        var body = document.querySelector('.coming-soon-banner');
-        if (body) {
-          body.innerHTML = '<strong>Stripe Test Mode.</strong> ' +
-            'The checkout button below opens the test-mode Payment Link. ' +
-            'Use card 4242 4242 4242 4242. Nothing is charged.';
-          body.style.background = '#1e2a13';
-          body.style.color = '#8fe388';
-          body.style.borderBottomColor = '#20482a';
-          body.style.display = 'block';
-        }
       }
     })();
   </script>
