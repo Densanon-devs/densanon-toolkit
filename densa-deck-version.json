@@ -1,15 +1,11 @@
 {
-  "version": "0.1.4",
-  "releaseDate": "2026-04-22",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.4.exe",
+  "version": "0.1.5",
+  "releaseDate": "2026-04-23",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.5.exe",
   "changelog": [
-    "Stability: card-DB ingest and analyst-pull progress updates now lock correctly so rapid polling can't raise a dictionary-changed-size error",
-    "Stability: closing the app mid-ingest/download no longer yanks the database out from under the writer — workers get signaled to abort and are joined with a 5s timeout",
-    "Coach: per-session turn lock prevents ask/reset/close from corrupting conversation history under rapid tab switching",
-    "License: license.key now writes atomically (crash mid-write can no longer force re-activation)",
-    "License: verify errors now tell you exactly which part looks off (prefix, length, unexpected chars, checksum) instead of a generic 'check for typos'",
-    "Recovery: corrupt coach_sessions.json or license.key are moved aside to *.corrupt-<timestamp>.bak with a breadcrumb in load-errors.log, and Settings surfaces a clear warning",
-    "Build: post-build smoke-test verifies llama-cpp-python actually imports in the frozen exe — prevents regressions of the analyst-runtime bug class",
-    "364 tests green (+14 new regression tests)"
+    "Fix: Universes-Within flavor names (Dracula reprints from Innistrad Crimson Vow, Warhammer 40K, Doctor Who, etc.) now resolve correctly when you paste a Moxfield Export -> Text decklist",
+    "New: three-pass deck resolver — canonical cards.name, then local card_aliases cache, then a one-time Scryfall fuzzy fallback that caches forever so the same deck re-imports offline next time",
+    "Also in: friendlier error message when Moxfield URL import is blocked by Cloudflare (v0.1.4); paste-the-text workaround documented in the product-page FAQ",
+    "371 tests green (+6 new covering the three-pass resolver and offline-graceful-degradation)"
   ]
 }
