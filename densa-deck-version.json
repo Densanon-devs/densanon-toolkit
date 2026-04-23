@@ -1,11 +1,15 @@
 {
-  "version": "0.1.3",
+  "version": "0.1.4",
   "releaseDate": "2026-04-22",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.3.exe",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.4.exe",
   "changelog": [
-    "Fix: the optional AI analyst model now actually loads after download",
-    "Under the hood: numpy and llama-cpp-python's other runtime deps (jinja2, diskcache, typing_extensions, markupsafe) are now bundled so `import llama_cpp` succeeds in the frozen build",
-    "CLI: `densa-deck analyst show` now reports llama-cpp-python import status alongside the model-file check",
-    "Size bump: installer ~50 MB, ZIP ~60 MB (numpy is ~50 MB on its own)"
+    "Stability: card-DB ingest and analyst-pull progress updates now lock correctly so rapid polling can't raise a dictionary-changed-size error",
+    "Stability: closing the app mid-ingest/download no longer yanks the database out from under the writer — workers get signaled to abort and are joined with a 5s timeout",
+    "Coach: per-session turn lock prevents ask/reset/close from corrupting conversation history under rapid tab switching",
+    "License: license.key now writes atomically (crash mid-write can no longer force re-activation)",
+    "License: verify errors now tell you exactly which part looks off (prefix, length, unexpected chars, checksum) instead of a generic 'check for typos'",
+    "Recovery: corrupt coach_sessions.json or license.key are moved aside to *.corrupt-<timestamp>.bak with a breadcrumb in load-errors.log, and Settings surfaces a clear warning",
+    "Build: post-build smoke-test verifies llama-cpp-python actually imports in the frozen exe — prevents regressions of the analyst-runtime bug class",
+    "364 tests green (+14 new regression tests)"
   ]
 }
