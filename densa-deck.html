@@ -674,6 +674,13 @@
         <div style="max-width:760px;margin:0 auto;">
 
           <details class="faq-item" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;">
+            <summary style="cursor:pointer;font-weight:600;color:var(--color-text);">Moxfield URL import isn't working &mdash; is it broken?</summary>
+            <p style="margin:12px 0 0;color:var(--color-text-muted);line-height:1.7;">
+              As of April 2026, Moxfield put their public API behind Cloudflare bot detection, which blocks all non-browser clients regardless of User-Agent. The workaround is built into Densa Deck already: open the deck on moxfield.com, click <strong>More &rarr; Export &rarr; Text</strong>, copy the decklist, and paste it into the decklist text box above the Import from URL button. Analysis runs on the pasted list identically to a URL import. <strong>Archidekt URLs</strong> (<code>archidekt.com/decks/...</code>) continue to work as direct imports.
+            </p>
+          </details>
+
+          <details class="faq-item" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;">
             <summary style="cursor:pointer;font-weight:600;color:var(--color-text);">What happens if I lose my license key?</summary>
             <p style="margin:12px 0 0;color:var(--color-text-muted);line-height:1.7;">
               Your Stripe receipt (the email Stripe sent after checkout) contains a link back to the receipt page. The license key is deterministically derived from your Stripe session ID, so if you can get to the success page URL from your browser history OR Stripe receipt, the same key re-appears. If neither of those works, email <a href="mailto:admin@densanon.com" style="color:var(--color-accent-green);">admin@densanon.com</a> with your Stripe receipt and we'll resend it within 48 hours.
