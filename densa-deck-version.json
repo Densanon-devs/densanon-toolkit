@@ -1,11 +1,11 @@
 {
-  "version": "0.1.7",
+  "version": "0.2.0",
   "releaseDate": "2026-04-24",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.7.exe",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.2.0.exe",
   "changelog": [
-    "New: opt-in card database auto-update — enable 'Check for updates on launch' in Settings to see a banner when Scryfall ships new cards; optionally let the app auto-download the update in the background",
-    "New: 'What changed' modal — after an update ingest, see a collapsible Added / Updated / Removed list of oracle cards so you know exactly what Scryfall just added or errata'd",
-    "New: 'Check for updates now' button in Settings for on-demand checks",
-    "Improved: Ingest now records the Scryfall bulk timestamp + local completion time so future update checks can tell 'you already have this build' apart from 'you haven't synced in a week'"
+    "New: Build tab — MTGA-style deckbuilder with card search, filters (colors, CMC, types, format legality, rarity, price ceiling), +/- quantity controls grouped by type, and live stats (mana curve, land/creature counts, pip count, format validity)",
+    "New: Free-tier preview of the builder — free users can search, filter, and build full decks; Save is Pro-gated with a modal that preserves your draft",
+    "New: Draft autosave — your in-progress deck is persisted to ~/.densa-deck/drafts.json every few seconds so a crash mid-build doesn't lose work",
+    "Prior: Opt-in card database auto-update + what-changed modal (shipped in v0.1.7)"
   ]
 }
