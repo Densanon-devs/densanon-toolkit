@@ -1,11 +1,11 @@
 {
-  "version": "0.1.5",
+  "version": "0.1.6",
   "releaseDate": "2026-04-23",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.5.exe",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.6.exe",
   "changelog": [
-    "Fix: Universes-Within flavor names (Dracula reprints from Innistrad Crimson Vow, Warhammer 40K, Doctor Who, etc.) now resolve correctly when you paste a Moxfield Export -> Text decklist",
-    "New: three-pass deck resolver — canonical cards.name, then local card_aliases cache, then a one-time Scryfall fuzzy fallback that caches forever so the same deck re-imports offline next time",
-    "Also in: friendlier error message when Moxfield URL import is blocked by Cloudflare (v0.1.4); paste-the-text workaround documented in the product-page FAQ",
-    "371 tests green (+6 new covering the three-pass resolver and offline-graceful-degradation)"
+    "New: deck-vs-deck duel mode inside My Decks — pit two saved decks head-to-head, 100/500/1000 games, symmetric win rates + per-axis power-score deltas",
+    "New: methodology tooltips on every metric (click the ? icon) + a full methodology page documenting every calculation, formula, and implementing module",
+    "Fix: analyst model now re-detects correctly after an in-place installer upgrade — Coach tab picks up a previously-downloaded model without requiring an app restart",
+    "Improved: Load saved deck into Analyze tab in one click — sidebar 'Load →' action and a renamed editor button that also sets the format dropdown"
   ]
 }
