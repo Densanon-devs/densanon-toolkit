@@ -161,9 +161,9 @@
 
     .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 20px;
-      max-width: 720px;
+      max-width: 1100px;
       margin: 0 auto;
     }
     .price-card {
@@ -382,10 +382,10 @@
           Runs offline forever.</strong>
         </p>
         <div class="mtg-cta-row">
-          <a href="#pricing" class="mtg-btn mtg-btn-primary">Get Densa Deck Pro &mdash; $39.99 launch</a>
-          <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline">Try Free Tools</a>
+          <a href="#download" class="mtg-btn mtg-btn-primary">Download Free &mdash; Windows</a>
+          <a href="#pricing" class="mtg-btn mtg-btn-outline">Upgrade to Pro ($39.99 launch)</a>
         </div>
-        <p class="mtg-note">Windows 10+ &middot; One-time purchase &middot; Runs fully offline after first sync</p>
+        <p class="mtg-note">Free desktop tier includes deck analysis, mana curve, archetype detection, and recommendations &mdash; no license needed. Pro unlocks simulation, duel mode, AI coach, version tracking.</p>
         <p class="mtg-note" style="margin-top:16px;">
           <a href="#requirements" style="color:var(--color-text-muted);margin:0 10px;">Requirements</a>
           &middot;
@@ -473,40 +473,62 @@
 
       <!-- Pricing -->
       <section class="section-divider" id="pricing">
-        <h2 class="section-title">Free vs <span>Pro</span></h2>
-        <p style="text-align:center;color:var(--color-text-muted);margin-bottom:28px;">
-          Free tools live in your browser on densanon-toolkit. Pro is a one-time purchase desktop app — yours forever with lifetime updates.
+        <h2 class="section-title">Three <span>tiers</span>, one decision</h2>
+        <p style="text-align:center;color:var(--color-text-muted);margin-bottom:28px;max-width:640px;margin-left:auto;margin-right:auto;">
+          The browser tools and the desktop app's Free tier are genuinely free &mdash; not a trial, not a nag. Upgrade to Pro when you need simulation, AI coaching, version tracking, or duels.
         </p>
         <div class="pricing-grid">
           <div class="price-card">
-            <h3>Free</h3>
-            <div class="price-amount">$0</div>
+            <h3>Browser</h3>
+            <div class="price-amount">$0 <span class="once">in your browser</span></div>
+            <p class="promo-code-hint" style="color:var(--color-text-muted);">Zero install. Open a tab, use a tool, close it. Good for quick lookups.</p>
             <ul class="price-features">
               <li class="included">Hypergeometric calculator</li>
               <li class="included">Mana curve analyzer</li>
               <li class="included">Staples checker</li>
-              <li class="included">Browser-based</li>
-              <li class="locked">Goldfish simulation</li>
-              <li class="locked">Matchup gauntlet</li>
-              <li class="locked">Version tracking</li>
+              <li class="locked">Full deck analysis</li>
+              <li class="locked">Archetype detection</li>
+              <li class="locked">Goldfish / Gauntlet / Duel</li>
+              <li class="locked">AI coach</li>
             </ul>
-            <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline">Try Free Tools</a>
+            <a href="categories/mtg-tools/" class="mtg-btn mtg-btn-outline">Open browser tools</a>
+          </div>
+          <div class="price-card">
+            <h3>Desktop Free</h3>
+            <div class="price-amount">$0 <span class="once">download + use</span></div>
+            <p class="promo-code-hint" style="color:var(--color-text-muted);">The full desktop app, free-tier features unlocked. No license needed.</p>
+            <ul class="price-features">
+              <li class="included">Everything in Browser, plus</li>
+              <li class="included">Full deck import (paste, URL, file)</li>
+              <li class="included">Mana curve + role counts + average CMC</li>
+              <li class="included">Archetype detection</li>
+              <li class="included">Basic recommendations</li>
+              <li class="included">Card search &amp; info</li>
+              <li class="included">Hypergeometric calculator in-app</li>
+              <li class="locked">Goldfish / Gauntlet / Duel</li>
+              <li class="locked">AI coach</li>
+              <li class="locked">Version tracking + diff</li>
+              <li class="locked">Power level (1&ndash;10)</li>
+              <li class="locked">Castability + Report export</li>
+            </ul>
+            <a href="#download" class="mtg-btn mtg-btn-outline">Download desktop</a>
           </div>
           <div class="price-card featured">
-            <h3>Pro <span class="launch-badge">Launch week</span></h3>
+            <h3>Desktop Pro <span class="launch-badge">Launch week</span></h3>
             <div class="price-amount"><span class="was">$49.99</span>$39.99 <span class="once">one-time</span></div>
             <p class="promo-code-hint">
               Use code <code>LAUNCH</code> at checkout &mdash; ends May 1. After launch week the price is $49.99.
             </p>
             <ul class="price-features">
-              <li class="included">All free tools, plus</li>
+              <li class="included">Everything in Desktop Free, plus</li>
               <li class="included">Goldfish simulation</li>
-              <li class="included">Matchup gauntlet</li>
-              <li class="included">Version tracking</li>
+              <li class="included">Matchup gauntlet (11 archetypes)</li>
+              <li class="included"><strong>Deck-vs-deck duel</strong></li>
+              <li class="included">Version tracking + diff</li>
               <li class="included">Power level rating (1&ndash;10)</li>
               <li class="included">AI deck coach (local)</li>
               <li class="included">Castability analysis</li>
-              <li class="included">Report export</li>
+              <li class="included">Report export (JSON/MD/HTML)</li>
               <li class="included">Mulligan practice</li>
               <li class="included">Lifetime updates</li>
             </ul>
@@ -606,12 +628,12 @@
            + version + download count from the GitHub Releases API, but the
            hard-coded direct URL works as a fallback if the API is down. -->
       <section class="section-divider download-section" id="download">
-        <div class="download-badge">Windows</div>
+        <div class="download-badge">Free download &middot; Windows</div>
         <h2 class="section-title">Get <span>Densa Deck</span></h2>
-        <p>Windows installer. No Python, no extra setup &mdash; double-click to install. Activate Pro with your license key from Settings after first launch. A portable ZIP is also available on the release page for users who prefer no-installer distribution.</p>
-        <a id="download-btn" href="https://github.com/densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.6.exe" class="mtg-btn mtg-btn-primary">Download for Windows</a>
+        <p><strong>The download is free for everyone</strong> &mdash; the desktop app ships with the Free-tier features unlocked out of the box (deck analysis, mana curve, archetype detection, recommendations, card search, in-app hypergeometric calculator). No license key needed to use those. If you later buy Pro, paste your license key into Settings and the Pro features (goldfish simulation, matchup gauntlet, deck-vs-deck duel, AI coach, version tracking, report export) unlock instantly on the same install.</p>
+        <a id="download-btn" href="https://github.com/densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.6.exe" class="mtg-btn mtg-btn-primary">Download for Windows (Free)</a>
         <p class="download-details">
-          <span id="app-version"></span>Windows 10+ &middot; Runs locally, no internet needed after first sync
+          <span id="app-version"></span>Windows 10+ &middot; Runs locally, no internet needed after first sync &middot; No account required
         </p>
         <p id="download-count"></p>
         <p class="download-details" style="margin-top:14px;font-size:0.82rem;">

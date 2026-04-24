@@ -105,6 +105,7 @@ function initPage(config = {}) {
 
 function injectHeader(root, activeCategory) {
   const categories = [
+    { id: 'mtg-tools', label: 'MTG' },
     { id: 'game-dev-tools', label: 'Game Dev' },
     { id: 'image-tools', label: 'Image Tools' },
     { id: 'developer-tools', label: 'Developer Tools' },
