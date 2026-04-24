@@ -1,11 +1,11 @@
 {
-  "version": "0.1.6",
-  "releaseDate": "2026-04-23",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.6.exe",
+  "version": "0.1.7",
+  "releaseDate": "2026-04-24",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.1.7.exe",
   "changelog": [
-    "New: deck-vs-deck duel mode inside My Decks — pit two saved decks head-to-head, 100/500/1000 games, symmetric win rates + per-axis power-score deltas",
-    "New: methodology tooltips on every metric (click the ? icon) + a full methodology page documenting every calculation, formula, and implementing module",
-    "Fix: analyst model now re-detects correctly after an in-place installer upgrade — Coach tab picks up a previously-downloaded model without requiring an app restart",
-    "Improved: Load saved deck into Analyze tab in one click — sidebar 'Load →' action and a renamed editor button that also sets the format dropdown"
+    "New: opt-in card database auto-update — enable 'Check for updates on launch' in Settings to see a banner when Scryfall ships new cards; optionally let the app auto-download the update in the background",
+    "New: 'What changed' modal — after an update ingest, see a collapsible Added / Updated / Removed list of oracle cards so you know exactly what Scryfall just added or errata'd",
+    "New: 'Check for updates now' button in Settings for on-demand checks",
+    "Improved: Ingest now records the Scryfall bulk timestamp + local completion time so future update checks can tell 'you already have this build' apart from 'you haven't synced in a week'"
   ]
 }
