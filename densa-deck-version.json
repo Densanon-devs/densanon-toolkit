@@ -1,7 +1,7 @@
 {
   "version": "0.2.0",
   "releaseDate": "2026-04-24",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.2.0.exe",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-0.2.0-windows.zip",
   "changelog": [
     "New: Build tab — MTGA-style deckbuilder with card search, filters (colors, CMC, types, format legality, rarity, price ceiling), +/- quantity controls grouped by type, and live stats (mana curve, land/creature counts, pip count, format validity)",
     "New: Free-tier preview of the builder — free users can search, filter, and build full decks; Save is Pro-gated with a modal that preserves your draft",
