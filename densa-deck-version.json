@@ -1,8 +1,10 @@
 {
   "version": "0.3.0",
   "releaseDate": "2026-04-25",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-0.3.0-windows.zip",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.3.0.exe",
+  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-0.3.0-windows.zip",
   "changelog": [
+    "New: Inno Setup installer (Densa-Deck-Setup-0.3.0.exe) — per-user install, Start Menu shortcut, optional desktop shortcut, optional densa-deck:// URL-scheme registration, proper Add/Remove Programs entry. Portable ZIP still ships alongside.",
     "New: Combo integration via Commander Spellbook (MIT, ~30k variants) — every analytical layer is combo-aware (goldfish, gauntlet, mulligan, power, archetype, brackets, cuts, adds, coach, version diff, exports)",
     "New: 'Combos broken' save toast names which combo lines a save dropped from your deck",
     "New: Duel 'Analyst compare' panel renders combo gained/lost between deck A and deck B",
