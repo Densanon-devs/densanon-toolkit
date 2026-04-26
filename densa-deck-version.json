@@ -1,17 +1,13 @@
 {
-  "version": "0.3.0",
-  "releaseDate": "2026-04-25",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.3.0.exe",
-  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-0.3.0-windows.zip",
+  "version": "0.4.0",
+  "releaseDate": "2026-04-26",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.4.0.exe",
+  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-0.4.0-windows.zip",
   "changelog": [
-    "New: Inno Setup installer (Densa-Deck-Setup-0.3.0.exe) — per-user install, Start Menu shortcut, optional desktop shortcut, optional densa-deck:// URL-scheme registration, proper Add/Remove Programs entry. Portable ZIP still ships alongside.",
-    "New: Combo integration via Commander Spellbook (MIT, ~30k variants) — every analytical layer is combo-aware (goldfish, gauntlet, mulligan, power, archetype, brackets, cuts, adds, coach, version diff, exports)",
-    "New: 'Combos broken' save toast names which combo lines a save dropped from your deck",
-    "New: Duel 'Analyst compare' panel renders combo gained/lost between deck A and deck B",
-    "New: One-shot stale-combo banner — when the local Spellbook cache is 90+ days old, prompts you once per cohort to refresh",
-    "New: densa-deck combos verify <deck> <combo_id> — debug helper showing per-piece presence + color-identity fit",
-    "New: analyze --with-llm now auto-protects combo pieces from cut suggestions and frames the deck's combo plan in the analyst's prose",
-    "New: Brackets + near-miss combo detection + AI deckbuild + multi-format export (MTGA / MTGO / Moxfield)",
-    "Prior: MTGA-style Build tab with live mana curve, pip count, format validity (shipped in v0.2.0)"
+    "New: MCP (Model Context Protocol) server — drive Densa Deck from Claude desktop, ulcagent, Cursor, or any AI client that speaks MCP. 17 free tools always; 11 Pro tools when a license is active. Run `densa-deck mcp serve` to start the local stdio server.",
+    "New: Operator controls — MTG_ENGINE_MCP=disabled env (or {\"mcp_enabled\": false} in config) for full kill switch. `--read-only` drops every Pro tool. `--tools name1,name2` curates the exposed surface (helps smaller-context AI clients).",
+    "New: docs/MCP-OPERATOR.md — full operator guide with 5 copy-pasteable recipes (default, privacy-paranoid, smaller-context, corporate-disabled, coach-only).",
+    "Prior: Inno Setup installer + portable ZIP (shipped in v0.3.0).",
+    "Prior: Commander Spellbook combo integration — every analytical layer is combo-aware (shipped in v0.3.0)."
   ]
 }
