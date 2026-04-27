@@ -1,13 +1,13 @@
 {
-  "version": "0.4.0",
+  "version": "0.4.1",
   "releaseDate": "2026-04-26",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.4.0.exe",
-  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-0.4.0-windows.zip",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.4.1.exe",
+  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-0.4.1-windows.zip",
   "changelog": [
-    "New: MCP (Model Context Protocol) server — drive Densa Deck from Claude desktop, ulcagent, Cursor, or any AI client that speaks MCP. 17 free tools always; 11 Pro tools when a license is active. Run `densa-deck mcp serve` to start the local stdio server.",
-    "New: Operator controls — MTG_ENGINE_MCP=disabled env (or {\"mcp_enabled\": false} in config) for full kill switch. `--read-only` drops every Pro tool. `--tools name1,name2` curates the exposed surface (helps smaller-context AI clients).",
-    "New: docs/MCP-OPERATOR.md — full operator guide with 5 copy-pasteable recipes (default, privacy-paranoid, smaller-context, corporate-disabled, coach-only).",
-    "Prior: Inno Setup installer + portable ZIP (shipped in v0.3.0).",
-    "Prior: Commander Spellbook combo integration — every analytical layer is combo-aware (shipped in v0.3.0)."
+    "New: One-command Claude desktop setup — `densa-deck mcp config` emits a paste-ready config block with your install's exe path auto-resolved (closes the PATH gap that bit Inno-installer customers in v0.4.0).",
+    "New: `densa-deck mcp selftest` verifies the server side works without involving Claude desktop. Reports tool count + tier, exits 0/1.",
+    "New: Settings → AI client integration (MCP) panel — Show config, Copy to clipboard, Verify connection. Click-driven equivalent for non-CLI users.",
+    "Prior: MCP (Model Context Protocol) server — drive Densa Deck from Claude desktop / ulcagent / Cursor / any AI client (shipped in v0.4.0).",
+    "Prior: Operator controls — kill switch (env or config), --read-only mode, --tools whitelist (shipped in v0.4.0)."
   ]
 }
