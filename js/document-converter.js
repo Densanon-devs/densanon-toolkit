@@ -159,12 +159,11 @@ function initDocumentConverter(config) {
   }
 
   function loadDocx() {
-    if (typeof window.docx !== 'undefined') return Promise.resolve();
-    return new Promise(function (resolve, reject) {
-      var s = document.createElement('script');
-      s.src = 'https://unpkg.com/docx@8.5.0/build/index.umd.min.js';
-      s.onload = resolve; s.onerror = reject;
-      document.head.appendChild(s);
+    if (window.docx && window.docx.Document) return Promise.resolve();
+    // docx v8 ships only ESM/CJS (no UMD). Use esm.sh's auto-bundle in
+    // ?bundle mode, which produces a single browser-ready ESM module.
+    return import('https://esm.sh/docx@8.5.0?bundle').then(function (m) {
+      window.docx = m.default && m.default.Document ? m.default : m;
     });
   }
 
@@ -419,7 +418,11 @@ function initDocumentConverter(config) {
         docxBlob = await htmlStructureToDocxBlob(fullHtml);
         dlBtn.style.display = '';
         setStatus(status, 'DOCX generated from ' + pdf.numPages + ' page(s).', 'success');
-      } catch (err) { setStatus(status, 'Error: ' + err.message, 'error'); }
+      } catch (err) {
+        var msg = (err && (err.message || err.toString())) || 'unknown error';
+        console.error('PDF → DOCX failed:', err);
+        setStatus(status, 'Error: ' + msg, 'error');
+      }
     });
 
     dlBtn.addEventListener('click', function () {
