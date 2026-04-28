@@ -1051,4 +1051,86 @@
     }
   });
 
+  // ── Images to PDF ──
+  NodeRegistry.register({
+    id: 'images-to-pdf', name: 'Images to PDF', category: 'Data', icon: '\uD83D\uDCC4',
+    inputs: [{ name: 'image', type: 'Image', label: 'Image' }],
+    outputs: [{ name: 'pdf', type: 'Text', label: 'PDF (data URL)' }],
+    config: [
+      { name: 'pageSize', type: 'select', label: 'Page Size',
+        options: [{ value: 'a4', label: 'A4' }, { value: 'letter', label: 'Letter' }, { value: 'fit', label: 'Fit to Image' }], default: 'a4' },
+      { name: 'fit', type: 'select', label: 'Image Fit',
+        options: [{ value: 'contain', label: 'Contain' }, { value: 'cover', label: 'Cover' }, { value: 'stretch', label: 'Stretch' }], default: 'contain' }
+    ],
+    execute: async function (inputs, config) {
+      if (!inputs.image) throw new Error('No image input');
+      // Load jsPDF dynamically
+      if (typeof window.jspdf === 'undefined') {
+        await new Promise(function (resolve, reject) {
+          var s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
+          s.onload = resolve; s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+      var jsPDF = window.jspdf.jsPDF;
+      var img = await blobToImage(inputs.image);
+      var pageDims = { a4: { w: 595.28, h: 841.89 }, letter: { w: 612, h: 792 } };
+      var pw, ph;
+      if (config.pageSize === 'fit') { pw = img.width * 0.75; ph = img.height * 0.75; }
+      else { pw = pageDims[config.pageSize || 'a4'].w; ph = pageDims[config.pageSize || 'a4'].h; }
+      var doc = new jsPDF({ unit: 'pt', format: [pw, ph] });
+      var canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      var dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      var dw, dh, dx, dy;
+      if (config.pageSize === 'fit' || config.fit === 'stretch') { dx = 0; dy = 0; dw = pw; dh = ph; }
+      else if (config.fit === 'cover') {
+        var cs = Math.max(pw / img.width, ph / img.height);
+        dw = img.width * cs; dh = img.height * cs; dx = (pw - dw) / 2; dy = (ph - dh) / 2;
+      } else {
+        var fs = Math.min(pw / img.width, ph / img.height) * 0.9;
+        dw = img.width * fs; dh = img.height * fs; dx = (pw - dw) / 2; dy = (ph - dh) / 2;
+      }
+      doc.addImage(dataUrl, 'JPEG', dx, dy, dw, dh);
+      canvas.width = 0;
+      var pdfDataUrl = doc.output('datauristring');
+      return { pdf: pdfDataUrl };
+    }
+  });
+
+  // ── Markdown to HTML (for pipeline) ──
+  NodeRegistry.register({
+    id: 'markdown-to-html', name: 'Markdown to HTML', category: 'Data', icon: '\uD83D\uDCDD',
+    inputs: [{ name: 'text', type: 'Text', label: 'Markdown' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'HTML' }],
+    config: [],
+    execute: async function (inputs, config) {
+      if (!inputs.text) throw new Error('No text input');
+      var md = inputs.text;
+      var html = md
+        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/^######\s+(.+)$/gm, '<h6>$1</h6>')
+        .replace(/^#####\s+(.+)$/gm, '<h5>$1</h5>')
+        .replace(/^####\s+(.+)$/gm, '<h4>$1</h4>')
+        .replace(/^###\s+(.+)$/gm, '<h3>$1</h3>')
+        .replace(/^##\s+(.+)$/gm, '<h2>$1</h2>')
+        .replace(/^#\s+(.+)$/gm, '<h1>$1</h1>')
+        .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+        .replace(/^\s*[-*+]\s+(.+)$/gm, '<li>$1</li>')
+        .replace(/^\s*\d+\.\s+(.+)$/gm, '<li>$1</li>')
+        .replace(/^---+$/gm, '<hr>')
+        .replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>')
+        .replace(/\n\n/g, '</p><p>');
+      html = html.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>').replace(/<\/ul>\s*<ul>/g, '');
+      return { text: '<p>' + html + '</p>' };
+    }
+  });
+
 })();

@@ -80,7 +80,8 @@ const TOOLKIT_TOOLS = [
   { name: 'Image Compress', desc: 'Reduce image file size by adjusting quality and output format.', category: 'image-tools', categoryLabel: 'Image Tools', slug: 'image-compress', keywords: 'image compress reduce file size quality jpeg webp optimize' },
   { name: 'MTG Hypergeometric Calculator', desc: 'Calculate the probability of drawing specific cards by any turn for any deck size.', category: 'mtg-tools', categoryLabel: 'MTG', slug: 'hypergeometric-calculator', keywords: 'mtg magic gathering hypergeometric probability calculator draw card turn commander modern' },
   { name: 'MTG Mana Curve Analyzer', desc: 'Paste a decklist and get instant mana curve, color distribution, and deck health analysis.', category: 'mtg-tools', categoryLabel: 'MTG', slug: 'mana-curve-analyzer', keywords: 'mtg magic gathering mana curve analyzer deck analysis color distribution lands' },
-  { name: 'MTG Deck Staples Checker', desc: 'Check your Commander deck for commonly-played staples by color identity.', category: 'mtg-tools', categoryLabel: 'MTG', slug: 'deck-staples-checker', keywords: 'mtg magic gathering commander staples checker edh missing cards sol ring' }
+  { name: 'MTG Deck Staples Checker', desc: 'Check your Commander deck for commonly-played staples by color identity.', category: 'mtg-tools', categoryLabel: 'MTG', slug: 'deck-staples-checker', keywords: 'mtg magic gathering commander staples checker edh missing cards sol ring' },
+  { name: 'Document Converter', desc: 'Convert between PDF, DOCX, HTML, Markdown, and images — extract text from PDFs, combine images into PDFs, convert Word docs to HTML.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'document-converter', keywords: 'document converter pdf to text images docx word html markdown convert extract combine' }
 ];
 
 function initPage(config = {}) {
