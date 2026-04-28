@@ -11,6 +11,7 @@ function initDocumentConverter(config) {
   // ── Modes ──
   var modes = [
     { id: 'pdf-text',   label: 'PDF \u2192 Text' },
+    { id: 'pdf-docx',   label: 'PDF \u2192 DOCX' },
     { id: 'pdf-images', label: 'PDF \u2192 Images' },
     { id: 'images-pdf', label: 'Images \u2192 PDF' },
     { id: 'html-pdf',   label: 'HTML \u2192 PDF' },
@@ -33,6 +34,13 @@ function initDocumentConverter(config) {
       '<div id="dc-pdfTextStatus" class="dc-status"></div>' +
       '<div id="dc-pdfTextOutput" class="dc-output"><pre id="dc-pdfTextResult"></pre></div>' +
       '<div class="dc-btn-row"><button id="dc-pdfTextCopy" class="dc-btn-secondary" style="display:none">Copy Text</button><button id="dc-pdfTextDl" class="dc-btn-secondary" style="display:none">Download .txt</button></div>' +
+    '</div>' +
+    // PDF → DOCX
+    '<div id="dc-pdf-docx" class="dc-panel' + (defaultMode === 'pdf-docx' ? ' active' : '') + '">' +
+      '<div class="dc-drop" data-target="dc-pdfDocxFile"><div class="dc-drop-label">Drop a PDF file here or click to browse</div><div class="dc-drop-hint">Extracts text with formatting and converts to editable .docx</div><input type="file" id="dc-pdfDocxFile" accept=".pdf,application/pdf" hidden></div>' +
+      '<div id="dc-pdfDocxInfo" class="dc-file-info"></div>' +
+      '<div id="dc-pdfDocxStatus" class="dc-status"></div>' +
+      '<div class="dc-btn-row"><button id="dc-pdfDocxDl" class="dc-btn-primary" style="display:none">Download .docx</button></div>' +
     '</div>' +
     // PDF → Images
     '<div id="dc-pdf-images" class="dc-panel' + (defaultMode === 'pdf-images' ? ' active' : '') + '">' +
@@ -150,6 +158,16 @@ function initDocumentConverter(config) {
     });
   }
 
+  function loadHtmlDocx() {
+    if (typeof htmlDocx !== 'undefined') return Promise.resolve();
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js';
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
   // ── Helpers ──
   function setStatus(el, msg, type) { el.textContent = msg; el.className = 'dc-status ' + type; }
   function clearStatus(el) { el.textContent = ''; el.className = 'dc-status'; }
@@ -217,6 +235,133 @@ function initDocumentConverter(config) {
       copyBtn.textContent = 'Copied!'; setTimeout(function () { copyBtn.textContent = 'Copy Text'; }, 1500);
     });
     dlBtn.addEventListener('click', function () { triggerDl(new Blob([extracted], { type: 'text/plain;charset=utf-8' }), 'extracted-text.txt'); });
+  })();
+
+  // ══════════════════════════════════════
+  //  PDF → DOCX
+  // ══════════════════════════════════════
+  (function () {
+    var drop = mount.querySelector('#dc-pdf-docx .dc-drop');
+    var input = document.getElementById('dc-pdfDocxFile');
+    var info = document.getElementById('dc-pdfDocxInfo');
+    var status = document.getElementById('dc-pdfDocxStatus');
+    var dlBtn = document.getElementById('dc-pdfDocxDl');
+    var docxBlob = null;
+
+    setupDrop(drop, input, async function (files) {
+      var file = files[0];
+      if (!file || !isPdf(file)) { setStatus(status, 'Please select a valid PDF file.', 'error'); return; }
+      info.textContent = file.name + ' (' + fmtSize(file.size) + ')'; info.classList.add('visible');
+      dlBtn.style.display = 'none'; docxBlob = null;
+      setStatus(status, 'Loading libraries...', 'loading');
+      try {
+        await Promise.all([loadPdfJs(), loadHtmlDocx()]);
+        setStatus(status, 'Analyzing PDF structure...', 'loading');
+        var buf = await file.arrayBuffer();
+        var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        var htmlPages = [];
+
+        for (var p = 1; p <= pdf.numPages; p++) {
+          setStatus(status, 'Processing page ' + p + ' of ' + pdf.numPages + '...', 'loading');
+          var page = await pdf.getPage(p);
+          var content = await page.getTextContent();
+          var vp = page.getViewport({ scale: 1 });
+          var pageHeight = vp.height;
+
+          // Collect items with position and style info
+          var items = content.items.map(function (item) {
+            var tx = item.transform;
+            return {
+              str: item.str,
+              x: tx[4],
+              y: pageHeight - tx[5], // flip Y to top-down
+              fontSize: Math.abs(tx[0]) || Math.abs(tx[3]) || 12,
+              fontName: item.fontName || ''
+            };
+          }).filter(function (it) { return it.str.trim().length > 0; });
+
+          if (items.length === 0) continue;
+
+          // Sort by Y (top to bottom) then X (left to right)
+          items.sort(function (a, b) { return (a.y - b.y) || (a.x - b.x); });
+
+          // Group into lines (items within 3px vertically)
+          var lines = [], currentLine = [items[0]];
+          for (var i = 1; i < items.length; i++) {
+            if (Math.abs(items[i].y - currentLine[0].y) < 3) {
+              currentLine.push(items[i]);
+            } else {
+              currentLine.sort(function (a, b) { return a.x - b.x; });
+              lines.push(currentLine);
+              currentLine = [items[i]];
+            }
+          }
+          if (currentLine.length) { currentLine.sort(function (a, b) { return a.x - b.x; }); lines.push(currentLine); }
+
+          // Determine body font size (most common)
+          var sizeCounts = {};
+          lines.forEach(function (line) {
+            line.forEach(function (it) {
+              var s = Math.round(it.fontSize);
+              sizeCounts[s] = (sizeCounts[s] || 0) + 1;
+            });
+          });
+          var bodySize = parseInt(Object.keys(sizeCounts).sort(function (a, b) { return sizeCounts[b] - sizeCounts[a]; })[0]) || 12;
+
+          // Convert lines to HTML
+          var pageHtml = '';
+          var prevY = 0;
+          lines.forEach(function (line) {
+            var lineSize = Math.round(line[0].fontSize);
+            var lineFont = line[0].fontName.toLowerCase();
+            var text = line.map(function (it) { return it.str; }).join(' ').trim();
+            if (!text) return;
+
+            // Escape HTML entities
+            text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            // Detect formatting from font name
+            var isBold = lineFont.indexOf('bold') !== -1 || lineFont.indexOf('black') !== -1;
+            var isItalic = lineFont.indexOf('italic') !== -1 || lineFont.indexOf('oblique') !== -1;
+
+            // Determine heading level by font size ratio
+            var tag = 'p';
+            if (lineSize > bodySize * 1.8) tag = 'h1';
+            else if (lineSize > bodySize * 1.5) tag = 'h2';
+            else if (lineSize > bodySize * 1.25) tag = 'h3';
+            else if (lineSize > bodySize * 1.1 && isBold) tag = 'h4';
+
+            // Wrap in formatting tags
+            var inner = text;
+            if (isBold && tag === 'p') inner = '<strong>' + inner + '</strong>';
+            if (isItalic) inner = '<em>' + inner + '</em>';
+
+            pageHtml += '<' + tag + '>' + inner + '</' + tag + '>\n';
+            prevY = line[0].y;
+          });
+
+          htmlPages.push(pageHtml);
+        }
+
+        if (!htmlPages.join('').trim()) {
+          setStatus(status, 'No extractable text found. This PDF may be image-only (scanned).', 'error');
+          return;
+        }
+
+        setStatus(status, 'Generating DOCX...', 'loading');
+        var fullHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.5;}h1{font-size:20pt;}h2{font-size:16pt;}h3{font-size:13pt;}h4{font-size:11pt;font-weight:bold;}</style></head><body>' +
+          htmlPages.join('<hr style="page-break-after:always;">') +
+          '</body></html>';
+
+        docxBlob = htmlDocx.asBlob(fullHtml);
+        dlBtn.style.display = '';
+        setStatus(status, 'DOCX generated from ' + pdf.numPages + ' page(s).', 'success');
+      } catch (err) { setStatus(status, 'Error: ' + err.message, 'error'); }
+    });
+
+    dlBtn.addEventListener('click', function () {
+      if (docxBlob) triggerDl(docxBlob, 'converted-document.docx');
+    });
   })();
 
   // ══════════════════════════════════════

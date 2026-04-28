@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF to DOCX Converter Online Free – Convert PDF to Word Document | Densanon Toolkit</title>
+  <meta name="description" content="Convert PDF to DOCX (Word) online free. Extracts text with headings, bold, and italic formatting into an editable Word document. No signup, 100% browser-based, private.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/document-converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>PDF to DOCX Converter</h1>
+      <p>Convert PDF files to editable Word documents — extracts text with heading structure and basic formatting.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../document-converter/index.html">&larr; All Document Converters</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What is PDF to DOCX Converter?</h2>
+      <p>This tool converts PDF files into editable Microsoft Word (.docx) documents entirely in your browser. It works by chaining two steps: first, PDF.js extracts text from each page with position and font data; then the tool analyzes font sizes and styles to reconstruct headings, paragraphs, bold, and italic formatting; finally, it generates a real .docx file you can open in Word, Google Docs, or LibreOffice.</p>
+      <p>Because this runs client-side with no server processing, your PDF never leaves your device — making it safe for confidential documents.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert PDF to DOCX</h2>
+      <ol>
+        <li><strong>Upload your PDF</strong> — drag and drop or click to browse.</li>
+        <li><strong>Wait for processing</strong> — the tool analyzes each page, detecting text structure and formatting.</li>
+        <li><strong>Download your .docx</strong> — click the download button to save your editable Word document.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>What Gets Preserved</h2>
+      <ul>
+        <li><strong>Text content</strong> — all readable text from every page</li>
+        <li><strong>Heading hierarchy</strong> — large text is detected as h1/h2/h3/h4 based on font size relative to body text</li>
+        <li><strong>Bold and italic</strong> — detected from PDF font names (e.g., "TimesNewRoman-Bold")</li>
+        <li><strong>Paragraph structure</strong> — text is grouped into logical paragraphs based on position</li>
+        <li><strong>Page separation</strong> — each PDF page maps to a section in the DOCX</li>
+        <li><strong>Reading order</strong> — text is sorted top-to-bottom, left-to-right</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Known Limitations</h2>
+      <p>This is a browser-based converter, not a full document reconstruction engine. Be aware of what it cannot do:</p>
+      <ul>
+        <li><strong>Tables</strong> — table data is extracted as text but loses its grid structure. Rows and columns become sequential paragraphs.</li>
+        <li><strong>Images</strong> — embedded images in the PDF are not transferred to the DOCX. Use PDF to Images if you need the visual content.</li>
+        <li><strong>Multi-column layouts</strong> — columns are read in position order, which may interleave content from side-by-side columns.</li>
+        <li><strong>Exact spacing and margins</strong> — the DOCX uses standard Word spacing, not the pixel-precise layout of the original PDF.</li>
+        <li><strong>Custom fonts</strong> — the DOCX uses Calibri/Arial. Original PDF fonts are not embedded.</li>
+        <li><strong>Headers, footers, and page numbers</strong> — these are extracted as body text, not placed in Word's header/footer areas.</li>
+        <li><strong>Scanned PDFs</strong> — image-only PDFs have no extractable text. The tool will notify you if no text is found.</li>
+        <li><strong>Forms and annotations</strong> — form fields, comments, and annotations are not converted.</li>
+      </ul>
+      <p>For best results, use this tool with text-heavy documents like reports, articles, contracts, and correspondence. Complex layouts (brochures, magazines, forms) will lose their visual structure.</p>
+    </section>
+
+    <section>
+      <h2>When to Use PDF to DOCX</h2>
+      <ul>
+        <li>You need to edit text from a PDF report or article</li>
+        <li>You want to reuse content from a PDF in a new Word document</li>
+        <li>You received a PDF contract and need to make revisions</li>
+        <li>You need to reformat or restructure content originally locked in a PDF</li>
+        <li>You want an editable version of meeting notes or agendas delivered as PDF</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>How It Works Internally</h2>
+      <p>The conversion is a three-step chain:</p>
+      <ol>
+        <li><strong>Text extraction</strong> — PDF.js parses the PDF and returns each text fragment with its position (x, y), font size, and font name.</li>
+        <li><strong>Structure detection</strong> — fragments are grouped into lines (same Y position), then analyzed: font sizes larger than the most common size become headings, font names containing "Bold" or "Italic" trigger formatting.</li>
+        <li><strong>DOCX generation</strong> — the structured HTML is passed to html-docx-js, which wraps it in Word-compatible XML to produce a real .docx file.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>Will the DOCX look exactly like the PDF?</h3>
+      <p>No. The DOCX preserves text content and structure (headings, paragraphs, basic formatting) but not the exact visual layout. Think of it as extracting the content and meaning, not cloning the appearance. For pixel-perfect reproduction, use PDF to Images instead.</p>
+      <h3>Can it handle large PDFs?</h3>
+      <p>Yes, but processing time increases with page count. A 50-page report typically takes 5-15 seconds depending on your device. Very large files (200+ pages) may be slow but will work.</p>
+      <h3>Does it work with password-protected PDFs?</h3>
+      <p>PDFs that require a password to open cannot be processed. PDFs with copy/print restrictions (but no open password) can usually still be converted.</p>
+      <h3>Is my PDF uploaded to a server?</h3>
+      <p>No. Everything runs in your browser. PDF.js extracts the text, and html-docx-js generates the DOCX — no network requests are made with your document data.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../pdf-to-text/index.html">PDF to Text Converter</a>
+      <a href="../pdf-to-images/index.html">PDF to Images Converter</a>
+      <a href="../docx-to-html/index.html">DOCX to HTML Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'developer-tools',
+      title: 'PDF to DOCX Converter Online Free – Convert PDF to Word Document',
+      breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'PDF to DOCX Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/document-converter.js"></script>
+  <script>initDocumentConverter({ defaultMode: 'pdf-docx', mountTo: '#converter-mount' });</script>
+</body>
+</html>
