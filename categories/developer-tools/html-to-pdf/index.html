@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML to PDF Converter Online Free – Convert HTML to PDF Instantly | Densanon Toolkit</title>
+  <meta name="description" content="Convert HTML to PDF online free. Paste or upload HTML markup and download a styled PDF document. No signup, browser-based, private.">
+  <meta name="robots" content="index, follow">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <link rel="stylesheet" href="../../../css/document-converter.css">
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>HTML to PDF Converter</h1>
+      <p>Turn HTML markup into a downloadable, styled PDF document.</p>
+    </div>
+
+    <section class="tool-box">
+      <div id="converter-mount"></div>
+      <div class="converter-all-link">
+        <a href="../document-converter/index.html">&larr; All Document Converters</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What is HTML to PDF Converter?</h2>
+      <p>This tool renders HTML content into a PDF document you can download, print, or share. Paste raw HTML, upload an .html file, or use it to save web content as a permanent offline PDF. The rendering engine (jsPDF + html2canvas) captures your HTML exactly as it would appear in a browser, including styles, colors, and layout. No server-side processing — everything happens in your browser.</p>
+    </section>
+
+    <section>
+      <h2>How to Convert HTML to PDF</h2>
+      <ol>
+        <li><strong>Enter your HTML</strong> — paste HTML markup into the text area, or drop an .html file.</li>
+        <li><strong>Choose page size</strong> — A4 for international standard or Letter for US paper.</li>
+        <li><strong>Click Convert to PDF</strong> — the HTML is rendered and captured into a PDF document.</li>
+        <li><strong>Download</strong> — save the resulting PDF to your device.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>What HTML Features Are Supported?</h2>
+      <p>The converter renders most standard HTML elements including headings, paragraphs, lists, tables, links, images (inline base64 or same-origin), bold/italic formatting, colors, backgrounds, borders, and CSS styles. Complex features like CSS grid, animations, and external fonts may not render perfectly since the tool captures a static snapshot of the rendered HTML.</p>
+    </section>
+
+    <section>
+      <h2>When to Use HTML to PDF</h2>
+      <ul>
+        <li>Saving a web page or HTML email as a permanent PDF archive</li>
+        <li>Converting HTML invoices or reports to printable PDF documents</li>
+        <li>Generating PDF versions of HTML documentation or changelogs</li>
+        <li>Creating shareable PDFs from HTML templates</li>
+        <li>Exporting styled HTML content for offline reading</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>Will external CSS stylesheets be applied?</h3>
+      <p>Only inline styles and styles within the pasted HTML are rendered. External stylesheet URLs are not fetched. For best results, include all styles inline or in a &lt;style&gt; block within your HTML.</p>
+      <h3>Can it handle multi-page content?</h3>
+      <p>Yes. If your HTML content exceeds one page, the PDF will automatically add pages as needed.</p>
+      <h3>Will images in my HTML appear in the PDF?</h3>
+      <p>Base64-encoded inline images will render. External image URLs may not load due to browser security restrictions (CORS). For reliable results, embed images as base64 data URIs.</p>
+      <h3>Is my HTML uploaded to a server?</h3>
+      <p>No. Rendering happens entirely in your browser using jsPDF and html2canvas. Your content never leaves your device.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../markdown-to-pdf/index.html">Markdown to PDF Converter</a>
+      <a href="../markdown-to-html/index.html">Markdown to HTML Converter</a>
+      <a href="../pdf-to-text/index.html">PDF to Text Converter</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'developer-tools',
+      title: 'HTML to PDF Converter Online Free – Convert HTML to PDF Instantly',
+      breadcrumbs: [
+        { label: 'Developer Tools', href: '../index.html' },
+        { label: 'HTML to PDF Converter' }
+      ]
+    });
+  </script>
+  <script src="../../../js/document-converter.js"></script>
+  <script>initDocumentConverter({ defaultMode: 'html-pdf', mountTo: '#converter-mount' });</script>
+</body>
+</html>

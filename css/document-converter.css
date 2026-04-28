@@ -1,0 +1,217 @@
+/* Document Converter — shared styles for all document converter landing pages */
+
+.dc-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--color-bg);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.dc-tab {
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+
+.dc-tab:hover {
+  color: var(--color-text);
+}
+
+.dc-tab.active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.dc-panel {
+  display: none;
+}
+
+.dc-panel.active {
+  display: block;
+}
+
+.dc-drop {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 20px;
+}
+
+.dc-drop:hover,
+.dc-drop.dragover {
+  border-color: var(--color-primary);
+  background: rgba(229, 62, 62, 0.05);
+}
+
+.dc-drop .dc-drop-label {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.dc-drop .dc-drop-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+.dc-status {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  display: none;
+}
+
+.dc-status.success {
+  display: block;
+  background: rgba(72, 187, 120, 0.1);
+  color: #48bb78;
+  border: 1px solid rgba(72, 187, 120, 0.2);
+}
+
+.dc-status.error {
+  display: block;
+  background: rgba(229, 62, 62, 0.1);
+  color: #e53e3e;
+  border: 1px solid rgba(229, 62, 62, 0.2);
+}
+
+.dc-status.loading {
+  display: block;
+  background: rgba(99, 179, 237, 0.1);
+  color: #63b3ed;
+  border: 1px solid rgba(99, 179, 237, 0.2);
+}
+
+.dc-output {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 16px;
+  display: none;
+  max-height: 400px;
+  overflow: auto;
+}
+
+.dc-output.visible {
+  display: block;
+}
+
+.dc-output pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text);
+}
+
+.dc-btn-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.dc-btn-row button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: opacity 0.2s;
+}
+
+.dc-btn-row button:hover {
+  opacity: 0.85;
+}
+
+.dc-btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.dc-btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border) !important;
+}
+
+.dc-option {
+  margin-bottom: 16px;
+}
+
+.dc-option label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.dc-option select,
+.dc-option input[type="number"],
+.dc-option textarea {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.dc-option textarea {
+  min-height: 150px;
+  font-family: monospace;
+  resize: vertical;
+}
+
+.dc-previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.dc-previews img {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.dc-previews .dc-page-label {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.dc-file-info {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: var(--color-bg);
+  border-radius: 6px;
+  display: none;
+}
+
+.dc-file-info.visible {
+  display: block;
+}
