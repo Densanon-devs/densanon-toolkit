@@ -310,7 +310,6 @@ function initDocumentConverter(config) {
 
           // Convert lines to HTML
           var pageHtml = '';
-          var prevY = 0;
           lines.forEach(function (line) {
             var lineSize = Math.round(line[0].fontSize);
             var lineFont = line[0].fontName.toLowerCase();
@@ -337,7 +336,6 @@ function initDocumentConverter(config) {
             if (isItalic) inner = '<em>' + inner + '</em>';
 
             pageHtml += '<' + tag + '>' + inner + '</' + tag + '>\n';
-            prevY = line[0].y;
           });
 
           htmlPages.push(pageHtml);
@@ -350,7 +348,7 @@ function initDocumentConverter(config) {
 
         setStatus(status, 'Generating DOCX...', 'loading');
         var fullHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.5;}h1{font-size:20pt;}h2{font-size:16pt;}h3{font-size:13pt;}h4{font-size:11pt;font-weight:bold;}</style></head><body>' +
-          htmlPages.join('<hr style="page-break-after:always;">') +
+          htmlPages.join('<div style="page-break-after:always;"></div>') +
           '</body></html>';
 
         docxBlob = htmlDocx.asBlob(fullHtml);
