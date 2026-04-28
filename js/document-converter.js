@@ -158,14 +158,79 @@ function initDocumentConverter(config) {
     });
   }
 
-  function loadHtmlDocx() {
-    if (typeof htmlDocx !== 'undefined') return Promise.resolve();
+  function loadDocx() {
+    if (typeof window.docx !== 'undefined') return Promise.resolve();
     return new Promise(function (resolve, reject) {
       var s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js';
+      s.src = 'https://unpkg.com/docx@8.5.0/build/index.umd.min.js';
       s.onload = resolve; s.onerror = reject;
       document.head.appendChild(s);
     });
+  }
+
+  // Walk a structured HTML string (h1-h4, p, strong, em, <div page-break>) and
+  // emit a real .docx Blob via the `docx` library. This preserves the heading
+  // hierarchy and inline formatting that the PDF parser detected, while
+  // producing OOXML that Word, Google Docs, and LibreOffice all open reliably.
+  function htmlStructureToDocxBlob(html) {
+    var d = window.docx;
+    var HeadingLevel = d.HeadingLevel;
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+
+    function runsFromNode(node, ctx) {
+      ctx = ctx || { bold: false, italic: false };
+      var runs = [];
+      for (var i = 0; i < node.childNodes.length; i++) {
+        var c = node.childNodes[i];
+        if (c.nodeType === 3) { // text
+          var t = c.nodeValue;
+          if (t) runs.push(new d.TextRun({ text: t, bold: ctx.bold || undefined, italics: ctx.italic || undefined }));
+        } else if (c.nodeType === 1) { // element
+          var tag = c.tagName.toLowerCase();
+          var nextCtx = {
+            bold: ctx.bold || tag === 'strong' || tag === 'b',
+            italic: ctx.italic || tag === 'em' || tag === 'i'
+          };
+          if (tag === 'br') { runs.push(new d.TextRun({ text: '', break: 1 })); continue; }
+          runs = runs.concat(runsFromNode(c, nextCtx));
+        }
+      }
+      return runs;
+    }
+
+    var headingMap = {
+      h1: HeadingLevel.HEADING_1,
+      h2: HeadingLevel.HEADING_2,
+      h3: HeadingLevel.HEADING_3,
+      h4: HeadingLevel.HEADING_4
+    };
+
+    var paragraphs = [];
+    var bodyChildren = doc.body.children;
+    for (var i = 0; i < bodyChildren.length; i++) {
+      var el = bodyChildren[i];
+      var tag = el.tagName.toLowerCase();
+
+      // Page-break <div style="page-break-after:always;">
+      if (tag === 'div' && /page-break/i.test(el.getAttribute('style') || '')) {
+        paragraphs.push(new d.Paragraph({ children: [new d.PageBreak()] }));
+        continue;
+      }
+
+      var runs = runsFromNode(el);
+      if (!runs.length) continue;
+
+      var opts = { children: runs };
+      if (headingMap[tag]) opts.heading = headingMap[tag];
+      paragraphs.push(new d.Paragraph(opts));
+    }
+
+    if (!paragraphs.length) {
+      paragraphs.push(new d.Paragraph({ children: [new d.TextRun('')] }));
+    }
+
+    var docxDoc = new d.Document({ sections: [{ properties: {}, children: paragraphs }] });
+    return d.Packer.toBlob(docxDoc);
   }
 
   // ── Helpers ──
@@ -255,7 +320,7 @@ function initDocumentConverter(config) {
       dlBtn.style.display = 'none'; docxBlob = null;
       setStatus(status, 'Loading libraries...', 'loading');
       try {
-        await Promise.all([loadPdfJs(), loadHtmlDocx()]);
+        await Promise.all([loadPdfJs(), loadDocx()]);
         setStatus(status, 'Analyzing PDF structure...', 'loading');
         var buf = await file.arrayBuffer();
         var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
@@ -347,11 +412,11 @@ function initDocumentConverter(config) {
         }
 
         setStatus(status, 'Generating DOCX...', 'loading');
-        var fullHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.5;}h1{font-size:20pt;}h2{font-size:16pt;}h3{font-size:13pt;}h4{font-size:11pt;font-weight:bold;}</style></head><body>' +
+        var fullHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>' +
           htmlPages.join('<div style="page-break-after:always;"></div>') +
           '</body></html>';
 
-        docxBlob = htmlDocx.asBlob(fullHtml);
+        docxBlob = await htmlStructureToDocxBlob(fullHtml);
         dlBtn.style.display = '';
         setStatus(status, 'DOCX generated from ' + pdf.numPages + ' page(s).', 'success');
       } catch (err) { setStatus(status, 'Error: ' + err.message, 'error'); }

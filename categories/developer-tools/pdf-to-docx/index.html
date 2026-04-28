@@ -26,7 +26,7 @@
 
     <section>
       <h2>What is PDF to DOCX Converter?</h2>
-      <p>This tool converts PDF files into editable Microsoft Word (.docx) documents entirely in your browser. It works by chaining two steps: first, PDF.js extracts text from each page with position and font data; then the tool analyzes font sizes and styles to reconstruct headings, paragraphs, bold, and italic formatting; finally, it generates a real .docx file you can open in Word, Google Docs, or LibreOffice.</p>
+      <p>This tool converts PDF files into editable Microsoft Word (.docx) documents entirely in your browser. It works by chaining three steps: PDF.js extracts text from each page with position and font data; the tool analyzes font sizes and styles to rebuild a structured HTML representation (headings, paragraphs, bold, italic, page breaks); then that structure is written out as real OOXML so the resulting .docx opens reliably in Word, Google Docs, and LibreOffice.</p>
       <p>Because this runs client-side with no server processing, your PDF never leaves your device — making it safe for confidential documents.</p>
     </section>
 
@@ -84,7 +84,7 @@
       <ol>
         <li><strong>Text extraction</strong> — PDF.js parses the PDF and returns each text fragment with its position (x, y), font size, and font name.</li>
         <li><strong>Structure detection</strong> — fragments are grouped into lines (same Y position), then analyzed: font sizes larger than the most common size become headings, font names containing "Bold" or "Italic" trigger formatting.</li>
-        <li><strong>DOCX generation</strong> — the structured HTML is passed to html-docx-js, which wraps it in Word-compatible XML to produce a real .docx file.</li>
+        <li><strong>DOCX generation</strong> — the structured HTML is walked element by element and translated into OOXML paragraphs and runs by the docx library, producing a real .docx file (not a Word-flavored HTML wrapper).</li>
       </ol>
     </section>
 
@@ -97,7 +97,7 @@
       <h3>Does it work with password-protected PDFs?</h3>
       <p>PDFs that require a password to open cannot be processed. PDFs with copy/print restrictions (but no open password) can usually still be converted.</p>
       <h3>Is my PDF uploaded to a server?</h3>
-      <p>No. Everything runs in your browser. PDF.js extracts the text, and html-docx-js generates the DOCX — no network requests are made with your document data.</p>
+      <p>No. Everything runs in your browser. PDF.js extracts the text, and the docx library generates the DOCX — no network requests are made with your document data.</p>
     </section>
 
     <section class="related-tools">
