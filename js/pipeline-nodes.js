@@ -1101,6 +1101,86 @@
     }
   });
 
+  // Caesar Cipher helper
+  function caesarShift(text, shift, decode) {
+    var s = ((decode ? -shift : shift) % 26 + 26) % 26;
+    var out = '';
+    for (var i = 0; i < text.length; i++) {
+      var code = text.charCodeAt(i);
+      if (code >= 65 && code <= 90) out += String.fromCharCode((code - 65 + s) % 26 + 65);
+      else if (code >= 97 && code <= 122) out += String.fromCharCode((code - 97 + s) % 26 + 97);
+      else out += text.charAt(i);
+    }
+    return out;
+  }
+
+  // Vigenere Cipher helper
+  function vigenereCipher(text, key, decode) {
+    var k = (key || '').toLowerCase();
+    if (!k || /[^a-z]/.test(k)) throw new Error('Vigenere keyword must contain only letters (A-Z).');
+    var sign = decode ? -1 : 1;
+    var out = '', ki = 0;
+    for (var i = 0; i < text.length; i++) {
+      var code = text.charCodeAt(i);
+      var keyShift = k.charCodeAt(ki % k.length) - 97;
+      var s = ((sign * keyShift) % 26 + 26) % 26;
+      if (code >= 65 && code <= 90) { out += String.fromCharCode((code - 65 + s) % 26 + 65); ki++; }
+      else if (code >= 97 && code <= 122) { out += String.fromCharCode((code - 97 + s) % 26 + 97); ki++; }
+      else out += text.charAt(i);
+    }
+    return out;
+  }
+
+  // Caesar Encode
+  NodeRegistry.register({
+    id: 'caesar-encode', name: 'Caesar Encode', category: 'Data', icon: '🔑',
+    inputs: [{ name: 'text', type: 'Text', label: 'Text' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'Encoded' }],
+    config: [{ name: 'shift', type: 'number', label: 'Shift (1-25)', default: 3, min: 1, max: 25 }],
+    execute: async function (inputs, config) {
+      if (!inputs.text) throw new Error('No text input');
+      var shift = parseInt(config.shift, 10) || 3;
+      return { text: caesarShift(inputs.text, shift, false) };
+    }
+  });
+
+  // Caesar Decode
+  NodeRegistry.register({
+    id: 'caesar-decode', name: 'Caesar Decode', category: 'Data', icon: '🔓',
+    inputs: [{ name: 'text', type: 'Text', label: 'Encoded' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'Decoded' }],
+    config: [{ name: 'shift', type: 'number', label: 'Shift (1-25)', default: 3, min: 1, max: 25 }],
+    execute: async function (inputs, config) {
+      if (!inputs.text) throw new Error('No text input');
+      var shift = parseInt(config.shift, 10) || 3;
+      return { text: caesarShift(inputs.text, shift, true) };
+    }
+  });
+
+  // Keyword (Vigenere) Encode
+  NodeRegistry.register({
+    id: 'keyword-encode', name: 'Keyword Encode', category: 'Data', icon: '🔐',
+    inputs: [{ name: 'text', type: 'Text', label: 'Text' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'Encoded' }],
+    config: [{ name: 'key', type: 'text', label: 'Keyword (letters only)', default: 'soup' }],
+    execute: async function (inputs, config) {
+      if (!inputs.text) throw new Error('No text input');
+      return { text: vigenereCipher(inputs.text, config.key, false) };
+    }
+  });
+
+  // Keyword (Vigenere) Decode
+  NodeRegistry.register({
+    id: 'keyword-decode', name: 'Keyword Decode', category: 'Data', icon: '🔒',
+    inputs: [{ name: 'text', type: 'Text', label: 'Encoded' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'Decoded' }],
+    config: [{ name: 'key', type: 'text', label: 'Keyword (letters only)', default: 'soup' }],
+    execute: async function (inputs, config) {
+      if (!inputs.text) throw new Error('No text input');
+      return { text: vigenereCipher(inputs.text, config.key, true) };
+    }
+  });
+
   // ── Markdown to HTML (for pipeline) ──
   NodeRegistry.register({
     id: 'markdown-to-html', name: 'Markdown to HTML', category: 'Data', icon: '\uD83D\uDCDD',

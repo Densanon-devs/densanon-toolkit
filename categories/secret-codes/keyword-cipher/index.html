@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vigenère Keyword Cipher Encoder &amp; Decoder Online Free | Densanon Toolkit</title>
+  <meta name="description" content="Free online Vigenère keyword cipher encoder and decoder. Pick a secret keyword and the cipher rotates through it letter-by-letter to encrypt or decrypt your message. Browser-based, instant, private.">
+  <meta name="robots" content="index, follow">
+  <meta name="keywords" content="vigenere cipher, keyword cipher, polyalphabetic cipher, encode, decode, encrypt, decrypt, classical cipher online">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    .cipher-form { display:flex; flex-direction:column; gap:18px; }
+    .cipher-row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+    .cipher-field { display:flex; flex-direction:column; gap:6px; flex:1; min-width:160px; }
+    .cipher-field label { font-size:0.85rem; font-weight:600; color:var(--color-text-muted); }
+    .cipher-field select, .cipher-field input[type="text"] {
+      padding:10px 12px; background:var(--color-surface); color:var(--color-text);
+      border:1px solid var(--color-border); border-radius:var(--radius); font-size:0.95rem;
+    }
+    .cipher-field input[type="text"] { font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, monospace; letter-spacing:0.05em; }
+    .cipher-textarea {
+      width:100%; min-height:140px; padding:12px; background:var(--color-surface);
+      color:var(--color-text); border:1px solid var(--color-border); border-radius:var(--radius);
+      font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, monospace; font-size:0.95rem;
+      resize:vertical;
+    }
+    .cipher-output {
+      width:100%; min-height:140px; padding:12px; background:#0b0d14;
+      color:var(--color-text); border:1px solid var(--color-border); border-radius:var(--radius);
+      font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, monospace; font-size:0.95rem;
+      white-space:pre-wrap; word-break:break-word;
+    }
+    .cipher-actions { display:flex; gap:10px; flex-wrap:wrap; }
+    .cipher-actions button {
+      padding:10px 18px; background:var(--color-primary); color:#fff; border:0;
+      border-radius:var(--radius); font-weight:600; cursor:pointer; font-size:0.95rem;
+    }
+    .cipher-actions button.secondary {
+      background:var(--color-surface); color:var(--color-text); border:1px solid var(--color-border);
+    }
+    .cipher-actions button:hover { filter:brightness(1.1); }
+    .cipher-presets { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .cipher-presets button {
+      padding:6px 12px; background:var(--color-surface); color:var(--color-text);
+      border:1px solid var(--color-border); border-radius:var(--radius); font-size:0.85rem; cursor:pointer;
+      font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, monospace;
+    }
+    .cipher-presets button:hover { border-color:var(--color-primary); }
+    .cipher-status { font-size:0.85rem; color:var(--color-text-muted); min-height:1.2em; }
+    .cipher-status.ok { color:#4ade80; }
+    .cipher-status.err { color:#f87171; }
+    .cipher-key-hint { font-size:0.8rem; color:var(--color-text-muted); }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Keyword Cipher (Vigenère)</h1>
+      <p>Pick a secret keyword and the cipher walks through it letter-by-letter as it shifts your message — repeating from the start of the key when it runs out. Numbers, spaces, and punctuation pass through unchanged.</p>
+    </div>
+
+    <section class="tool-box">
+      <div class="cipher-form">
+        <div class="cipher-row">
+          <div class="cipher-field" style="flex:0 0 auto;">
+            <label for="cipher-mode">Mode</label>
+            <select id="cipher-mode">
+              <option value="encode">Encode</option>
+              <option value="decode">Decode</option>
+            </select>
+          </div>
+          <div class="cipher-field">
+            <label for="cipher-key">Keyword (letters only)</label>
+            <input id="cipher-key" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. soup" value="soup">
+            <span class="cipher-key-hint">Case is ignored. Non-letters are not allowed in the key.</span>
+          </div>
+        </div>
+
+        <div class="cipher-presets">
+          <span style="font-size:0.85rem;color:var(--color-text-muted);">Try a key:</span>
+          <button data-key="soup" type="button">soup</button>
+          <button data-key="lemon" type="button">lemon</button>
+          <button data-key="thunder" type="button">thunder</button>
+          <button data-key="dragon" type="button">dragon</button>
+          <button data-key="alibaba" type="button">alibaba</button>
+        </div>
+
+        <div class="cipher-field">
+          <label for="cipher-input">Your message</label>
+          <textarea id="cipher-input" class="cipher-textarea" placeholder="Type or paste your message here..."></textarea>
+        </div>
+
+        <div class="cipher-actions">
+          <button id="cipher-go" type="button">Convert</button>
+          <button id="cipher-swap" type="button" class="secondary">Swap (encode &harr; decode)</button>
+          <button id="cipher-clear" type="button" class="secondary">Clear</button>
+        </div>
+
+        <div class="cipher-field">
+          <label for="cipher-output">Result</label>
+          <div id="cipher-output" class="cipher-output"></div>
+          <div class="cipher-actions" style="margin-top:8px;">
+            <button id="cipher-copy" type="button" class="secondary">Copy result</button>
+            <button id="cipher-download" type="button" class="secondary">Download .txt</button>
+          </div>
+          <div class="cipher-status" id="cipher-status"></div>
+        </div>
+      </div>
+      <div class="converter-all-link" style="margin-top:16px;">
+        <a href="../index.html">&larr; All Secret Codes</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What is the Keyword (Vigenère) Cipher?</h2>
+      <p>The keyword cipher — also known as the <strong>Vigenère cipher</strong> — is a classical encryption method that uses a secret keyword to shift each letter of your message by a different amount. Where the simpler Caesar cipher shifts every letter by the <em>same</em> amount, the Vigenère cipher rotates through the letters of your keyword to vary the shift. This makes it dramatically harder to break by hand. Invented in the 16th century, it was famously called <em>le chiffre indéchiffrable</em> ("the indecipherable cipher") and resisted serious attack for nearly 300 years before Friedrich Kasiski published a successful method in 1863.</p>
+    </section>
+
+    <section>
+      <h2>How the Keyword Walk Works</h2>
+      <p>Suppose your keyword is <code>soup</code>. The cipher walks through your message one letter at a time, and at each letter it uses the next letter of the keyword as the shift amount:</p>
+      <ul>
+        <li>The <strong>1st</strong> letter of your message is shifted by <code>s</code> (so plaintext <code>a</code> becomes <code>s</code>).</li>
+        <li>The <strong>2nd</strong> letter is shifted by <code>o</code> (so plaintext <code>a</code> becomes <code>o</code>).</li>
+        <li>The <strong>3rd</strong> letter is shifted by <code>u</code> (so plaintext <code>a</code> becomes <code>u</code>).</li>
+        <li>The <strong>4th</strong> letter is shifted by <code>p</code> (so plaintext <code>a</code> becomes <code>p</code>).</li>
+        <li>On the <strong>5th</strong> letter the keyword repeats — back to <code>s</code> — and the walk continues for the rest of the message.</li>
+      </ul>
+      <p>Spaces, numbers, and punctuation are passed through unchanged and do <em>not</em> consume a keyword letter. Capitalization in your message is preserved.</p>
+    </section>
+
+    <section>
+      <h2>How to Use This Tool</h2>
+      <ol>
+        <li><strong>Pick a mode</strong> — Encode to scramble a plaintext, Decode to reverse a previously encoded message using the same keyword.</li>
+        <li><strong>Type a keyword</strong> — letters only, any length, case is ignored. Longer and less-predictable keywords are stronger.</li>
+        <li><strong>Type your message</strong> — paste or type into the message box. Letters are shifted per the keyword walk; everything else passes through.</li>
+        <li><strong>Click Convert</strong> — the result appears instantly and can be copied or downloaded.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Example</h2>
+      <p>With keyword <code>soup</code>, encoding the message:</p>
+      <p><code>Attack at dawn!</code></p>
+      <p>produces:</p>
+      <p><code>Shnpuy ui voqc!</code></p>
+      <p>To recover the original message, switch to Decode and use the same keyword <code>soup</code>.</p>
+    </section>
+
+    <section>
+      <h2>Common Use Cases</h2>
+      <ul>
+        <li>Build escape-room or scavenger-hunt clues that require a secret keyword to solve</li>
+        <li>Teach polyalphabetic substitution and the history of cryptography in classrooms</li>
+        <li>Create encrypted journals, letters, and props for TTRPG campaigns and LARPs</li>
+        <li>Send playful "secret notes" to friends who share the keyword</li>
+        <li>Solve Vigenère puzzles in adventure games, ARGs, and puzzle books</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Tips for Choosing a Strong Keyword</h2>
+      <ul>
+        <li><strong>Make it long.</strong> Short keywords repeat often, leaving patterns frequency analysis can lock onto.</li>
+        <li><strong>Avoid dictionary words</strong> if you want better resistance — the classical Kasiski attack relies on them.</li>
+        <li><strong>Mix unusual letter combinations</strong> rather than common phrases, but remember: even a great keyword does not make Vigenère secure for real secrets.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>Is the Vigenère cipher secure?</h3>
+      <p>No. While much stronger than a Caesar cipher, the Vigenère cipher has been breakable since the 19th century. It is fun and instructive — but never use it to protect real secrets. For genuine encryption, use a modern algorithm like AES via a trusted password manager or encrypted messenger.</p>
+      <h3>What characters are allowed in the keyword?</h3>
+      <p>Letters only (A–Z, case-insensitive). Spaces, numbers, and punctuation are not valid keyword characters and the tool will warn you.</p>
+      <h3>What happens to numbers, spaces, and punctuation in the message?</h3>
+      <p>They pass through unchanged and do not advance the keyword. Only alphabetic characters are shifted, which is the standard Vigenère behavior and keeps the output readable.</p>
+      <h3>Does the keyword need to match the message length?</h3>
+      <p>No — the keyword automatically repeats from the start once it has been used up. A 4-letter keyword can encode a paragraph just fine.</p>
+      <h3>Does this tool send my message to a server?</h3>
+      <p>No. All encryption happens entirely in your browser using local JavaScript. Nothing is uploaded, logged, or stored.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../caesar-cipher/index.html">Caesar Cipher</a>
+      <a href="../../developer-tools/base64-encoder/index.html">Base64 Encoder</a>
+      <a href="../../developer-tools/base64-decoder/index.html">Base64 Decoder</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'secret-codes',
+      title: 'Vigenère Keyword Cipher Encoder &amp; Decoder Online Free',
+      breadcrumbs: [
+        { label: 'Secret Codes', href: '../index.html' },
+        { label: 'Keyword Cipher' }
+      ]
+    });
+  </script>
+  <script>
+    (function () {
+      'use strict';
+
+      function vigenere(text, key, mode) {
+        var k = (key || '').toLowerCase();
+        if (!k || /[^a-z]/.test(k)) {
+          throw new Error('Keyword must contain only letters (A–Z).');
+        }
+        var sign = mode === 'decode' ? -1 : 1;
+        var out = '';
+        var ki = 0;
+        for (var i = 0; i < text.length; i++) {
+          var code = text.charCodeAt(i);
+          var keyShift = k.charCodeAt(ki % k.length) - 97;
+          var s = ((sign * keyShift) % 26 + 26) % 26;
+          if (code >= 65 && code <= 90) {
+            out += String.fromCharCode((code - 65 + s) % 26 + 65);
+            ki++;
+          } else if (code >= 97 && code <= 122) {
+            out += String.fromCharCode((code - 97 + s) % 26 + 97);
+            ki++;
+          } else {
+            out += text.charAt(i);
+          }
+        }
+        return out;
+      }
+
+      var modeSel = document.getElementById('cipher-mode');
+      var keyEl = document.getElementById('cipher-key');
+      var input = document.getElementById('cipher-input');
+      var output = document.getElementById('cipher-output');
+      var status = document.getElementById('cipher-status');
+      var hasRun = false;
+
+      function setStatus(msg, kind) {
+        status.textContent = msg || '';
+        status.className = 'cipher-status' + (kind ? ' ' + kind : '');
+      }
+
+      document.querySelectorAll('.cipher-presets button').forEach(function (b) {
+        b.addEventListener('click', function () {
+          keyEl.value = b.dataset.key;
+          if (hasRun) run();
+        });
+      });
+
+      function run() {
+        var key = keyEl.value.trim();
+        var mode = modeSel.value;
+        var text = input.value;
+        if (!text) { output.textContent = ''; setStatus('Type a message first.', 'err'); return; }
+        try {
+          output.textContent = vigenere(text, key, mode);
+          setStatus((mode === 'encode' ? 'Encoded' : 'Decoded') + ' with keyword "' + key.toLowerCase() + '".', 'ok');
+          hasRun = true;
+        } catch (err) {
+          output.textContent = '';
+          setStatus(err.message, 'err');
+        }
+      }
+
+      document.getElementById('cipher-go').addEventListener('click', run);
+      input.addEventListener('input', function () { if (hasRun) run(); });
+      keyEl.addEventListener('input', function () { if (hasRun) run(); });
+      modeSel.addEventListener('change', function () { if (hasRun) run(); });
+
+      document.getElementById('cipher-swap').addEventListener('click', function () {
+        if (output.textContent) input.value = output.textContent;
+        modeSel.value = modeSel.value === 'encode' ? 'decode' : 'encode';
+        run();
+      });
+
+      document.getElementById('cipher-clear').addEventListener('click', function () {
+        input.value = ''; output.textContent = ''; setStatus(''); hasRun = false;
+      });
+
+      function copyText(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(text);
+        }
+        return new Promise(function (resolve, reject) {
+          try {
+            var ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            var ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            ok ? resolve() : reject(new Error('execCommand failed'));
+          } catch (e) { reject(e); }
+        });
+      }
+
+      document.getElementById('cipher-copy').addEventListener('click', function () {
+        if (!output.textContent) { setStatus('Nothing to copy yet.', 'err'); return; }
+        copyText(output.textContent).then(function () {
+          setStatus('Copied to clipboard.', 'ok');
+        }, function () { setStatus('Copy failed — select and copy manually.', 'err'); });
+      });
+
+      document.getElementById('cipher-download').addEventListener('click', function () {
+        if (!output.textContent) { setStatus('Nothing to download yet.', 'err'); return; }
+        var blob = new Blob([output.textContent], { type: 'text/plain' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'keyword-cipher-' + modeSel.value + '.txt';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setStatus('Downloaded.', 'ok');
+      });
+    })();
+  </script>
+</body>
+</html>

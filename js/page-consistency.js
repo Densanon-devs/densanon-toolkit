@@ -88,7 +88,9 @@ const TOOLKIT_TOOLS = [
   { name: 'Images to PDF Converter', desc: 'Combine multiple images into a single PDF document with page size options.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'images-to-pdf', keywords: 'images to pdf combine merge photos pictures png jpg document' },
   { name: 'HTML to PDF Converter', desc: 'Convert HTML markup into a styled, downloadable PDF document.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'html-to-pdf', keywords: 'html to pdf convert markup web page document download' },
   { name: 'Markdown to PDF Converter', desc: 'Transform Markdown files into professionally formatted PDF documents.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'markdown-to-pdf', keywords: 'markdown to pdf convert md readme documentation formatted' },
-  { name: 'DOCX to HTML Converter', desc: 'Convert Word .docx files to clean, semantic HTML markup.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'docx-to-html', keywords: 'docx to html word document convert extract content semantic' }
+  { name: 'DOCX to HTML Converter', desc: 'Convert Word .docx files to clean, semantic HTML markup.', category: 'developer-tools', categoryLabel: 'Developer Tools', slug: 'docx-to-html', keywords: 'docx to html word document convert extract content semantic' },
+  { name: 'Caesar Cipher', desc: 'Encode or decode messages with a Caesar shift cipher. Includes a ROT13 preset.', category: 'secret-codes', categoryLabel: 'Secret Codes', slug: 'caesar-cipher', keywords: 'caesar cipher shift rot13 encode decode encrypt decrypt secret message classical' },
+  { name: 'Keyword Cipher (Vigenère)', desc: 'Encode or decode messages with a secret keyword using the Vigenère cipher.', category: 'secret-codes', categoryLabel: 'Secret Codes', slug: 'keyword-cipher', keywords: 'vigenere keyword cipher polyalphabetic encode decode encrypt decrypt secret classical' }
 ];
 
 function initPage(config = {}) {
@@ -118,7 +120,8 @@ function injectHeader(root, activeCategory) {
     { id: 'image-tools', label: 'Image Tools' },
     { id: 'developer-tools', label: 'Developer Tools' },
     { id: 'math-tools', label: 'Math' },
-    { id: 'media-tools', label: 'Media' }
+    { id: 'media-tools', label: 'Media' },
+    { id: 'secret-codes', label: 'Secret Codes' }
   ];
 
   const navLinks = categories.map(cat => {

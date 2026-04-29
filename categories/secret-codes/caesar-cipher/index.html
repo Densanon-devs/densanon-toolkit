@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caesar Cipher Encoder &amp; Decoder Online Free – Shift Cipher Tool | Densanon Toolkit</title>
+  <meta name="description" content="Free online Caesar cipher encoder and decoder. Shift letters by any amount from 1 to 25 to encrypt or decrypt messages. Includes ROT13 preset. No signup, instant, browser-based.">
+  <meta name="robots" content="index, follow">
+  <meta name="keywords" content="caesar cipher, caesar shift, rot13, encode, decode, encrypt, decrypt, classical cipher, shift cipher online">
+  <link rel="stylesheet" href="../../../css/style.css">
+  <style>
+    .cipher-form { display:flex; flex-direction:column; gap:18px; }
+    .cipher-row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+    .cipher-field { display:flex; flex-direction:column; gap:6px; flex:1; min-width:160px; }
+    .cipher-field label { font-size:0.85rem; font-weight:600; color:var(--color-text-muted); }
+    .cipher-field select, .cipher-field input[type="number"] {
+      padding:10px 12px; background:var(--color-surface); color:var(--color-text);
+      border:1px solid var(--color-border); border-radius:var(--radius); font-size:0.95rem;
+    }
+    .cipher-shift-row { display:flex; gap:12px; align-items:center; }
+    .cipher-shift-row input[type="range"] { flex:1; }
+    .cipher-shift-row .shift-val { min-width:42px; text-align:center; font-weight:700; color:var(--color-primary); }
+    .cipher-textarea {
+      width:100%; min-height:140px; padding:12px; background:var(--color-surface);
+      color:var(--color-text); border:1px solid var(--color-border); border-radius:var(--radius);
+      font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, monospace; font-size:0.95rem;
+      resize:vertical;
+    }
+    .cipher-output {
+      width:100%; min-height:140px; padding:12px; background:#0b0d14;
+      color:var(--color-text); border:1px solid var(--color-border); border-radius:var(--radius);
+      font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, monospace; font-size:0.95rem;
+      white-space:pre-wrap; word-break:break-word;
+    }
+    .cipher-actions { display:flex; gap:10px; flex-wrap:wrap; }
+    .cipher-actions button {
+      padding:10px 18px; background:var(--color-primary); color:#fff; border:0;
+      border-radius:var(--radius); font-weight:600; cursor:pointer; font-size:0.95rem;
+    }
+    .cipher-actions button.secondary {
+      background:var(--color-surface); color:var(--color-text); border:1px solid var(--color-border);
+    }
+    .cipher-actions button:hover { filter:brightness(1.1); }
+    .cipher-presets { display:flex; gap:8px; flex-wrap:wrap; }
+    .cipher-presets button {
+      padding:6px 12px; background:var(--color-surface); color:var(--color-text);
+      border:1px solid var(--color-border); border-radius:var(--radius); font-size:0.85rem; cursor:pointer;
+    }
+    .cipher-presets button:hover { border-color:var(--color-primary); }
+    .cipher-status { font-size:0.85rem; color:var(--color-text-muted); min-height:1.2em; }
+    .cipher-status.ok { color:#4ade80; }
+    .cipher-status.err { color:#f87171; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="category-header">
+      <div class="breadcrumb"></div>
+      <h1>Caesar Cipher</h1>
+      <p>Shift every letter in your message by 1 to 25 places to encode or decode a secret note. Numbers, spaces, and punctuation are preserved exactly.</p>
+    </div>
+
+    <section class="tool-box">
+      <div class="cipher-form">
+        <div class="cipher-row">
+          <div class="cipher-field">
+            <label for="cipher-mode">Mode</label>
+            <select id="cipher-mode">
+              <option value="encode">Encode (shift forward)</option>
+              <option value="decode">Decode (shift backward)</option>
+            </select>
+          </div>
+          <div class="cipher-field">
+            <label for="cipher-shift-num">Shift amount (1–25)</label>
+            <div class="cipher-shift-row">
+              <input id="cipher-shift" type="range" min="1" max="25" value="3">
+              <input id="cipher-shift-num" type="number" min="1" max="25" value="3" style="width:70px;">
+              <span class="shift-val" id="cipher-shift-display">3</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cipher-presets">
+          <span style="font-size:0.85rem;color:var(--color-text-muted);align-self:center;">Presets:</span>
+          <button data-shift="3" type="button">Caesar (3)</button>
+          <button data-shift="13" type="button">ROT13</button>
+          <button data-shift="1" type="button">Shift 1</button>
+          <button data-shift="25" type="button">Shift 25</button>
+        </div>
+
+        <div class="cipher-field">
+          <label for="cipher-input">Your message</label>
+          <textarea id="cipher-input" class="cipher-textarea" placeholder="Type or paste your message here..."></textarea>
+        </div>
+
+        <div class="cipher-actions">
+          <button id="cipher-go" type="button">Convert</button>
+          <button id="cipher-swap" type="button" class="secondary">Swap (encode &harr; decode)</button>
+          <button id="cipher-clear" type="button" class="secondary">Clear</button>
+        </div>
+
+        <div class="cipher-field">
+          <label for="cipher-output">Result</label>
+          <div id="cipher-output" class="cipher-output"></div>
+          <div class="cipher-actions" style="margin-top:8px;">
+            <button id="cipher-copy" type="button" class="secondary">Copy result</button>
+            <button id="cipher-download" type="button" class="secondary">Download .txt</button>
+          </div>
+          <div class="cipher-status" id="cipher-status"></div>
+        </div>
+      </div>
+      <div class="converter-all-link" style="margin-top:16px;">
+        <a href="../index.html">&larr; All Secret Codes</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>What is the Caesar Cipher?</h2>
+      <p>The Caesar cipher is one of the oldest and simplest forms of encryption, named after Julius Caesar who used it to send private messages to his generals. The cipher works by shifting each letter of the alphabet by a fixed number of positions. With a shift of 3 (Caesar's traditional choice), the letter <code>A</code> becomes <code>D</code>, <code>B</code> becomes <code>E</code>, and so on. When you reach the end of the alphabet, you wrap around to the beginning — so <code>X</code> becomes <code>A</code> with a shift of 3. Decoding works the same way in reverse: you shift each letter <em>backward</em> by the same amount to recover the original message.</p>
+    </section>
+
+    <section>
+      <h2>How to Use This Caesar Cipher Tool</h2>
+      <ol>
+        <li><strong>Pick a mode</strong> — choose Encode to scramble your message, or Decode to unscramble one you received.</li>
+        <li><strong>Set the shift amount</strong> — drag the slider or type a number from 1 to 25. Use a preset like ROT13 or the classical Caesar shift of 3.</li>
+        <li><strong>Type your message</strong> — paste or type into the message box. Letters will be shifted; numbers, spaces, and punctuation pass through unchanged.</li>
+        <li><strong>Click Convert</strong> — the result appears instantly in the output panel, where you can copy or download it.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Example</h2>
+      <p>With a shift of 3, the message:</p>
+      <p><code>Hello, World!</code></p>
+      <p>encodes to:</p>
+      <p><code>Khoor, Zruog!</code></p>
+      <p>Notice how the comma, space, and exclamation mark are unchanged, and the original capitalization is preserved.</p>
+    </section>
+
+    <section>
+      <h2>What is ROT13?</h2>
+      <p>ROT13 is a special case of the Caesar cipher where the shift is exactly 13. Because the English alphabet has 26 letters, applying ROT13 twice returns the original text — encoding and decoding are the same operation. ROT13 has been used for decades on Usenet and forums to hide spoilers, punchlines, or potentially offensive text without truly hiding it from anyone willing to decode.</p>
+    </section>
+
+    <section>
+      <h2>Common Use Cases</h2>
+      <ul>
+        <li>Write escape-room and scavenger-hunt clues that players need to decode on the spot</li>
+        <li>Teach the basics of classical cryptography, frequency analysis, and code-breaking</li>
+        <li>Hide spoilers in forum posts using ROT13, the internet's traditional spoiler-encoding</li>
+        <li>Create encrypted props (notes, journals, signs) for TTRPG campaigns and LARPs</li>
+        <li>Solve Caesar-encoded puzzles in adventure games, ARGs, and puzzle books</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      <h3>Is the Caesar cipher secure?</h3>
+      <p>No. The Caesar cipher has only 25 possible keys, so anyone can brute-force every shift in seconds. It is also vulnerable to letter-frequency analysis. Never use it to protect real secrets — use modern encryption like AES via a trusted password manager or messenger.</p>
+      <h3>Why does the tool preserve case and punctuation?</h3>
+      <p>Preserving case and non-letter characters is the standard behavior for the Caesar cipher and makes the encoded output much easier to work with in puzzles and word games. If you want fully uniform output, you can lowercase your input before encoding.</p>
+      <h3>What is the difference between encoding and decoding?</h3>
+      <p>Encoding shifts each letter <em>forward</em> by the chosen amount. Decoding shifts each letter <em>backward</em> by the same amount. With a shift of 13 (ROT13), encoding and decoding produce the same result.</p>
+      <h3>Does this tool send my message to a server?</h3>
+      <p>No. All shifting happens entirely in your browser using local JavaScript. Nothing is uploaded, logged, or stored.</p>
+    </section>
+
+    <section class="related-tools">
+      <h2>Related Tools</h2>
+      <a href="../keyword-cipher/index.html">Keyword Cipher (Vigenère)</a>
+      <a href="../../developer-tools/base64-encoder/index.html">Base64 Encoder</a>
+      <a href="../../developer-tools/base64-decoder/index.html">Base64 Decoder</a>
+    </section>
+  </main>
+
+  <script src="../../../js/page-consistency.js"></script>
+  <script>
+    initPage({
+      depth: 3,
+      activeCategory: 'secret-codes',
+      title: 'Caesar Cipher Encoder &amp; Decoder Online Free – Shift Cipher Tool',
+      breadcrumbs: [
+        { label: 'Secret Codes', href: '../index.html' },
+        { label: 'Caesar Cipher' }
+      ]
+    });
+  </script>
+  <script>
+    (function () {
+      'use strict';
+
+      function caesarShift(text, shift, mode) {
+        var s = ((mode === 'decode' ? -shift : shift) % 26 + 26) % 26;
+        var out = '';
+        for (var i = 0; i < text.length; i++) {
+          var code = text.charCodeAt(i);
+          if (code >= 65 && code <= 90) {
+            out += String.fromCharCode((code - 65 + s) % 26 + 65);
+          } else if (code >= 97 && code <= 122) {
+            out += String.fromCharCode((code - 97 + s) % 26 + 97);
+          } else {
+            out += text.charAt(i);
+          }
+        }
+        return out;
+      }
+
+      var modeSel = document.getElementById('cipher-mode');
+      var slider = document.getElementById('cipher-shift');
+      var num = document.getElementById('cipher-shift-num');
+      var display = document.getElementById('cipher-shift-display');
+      var input = document.getElementById('cipher-input');
+      var output = document.getElementById('cipher-output');
+      var status = document.getElementById('cipher-status');
+      var hasRun = false;
+
+      function syncShift(val) {
+        var n = Math.max(1, Math.min(25, parseInt(val, 10) || 1));
+        slider.value = String(n);
+        if (num.value !== String(n)) num.value = String(n);
+        display.textContent = String(n);
+        if (hasRun) run();
+      }
+
+      slider.addEventListener('input', function () { syncShift(slider.value); });
+      num.addEventListener('input', function () { syncShift(num.value); });
+
+      document.querySelectorAll('.cipher-presets button').forEach(function (b) {
+        b.addEventListener('click', function () { syncShift(b.dataset.shift); });
+      });
+
+      function setStatus(msg, kind) {
+        status.textContent = msg || '';
+        status.className = 'cipher-status' + (kind ? ' ' + kind : '');
+      }
+
+      function run() {
+        var shift = Math.max(1, Math.min(25, parseInt(slider.value, 10) || 1));
+        var mode = modeSel.value;
+        var text = input.value;
+        if (!text) { output.textContent = ''; setStatus('Type a message first.', 'err'); return; }
+        output.textContent = caesarShift(text, shift, mode);
+        setStatus((mode === 'encode' ? 'Encoded' : 'Decoded') + ' with shift ' + shift + '.', 'ok');
+        hasRun = true;
+      }
+
+      document.getElementById('cipher-go').addEventListener('click', run);
+      input.addEventListener('input', function () { if (hasRun) run(); });
+      modeSel.addEventListener('change', function () { if (hasRun) run(); });
+
+      document.getElementById('cipher-swap').addEventListener('click', function () {
+        if (output.textContent) input.value = output.textContent;
+        modeSel.value = modeSel.value === 'encode' ? 'decode' : 'encode';
+        run();
+      });
+
+      document.getElementById('cipher-clear').addEventListener('click', function () {
+        input.value = ''; output.textContent = ''; setStatus(''); hasRun = false;
+      });
+
+      function copyText(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(text);
+        }
+        return new Promise(function (resolve, reject) {
+          try {
+            var ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            var ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            ok ? resolve() : reject(new Error('execCommand failed'));
+          } catch (e) { reject(e); }
+        });
+      }
+
+      document.getElementById('cipher-copy').addEventListener('click', function () {
+        if (!output.textContent) { setStatus('Nothing to copy yet.', 'err'); return; }
+        copyText(output.textContent).then(function () {
+          setStatus('Copied to clipboard.', 'ok');
+        }, function () { setStatus('Copy failed — select and copy manually.', 'err'); });
+      });
+
+      document.getElementById('cipher-download').addEventListener('click', function () {
+        if (!output.textContent) { setStatus('Nothing to download yet.', 'err'); return; }
+        var blob = new Blob([output.textContent], { type: 'text/plain' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'caesar-cipher-' + modeSel.value + '.txt';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setStatus('Downloaded.', 'ok');
+      });
+    })();
+  </script>
+</body>
+</html>
