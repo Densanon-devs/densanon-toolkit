@@ -265,13 +265,18 @@ function initDocumentConverter(config) {
     Object.keys(fontW).forEach(function (k) {
       if (fontW[k].c > 0) perChar[k] = fontW[k].w / fontW[k].c;
     });
-    var widthVals = Object.keys(perChar).map(function (k) { return perChar[k]; })
-      .filter(function (v) { return isFinite(v) && v > 0; })
-      .sort(function (a, b) { return a - b; });
-    var medianW = widthVals.length ? widthVals[Math.floor(widthVals.length / 2)] : 0;
+    // Pick the body font: the key with the most visible characters. In a
+    // real document, the regular-weight body face dominates char count, and
+    // bold/heading faces are by definition less common. This is far more
+    // robust than median-width — a doc with two bold faces (e.g. heading
+    // semibold + inline-bold) would put the median right at one of them and
+    // miss it. Using the most-chars font as the regular baseline avoids
+    // that. Anything > body × 1.05 is treated as bold.
+    var bodyKey = Object.keys(fontW).sort(function (a, b) { return fontW[b].c - fontW[a].c; })[0];
+    var bodyWidth = bodyKey ? perChar[bodyKey] : 0;
     var fontBold = {};
     Object.keys(perChar).forEach(function (k) {
-      fontBold[k] = medianW > 0 && perChar[k] > medianW * 1.06;
+      fontBold[k] = bodyWidth > 0 && perChar[k] > bodyWidth * 1.05;
     });
 
     // Apply width-based bold flag (additive — name-based detection still wins
@@ -292,7 +297,7 @@ function initDocumentConverter(config) {
           bold: !!fontBold[v.fn] || BOLD_RE.test(k),
           italic: ITALIC_RE.test(k) };
       });
-      console.log('[PDF→DOCX] body font size pt:', bodySize, 'median width/char/pt:', medianW.toFixed(3), 'fonts seen:', fontTable);
+      console.log('[PDF→DOCX] body font size pt:', bodySize, 'body font key:', bodyKey, 'body width/char/pt:', bodyWidth.toFixed(3), 'fonts seen:', fontTable);
     } catch (e) { /* swallow */ }
 
     // ── Step 3: collapse each line's fragments into runs ──
