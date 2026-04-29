@@ -188,6 +188,55 @@ function initDocumentConverter(config) {
     // and other PDFs put the clue only in fontFamily.
     var BOLD_RE = /bold|black|heavy|semibold|extrabold|ultrabold|demibold|[7-9]00/i;
     var ITALIC_RE = /italic|oblique/i;
+
+    // Walk the page operator list to extract a color per text-show op. PDF
+    // colors live in the page's content stream (setFillRGBColor / setFillGray
+    // / setFillCMYKColor) as paint state between text-show ops, not in
+    // getTextContent() output. We track the current fill color, count items
+    // emitted by each text-show op type (showText/nextLineShowText emit one;
+    // showSpacedText emits one per string element of its TJ array), and
+    // return one hex string per logical text item.
+    function chToByte(v) {
+      if (v == null) return 0;
+      if (v >= 0 && v <= 1) return Math.round(v * 255);
+      return Math.max(0, Math.min(255, Math.round(v)));
+    }
+    function rgbToHex(r, g, b) {
+      var n = (chToByte(r) << 16) | (chToByte(g) << 8) | chToByte(b);
+      return ('000000' + n.toString(16)).slice(-6);
+    }
+    async function extractItemColors(page) {
+      try {
+        var opList = await page.getOperatorList();
+        var OPS = pdfjsLib.OPS;
+        var colors = [];
+        var current = '000000';
+        for (var i = 0; i < opList.fnArray.length; i++) {
+          var op = opList.fnArray[i];
+          var args = opList.argsArray[i];
+          if (op === OPS.setFillRGBColor) {
+            current = rgbToHex(args[0], args[1], args[2]);
+          } else if (op === OPS.setFillGray) {
+            current = rgbToHex(args[0], args[0], args[0]);
+          } else if (op === OPS.setFillCMYKColor) {
+            var c = args[0] || 0, m = args[1] || 0, y = args[2] || 0, k = args[3] || 0;
+            current = rgbToHex((1 - c) * (1 - k), (1 - m) * (1 - k), (1 - y) * (1 - k));
+          } else if (op === OPS.showText || op === OPS.nextLineShowText || op === OPS.nextLineSetSpacingShowText) {
+            colors.push(current);
+          } else if (op === OPS.showSpacedText) {
+            var arr = args[0] || [];
+            for (var ai = 0; ai < arr.length; ai++) {
+              if (typeof arr[ai] === 'string') colors.push(current);
+            }
+          }
+        }
+        return colors;
+      } catch (e) {
+        console.warn('[PDF→DOCX] color extraction failed:', e);
+        return null;
+      }
+    }
+
     var pagesLines = [];
     var debugFonts = {};
     for (var p = 1; p <= pdf.numPages; p++) {
@@ -197,14 +246,26 @@ function initDocumentConverter(config) {
       var styles = content.styles || {};
       var vp = page.getViewport({ scale: 1 });
       var pageHeight = vp.height;
+      var pageColors = await extractItemColors(page);
 
-      var items = content.items.map(function (item) {
+      var items = content.items.map(function (item, rawIdx) {
         var tx = item.transform;
         var styleEntry = styles[item.fontName] || {};
         var ff = (styleEntry.fontFamily || '').toLowerCase();
         var fn = (item.fontName || '').toLowerCase();
         var combined = fn + '|' + ff;
         if (!debugFonts[combined]) debugFonts[combined] = { fn: item.fontName, ff: styleEntry.fontFamily, sample: item.str.slice(0, 24) };
+        // Map raw-index → color by ratio when counts disagree (PDF.js
+        // sometimes merges adjacent showText ops into one item or splits one
+        // op across multiple). Both lists are still in document order, so
+        // this approximates well enough that long runs of black stay black.
+        var color = '000000';
+        if (pageColors && pageColors.length) {
+          var colorIdx = pageColors.length === content.items.length
+            ? rawIdx
+            : Math.min(pageColors.length - 1, Math.floor(rawIdx * pageColors.length / Math.max(1, content.items.length)));
+          color = pageColors[colorIdx] || '000000';
+        }
         return {
           str: item.str,
           x: tx[4],
@@ -213,7 +274,8 @@ function initDocumentConverter(config) {
           fontSize: Math.abs(tx[0]) || Math.abs(tx[3]) || 12,
           fontKey: item.fontName || '',
           bold: BOLD_RE.test(combined),
-          italic: ITALIC_RE.test(combined)
+          italic: ITALIC_RE.test(combined),
+          color: color
         };
       }).filter(function (it) { return it.str.length > 0; });
 
@@ -317,10 +379,10 @@ function initDocumentConverter(config) {
         }
         var text = sep + f.str;
         var last = runs[runs.length - 1];
-        if (last && last.bold === f.bold && last.italic === f.italic) {
+        if (last && last.bold === f.bold && last.italic === f.italic && last.color === f.color) {
           last.str += text;
         } else {
-          runs.push({ str: text, bold: f.bold, italic: f.italic });
+          runs.push({ str: text, bold: f.bold, italic: f.italic, color: f.color });
         }
         prevFrag = f;
       });
@@ -339,7 +401,7 @@ function initDocumentConverter(config) {
     }
 
     function cloneRuns(runs) {
-      return runs.map(function (r) { return { str: r.str, bold: r.bold, italic: r.italic }; });
+      return runs.map(function (r) { return { str: r.str, bold: r.bold, italic: r.italic, color: r.color }; });
     }
 
     function appendRunsTo(target, source) {
@@ -351,21 +413,19 @@ function initDocumentConverter(config) {
       }
       source.forEach(function (r) {
         var last = target[target.length - 1];
-        if (last && !last.br && last.bold === r.bold && last.italic === r.italic) last.str += r.str;
-        else target.push({ str: r.str, bold: r.bold, italic: r.italic });
+        if (last && !last.br && last.bold === r.bold && last.italic === r.italic && last.color === r.color) last.str += r.str;
+        else target.push({ str: r.str, bold: r.bold, italic: r.italic, color: r.color });
       });
     }
 
     function appendBreakAndRuns(target, source) {
-      // Trim trailing whitespace off the previous run before the break — the
-      // line was visually self-contained so the implicit space is wrong.
       if (target.length) {
         var last = target[target.length - 1];
         if (last.str) last.str = last.str.replace(/\s+$/, '');
       }
       target.push({ str: '', br: true });
       source.forEach(function (r) {
-        target.push({ str: r.str.replace(/^\s+/, ''), bold: r.bold, italic: r.italic });
+        target.push({ str: r.str.replace(/^\s+/, ''), bold: r.bold, italic: r.italic, color: r.color });
       });
     }
 
@@ -467,10 +527,15 @@ function initDocumentConverter(config) {
       runs.forEach(function (r) {
         if (r.br) { out.push(new d.TextRun({ text: '', break: 1 })); return; }
         if (!r.str) return;
+        // Always pass an explicit color (default '000000' if PDF didn't set
+        // one). This stomps Word's default Heading-style blue at the run
+        // level — even a heading paragraph reads black unless the source PDF
+        // actually painted color text.
         out.push(new d.TextRun({
           text: r.str,
           bold: r.bold || undefined,
-          italics: r.italic || undefined
+          italics: r.italic || undefined,
+          color: r.color || '000000'
         }));
       });
       if (!out.length) out.push(new d.TextRun(''));
@@ -515,21 +580,7 @@ function initDocumentConverter(config) {
       }]
     };
 
-    // Override Word's default Heading 1/2/3 colors (which ship blue) to black
-    // so the converted .docx matches typical PDF source text. Sizes/spacing
-    // from Word's built-in heading styles are kept — only the run color is
-    // overridden.
-    var stylesConfig = {
-      default: {
-        heading1: { run: { color: '000000' } },
-        heading2: { run: { color: '000000' } },
-        heading3: { run: { color: '000000' } },
-        heading4: { run: { color: '000000' } }
-      }
-    };
-
     var docxDoc = new d.Document({
-      styles: stylesConfig,
       numbering: numbering,
       sections: [{ properties: {}, children: paragraphs }]
     });
