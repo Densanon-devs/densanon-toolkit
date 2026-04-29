@@ -487,6 +487,11 @@ function initDocumentConverter(config) {
             rec.runs[0].str = rec.runs[0].str.replace(BULLET_RE, '');
             while (rec.runs.length && !rec.runs[0].str) rec.runs.shift();
           }
+          // Recompute allBold from remaining runs — the bullet glyph itself
+          // may live in a non-bold font (often Symbol/Arial regardless of
+          // surrounding weight), which would otherwise mask a bold bullet
+          // sub-heading line and block the wrap-line break logic later.
+          rec.allBold = rec.runs.length > 0 && rec.runs.every(function (r) { return r.bold; });
           blocks.push({ kind: 'bullet', level: 0, runs: cloneRuns(rec.runs), x: rec.x, startY: rec.y, endY: rec.y });
           prevRec = rec; firstLineSeen = true;
           return;
@@ -500,6 +505,7 @@ function initDocumentConverter(config) {
             rec.runs[0].str = rec.runs[0].str.replace(SUBBULLET_RE, '');
             while (rec.runs.length && !rec.runs[0].str) rec.runs.shift();
           }
+          rec.allBold = rec.runs.length > 0 && rec.runs.every(function (r) { return r.bold; });
           blocks.push({ kind: 'bullet', level: 1, runs: cloneRuns(rec.runs), x: rec.x, startY: rec.y, endY: rec.y });
           prevRec = rec; firstLineSeen = true;
           return;
@@ -569,20 +575,26 @@ function initDocumentConverter(config) {
     // ── Step 5: emit DOCX ──
     function runsToTextRuns(runs) {
       var out = [];
+      var pendingBreak = 0;
       runs.forEach(function (r) {
-        if (r.br) { out.push(new d.TextRun({ text: '', break: 1 })); return; }
+        if (r.br) { pendingBreak += 1; return; }
         if (!r.str) return;
         // Always pass an explicit color (default '000000' if PDF didn't set
         // one). This stomps Word's default Heading-style blue at the run
         // level — even a heading paragraph reads black unless the source PDF
-        // actually painted color text.
-        out.push(new d.TextRun({
+        // actually painted color text. A pending soft break attaches to the
+        // next non-empty run as `break: N`, which docx@8 emits as <w:br/>
+        // before the text — a standalone empty TextRun gets dropped.
+        var opts = {
           text: r.str,
           bold: r.bold || undefined,
           italics: r.italic || undefined,
           color: r.color || '000000'
-        }));
+        };
+        if (pendingBreak) { opts.break = pendingBreak; pendingBreak = 0; }
+        out.push(new d.TextRun(opts));
       });
+      if (pendingBreak) out.push(new d.TextRun({ text: ' ', break: pendingBreak }));
       if (!out.length) out.push(new d.TextRun(''));
       return out;
     }
