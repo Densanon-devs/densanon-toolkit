@@ -167,69 +167,263 @@ function initDocumentConverter(config) {
     });
   }
 
-  // Walk a structured HTML string (h1-h4, p, strong, em, <div page-break>) and
-  // emit a real .docx Blob via the `docx` library. This preserves the heading
-  // hierarchy and inline formatting that the PDF parser detected, while
-  // producing OOXML that Word, Google Docs, and LibreOffice all open reliably.
-  function htmlStructureToDocxBlob(html) {
+  // Build a DOCX Blob directly from a PDF, preserving paragraph flow,
+  // per-fragment bold/italic, bullet lists, headings, and section dividers.
+  // Returns a Promise<Blob>.
+  async function pdfToDocxBlob(file, statusEl) {
     var d = window.docx;
     var HeadingLevel = d.HeadingLevel;
-    var doc = new DOMParser().parseFromString(html, 'text/html');
+    var BorderStyle = d.BorderStyle || { SINGLE: 'single' };
+    var LevelFormat = d.LevelFormat || { BULLET: 'bullet' };
+    var AlignmentType = d.AlignmentType || { LEFT: 'left' };
 
-    function runsFromNode(node, ctx) {
-      ctx = ctx || { bold: false, italic: false };
-      var runs = [];
-      for (var i = 0; i < node.childNodes.length; i++) {
-        var c = node.childNodes[i];
-        if (c.nodeType === 3) { // text
-          var t = c.nodeValue;
-          if (t) runs.push(new d.TextRun({ text: t, bold: ctx.bold || undefined, italics: ctx.italic || undefined }));
-        } else if (c.nodeType === 1) { // element
-          var tag = c.tagName.toLowerCase();
-          var nextCtx = {
-            bold: ctx.bold || tag === 'strong' || tag === 'b',
-            italic: ctx.italic || tag === 'em' || tag === 'i'
-          };
-          if (tag === 'br') { runs.push(new d.TextRun({ text: '', break: 1 })); continue; }
-          runs = runs.concat(runsFromNode(c, nextCtx));
-        }
+    var buf = await file.arrayBuffer();
+    var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+
+    // ── Step 1: extract every page into sorted lines of fragments ──
+    var pagesLines = [];
+    for (var p = 1; p <= pdf.numPages; p++) {
+      setStatus(statusEl, 'Processing page ' + p + ' of ' + pdf.numPages + '...', 'loading');
+      var page = await pdf.getPage(p);
+      var content = await page.getTextContent();
+      var vp = page.getViewport({ scale: 1 });
+      var pageHeight = vp.height;
+
+      var items = content.items.map(function (item) {
+        var tx = item.transform;
+        var fn = (item.fontName || '').toLowerCase();
+        return {
+          str: item.str,
+          x: tx[4],
+          y: pageHeight - tx[5],
+          width: item.width || 0,
+          fontSize: Math.abs(tx[0]) || Math.abs(tx[3]) || 12,
+          bold: fn.indexOf('bold') !== -1 || fn.indexOf('black') !== -1 || fn.indexOf('heavy') !== -1,
+          italic: fn.indexOf('italic') !== -1 || fn.indexOf('oblique') !== -1
+        };
+      }).filter(function (it) { return it.str.length > 0; });
+
+      if (!items.length) { pagesLines.push([]); continue; }
+      items.sort(function (a, b) { return (a.y - b.y) || (a.x - b.x); });
+
+      var lines = [], cur = [items[0]];
+      for (var i = 1; i < items.length; i++) {
+        if (Math.abs(items[i].y - cur[0].y) < 3) cur.push(items[i]);
+        else { cur.sort(function (a, b) { return a.x - b.x; }); lines.push(cur); cur = [items[i]]; }
       }
-      return runs;
+      if (cur.length) { cur.sort(function (a, b) { return a.x - b.x; }); lines.push(cur); }
+      pagesLines.push(lines);
     }
 
-    var headingMap = {
-      h1: HeadingLevel.HEADING_1,
-      h2: HeadingLevel.HEADING_2,
-      h3: HeadingLevel.HEADING_3,
-      h4: HeadingLevel.HEADING_4
-    };
+    // ── Step 2: body font size (most common across the whole doc) ──
+    var sizeCounts = {};
+    pagesLines.forEach(function (lines) {
+      lines.forEach(function (line) {
+        line.forEach(function (it) {
+          var s = Math.round(it.fontSize);
+          sizeCounts[s] = (sizeCounts[s] || 0) + 1;
+        });
+      });
+    });
+    var bodySize = parseInt(Object.keys(sizeCounts).sort(function (a, b) { return sizeCounts[b] - sizeCounts[a]; })[0]) || 12;
+    var expectedLineGap = bodySize * 1.4;
+
+    // ── Step 3: collapse each line's fragments into runs ──
+    // Adjacent fragments with the same bold/italic merge; spacing is
+    // inserted only when there's a real X gap and no existing whitespace.
+    function lineToRecord(line) {
+      var runs = [];
+      var prevFrag = null;
+      line.forEach(function (f) {
+        var sep = '';
+        if (prevFrag) {
+          var gap = f.x - (prevFrag.x + prevFrag.width);
+          var charW = prevFrag.width / Math.max(1, prevFrag.str.length) || (prevFrag.fontSize * 0.5);
+          var endsWS = /\s$/.test(prevFrag.str);
+          var startsWS = /^\s/.test(f.str);
+          if (!endsWS && !startsWS && gap > charW * 0.3) sep = ' ';
+        }
+        var text = sep + f.str;
+        var last = runs[runs.length - 1];
+        if (last && last.bold === f.bold && last.italic === f.italic) {
+          last.str += text;
+        } else {
+          runs.push({ str: text, bold: f.bold, italic: f.italic });
+        }
+        prevFrag = f;
+      });
+
+      var allBold = line.every(function (f) { return f.bold; });
+      var maxSize = line.reduce(function (m, f) { return Math.max(m, f.fontSize); }, 0);
+      var text = runs.map(function (r) { return r.str; }).join('');
+      return {
+        runs: runs,
+        text: text,
+        y: line[0].y,
+        x: line[0].x,
+        maxSize: maxSize,
+        allBold: allBold
+      };
+    }
+
+    function cloneRuns(runs) {
+      return runs.map(function (r) { return { str: r.str, bold: r.bold, italic: r.italic }; });
+    }
+
+    function appendRunsTo(target, source) {
+      if (!source.length) return;
+      // Add a soft space between merged lines if neither side already has whitespace.
+      if (target.length) {
+        var last = target[target.length - 1];
+        if (last.str && !/\s$/.test(last.str) && !/^\s/.test(source[0].str)) last.str += ' ';
+      }
+      source.forEach(function (r) {
+        var last = target[target.length - 1];
+        if (last && last.bold === r.bold && last.italic === r.italic) last.str += r.str;
+        else target.push({ str: r.str, bold: r.bold, italic: r.italic });
+      });
+    }
+
+    // ── Step 4: walk lines, group into blocks (paragraph / bullet / heading / divider / pageBreak) ──
+    // U+2022 •  U+25CF ●  U+25E6 ◦  U+2023 ‣  hyphen-minus and en/em dashes are NOT bullets
+    var BULLET_RE = /^\s*[•●◦‣]\s*/;
+    var SUBBULLET_RE = /^\s*o\s+/;
+    var HEADING_PREFIX_RE = /^(\d+\.\s|Option\s+[A-Z]\b|Acknowledgment|Purpose|Intent|Definitions|General Terms|Intellectual Property|Participation Structure)/i;
+
+    var blocks = [];
+    var firstLineSeen = false;
+
+    pagesLines.forEach(function (lines, pageIdx) {
+      var prevRec = null;
+      lines.forEach(function (line) {
+        var rec = lineToRecord(line);
+        if (!rec.text.trim()) { prevRec = rec; return; }
+
+        var gap = prevRec ? rec.y - prevRec.y : 0;
+        var bigGap = prevRec && gap > expectedLineGap * 1.6;
+        var hugeGap = prevRec && gap > expectedLineGap * 3.2;
+
+        // Divider on a really large gap (mimics the PDF's horizontal rules).
+        if (hugeGap) blocks.push({ kind: 'divider' });
+
+        // Bullet glyph?
+        if (BULLET_RE.test(rec.text)) {
+          rec.text = rec.text.replace(BULLET_RE, '');
+          if (rec.runs.length) {
+            rec.runs[0].str = rec.runs[0].str.replace(BULLET_RE, '');
+            while (rec.runs.length && !rec.runs[0].str) rec.runs.shift();
+          }
+          blocks.push({ kind: 'bullet', level: 0, runs: cloneRuns(rec.runs), x: rec.x });
+          prevRec = rec; firstLineSeen = true;
+          return;
+        }
+
+        // Sub-bullet (Word's "o " convention) — only if the previous block was a bullet.
+        var lastBlock = blocks[blocks.length - 1];
+        if (SUBBULLET_RE.test(rec.text) && lastBlock && lastBlock.kind === 'bullet') {
+          rec.text = rec.text.replace(SUBBULLET_RE, '');
+          if (rec.runs.length) {
+            rec.runs[0].str = rec.runs[0].str.replace(SUBBULLET_RE, '');
+            while (rec.runs.length && !rec.runs[0].str) rec.runs.shift();
+          }
+          blocks.push({ kind: 'bullet', level: 1, runs: cloneRuns(rec.runs), x: rec.x });
+          prevRec = rec; firstLineSeen = true;
+          return;
+        }
+
+        // Heading: standalone bold line, short-ish, with section-prefix or
+        // a leading gap, or it's the very first line of the document (title).
+        var standalone = bigGap || !firstLineSeen;
+        var matchesPrefix = HEADING_PREFIX_RE.test(rec.text.trim());
+        var shortish = rec.text.length < 110;
+        var isHeading = rec.allBold && shortish && (matchesPrefix || standalone) && rec.text.trim().length > 1;
+
+        if (isHeading) {
+          var level = !firstLineSeen ? 1 : (matchesPrefix && /^\d+\./.test(rec.text.trim()) ? 2 : 3);
+          blocks.push({ kind: 'heading', level: level, runs: cloneRuns(rec.runs), x: rec.x });
+          prevRec = rec; firstLineSeen = true;
+          return;
+        }
+
+        // Continuation vs. new paragraph.
+        // A bullet keeps absorbing wrap-lines as long as they stay indented.
+        // A line that returns to (or near) the left margin starts a new paragraph.
+        var canContinue = lastBlock && !bigGap &&
+          (lastBlock.kind === 'paragraph' || lastBlock.kind === 'bullet');
+
+        if (canContinue && lastBlock.kind === 'bullet' && rec.x < (lastBlock.x || 0) - 12) {
+          canContinue = false;
+        }
+
+        if (canContinue) {
+          appendRunsTo(lastBlock.runs, rec.runs);
+        } else {
+          blocks.push({ kind: 'paragraph', runs: cloneRuns(rec.runs), x: rec.x });
+        }
+        prevRec = rec; firstLineSeen = true;
+      });
+
+      if (pageIdx < pagesLines.length - 1) blocks.push({ kind: 'pageBreak' });
+    });
+
+    // ── Step 5: emit DOCX ──
+    function runsToTextRuns(runs) {
+      var out = [];
+      runs.forEach(function (r) {
+        if (!r.str) return;
+        out.push(new d.TextRun({
+          text: r.str,
+          bold: r.bold || undefined,
+          italics: r.italic || undefined
+        }));
+      });
+      if (!out.length) out.push(new d.TextRun(''));
+      return out;
+    }
 
     var paragraphs = [];
-    var bodyChildren = doc.body.children;
-    for (var i = 0; i < bodyChildren.length; i++) {
-      var el = bodyChildren[i];
-      var tag = el.tagName.toLowerCase();
-
-      // Page-break <div style="page-break-after:always;">
-      if (tag === 'div' && /page-break/i.test(el.getAttribute('style') || '')) {
+    blocks.forEach(function (b) {
+      if (b.kind === 'pageBreak') {
         paragraphs.push(new d.Paragraph({ children: [new d.PageBreak()] }));
-        continue;
+      } else if (b.kind === 'divider') {
+        paragraphs.push(new d.Paragraph({
+          border: { bottom: { color: '888888', size: 6, style: BorderStyle.SINGLE, space: 1 } },
+          children: [new d.TextRun('')]
+        }));
+      } else if (b.kind === 'heading') {
+        var hl = HeadingLevel.HEADING_2;
+        if (b.level === 1) hl = HeadingLevel.HEADING_1;
+        else if (b.level === 3) hl = HeadingLevel.HEADING_3;
+        paragraphs.push(new d.Paragraph({ heading: hl, children: runsToTextRuns(b.runs) }));
+      } else if (b.kind === 'bullet') {
+        paragraphs.push(new d.Paragraph({
+          numbering: { reference: 'pdf-bullets', level: b.level || 0 },
+          children: runsToTextRuns(b.runs)
+        }));
+      } else {
+        paragraphs.push(new d.Paragraph({ children: runsToTextRuns(b.runs) }));
       }
+    });
 
-      var runs = runsFromNode(el);
-      if (!runs.length) continue;
+    if (!paragraphs.length) paragraphs.push(new d.Paragraph({ children: [new d.TextRun('')] }));
 
-      var opts = { children: runs };
-      if (headingMap[tag]) opts.heading = headingMap[tag];
-      paragraphs.push(new d.Paragraph(opts));
-    }
+    var numbering = {
+      config: [{
+        reference: 'pdf-bullets',
+        levels: [
+          { level: 0, format: LevelFormat.BULLET, text: '•', alignment: AlignmentType.LEFT,
+            style: { paragraph: { indent: { left: 720, hanging: 360 } } } },
+          { level: 1, format: LevelFormat.BULLET, text: '◦', alignment: AlignmentType.LEFT,
+            style: { paragraph: { indent: { left: 1440, hanging: 360 } } } }
+        ]
+      }]
+    };
 
-    if (!paragraphs.length) {
-      paragraphs.push(new d.Paragraph({ children: [new d.TextRun('')] }));
-    }
-
-    var docxDoc = new d.Document({ sections: [{ properties: {}, children: paragraphs }] });
-    return d.Packer.toBlob(docxDoc);
+    var docxDoc = new d.Document({
+      numbering: numbering,
+      sections: [{ properties: {}, children: paragraphs }]
+    });
+    return await d.Packer.toBlob(docxDoc);
   }
 
   // ── Helpers ──
@@ -321,103 +515,14 @@ function initDocumentConverter(config) {
       try {
         await Promise.all([loadPdfJs(), loadDocx()]);
         setStatus(status, 'Analyzing PDF structure...', 'loading');
-        var buf = await file.arrayBuffer();
-        var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-        var htmlPages = [];
-
-        for (var p = 1; p <= pdf.numPages; p++) {
-          setStatus(status, 'Processing page ' + p + ' of ' + pdf.numPages + '...', 'loading');
-          var page = await pdf.getPage(p);
-          var content = await page.getTextContent();
-          var vp = page.getViewport({ scale: 1 });
-          var pageHeight = vp.height;
-
-          // Collect items with position and style info
-          var items = content.items.map(function (item) {
-            var tx = item.transform;
-            return {
-              str: item.str,
-              x: tx[4],
-              y: pageHeight - tx[5], // flip Y to top-down
-              fontSize: Math.abs(tx[0]) || Math.abs(tx[3]) || 12,
-              fontName: item.fontName || ''
-            };
-          }).filter(function (it) { return it.str.trim().length > 0; });
-
-          if (items.length === 0) continue;
-
-          // Sort by Y (top to bottom) then X (left to right)
-          items.sort(function (a, b) { return (a.y - b.y) || (a.x - b.x); });
-
-          // Group into lines (items within 3px vertically)
-          var lines = [], currentLine = [items[0]];
-          for (var i = 1; i < items.length; i++) {
-            if (Math.abs(items[i].y - currentLine[0].y) < 3) {
-              currentLine.push(items[i]);
-            } else {
-              currentLine.sort(function (a, b) { return a.x - b.x; });
-              lines.push(currentLine);
-              currentLine = [items[i]];
-            }
-          }
-          if (currentLine.length) { currentLine.sort(function (a, b) { return a.x - b.x; }); lines.push(currentLine); }
-
-          // Determine body font size (most common)
-          var sizeCounts = {};
-          lines.forEach(function (line) {
-            line.forEach(function (it) {
-              var s = Math.round(it.fontSize);
-              sizeCounts[s] = (sizeCounts[s] || 0) + 1;
-            });
-          });
-          var bodySize = parseInt(Object.keys(sizeCounts).sort(function (a, b) { return sizeCounts[b] - sizeCounts[a]; })[0]) || 12;
-
-          // Convert lines to HTML
-          var pageHtml = '';
-          lines.forEach(function (line) {
-            var lineSize = Math.round(line[0].fontSize);
-            var lineFont = line[0].fontName.toLowerCase();
-            var text = line.map(function (it) { return it.str; }).join(' ').trim();
-            if (!text) return;
-
-            // Escape HTML entities
-            text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-            // Detect formatting from font name
-            var isBold = lineFont.indexOf('bold') !== -1 || lineFont.indexOf('black') !== -1;
-            var isItalic = lineFont.indexOf('italic') !== -1 || lineFont.indexOf('oblique') !== -1;
-
-            // Determine heading level by font size ratio
-            var tag = 'p';
-            if (lineSize > bodySize * 1.8) tag = 'h1';
-            else if (lineSize > bodySize * 1.5) tag = 'h2';
-            else if (lineSize > bodySize * 1.25) tag = 'h3';
-            else if (lineSize > bodySize * 1.1 && isBold) tag = 'h4';
-
-            // Wrap in formatting tags
-            var inner = text;
-            if (isBold && tag === 'p') inner = '<strong>' + inner + '</strong>';
-            if (isItalic) inner = '<em>' + inner + '</em>';
-
-            pageHtml += '<' + tag + '>' + inner + '</' + tag + '>\n';
-          });
-
-          htmlPages.push(pageHtml);
-        }
-
-        if (!htmlPages.join('').trim()) {
+        var blob = await pdfToDocxBlob(file, status);
+        if (!blob) {
           setStatus(status, 'No extractable text found. This PDF may be image-only (scanned).', 'error');
           return;
         }
-
-        setStatus(status, 'Generating DOCX...', 'loading');
-        var fullHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>' +
-          htmlPages.join('<div style="page-break-after:always;"></div>') +
-          '</body></html>';
-
-        docxBlob = await htmlStructureToDocxBlob(fullHtml);
+        docxBlob = blob;
         dlBtn.style.display = '';
-        setStatus(status, 'DOCX generated from ' + pdf.numPages + ' page(s).', 'success');
+        setStatus(status, 'DOCX generated.', 'success');
       } catch (err) {
         var msg = (err && (err.message || err.toString())) || 'unknown error';
         console.error('PDF → DOCX failed:', err);
