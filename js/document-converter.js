@@ -239,6 +239,8 @@ function initDocumentConverter(config) {
 
     var pagesLines = [];
     var debugFonts = {};
+    var pageGeom = null;  // { widthPt, heightPt } captured from page 1
+    var bbox = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };  // tight bounding box of all text in flipped (top-down) coords
     for (var p = 1; p <= pdf.numPages; p++) {
       setStatus(statusEl, 'Processing page ' + p + ' of ' + pdf.numPages + '...', 'loading');
       var page = await pdf.getPage(p);
@@ -247,6 +249,16 @@ function initDocumentConverter(config) {
       var vp = page.getViewport({ scale: 1 });
       var pageHeight = vp.height;
       var pageColors = await extractItemColors(page);
+
+      if (!pageGeom) {
+        var pv = page.view || [0, 0, 612, 792];
+        var unit = page.userUnit || 1;
+        var rot = page.rotate || 0;
+        var w = (pv[2] - pv[0]) * unit;
+        var h = (pv[3] - pv[1]) * unit;
+        if (rot === 90 || rot === 270) { var tmp = w; w = h; h = tmp; }
+        pageGeom = { widthPt: w, heightPt: h };
+      }
 
       var items = content.items.map(function (item, rawIdx) {
         var tx = item.transform;
@@ -280,6 +292,20 @@ function initDocumentConverter(config) {
       }).filter(function (it) { return it.str.length > 0; });
 
       if (!items.length) { pagesLines.push([]); continue; }
+
+      // Tight bounding box of all visible text on page 1 — used to infer
+      // page margins. Skip later pages so a long-tail page (e.g. ack page
+      // with one short line) doesn't pull the bottom margin upward.
+      if (p === 1) {
+        items.forEach(function (it) {
+          if (it.x < bbox.minX) bbox.minX = it.x;
+          var right = it.x + (it.width || it.fontSize * 0.5 * it.str.length);
+          if (right > bbox.maxX) bbox.maxX = right;
+          if (it.y < bbox.minY) bbox.minY = it.y;
+          if (it.y > bbox.maxY) bbox.maxY = it.y;
+        });
+      }
+
       items.sort(function (a, b) { return (a.y - b.y) || (a.x - b.x); });
 
       var lines = [], cur = [items[0]];
@@ -461,7 +487,7 @@ function initDocumentConverter(config) {
             rec.runs[0].str = rec.runs[0].str.replace(BULLET_RE, '');
             while (rec.runs.length && !rec.runs[0].str) rec.runs.shift();
           }
-          blocks.push({ kind: 'bullet', level: 0, runs: cloneRuns(rec.runs), x: rec.x });
+          blocks.push({ kind: 'bullet', level: 0, runs: cloneRuns(rec.runs), x: rec.x, startY: rec.y, endY: rec.y });
           prevRec = rec; firstLineSeen = true;
           return;
         }
@@ -474,7 +500,7 @@ function initDocumentConverter(config) {
             rec.runs[0].str = rec.runs[0].str.replace(SUBBULLET_RE, '');
             while (rec.runs.length && !rec.runs[0].str) rec.runs.shift();
           }
-          blocks.push({ kind: 'bullet', level: 1, runs: cloneRuns(rec.runs), x: rec.x });
+          blocks.push({ kind: 'bullet', level: 1, runs: cloneRuns(rec.runs), x: rec.x, startY: rec.y, endY: rec.y });
           prevRec = rec; firstLineSeen = true;
           return;
         }
@@ -488,7 +514,7 @@ function initDocumentConverter(config) {
 
         if (isHeading) {
           var level = !firstLineSeen ? 1 : (matchesPrefix && /^\d+\./.test(rec.text.trim()) ? 2 : 3);
-          blocks.push({ kind: 'heading', level: level, runs: cloneRuns(rec.runs), x: rec.x });
+          blocks.push({ kind: 'heading', level: level, runs: cloneRuns(rec.runs), x: rec.x, startY: rec.y, endY: rec.y });
           prevRec = rec; firstLineSeen = true;
           return;
         }
@@ -512,13 +538,32 @@ function initDocumentConverter(config) {
             prevRec && prevRec.allBold && !rec.allBold && rec.text.length > 4;
           if (subHeadingBreak) appendBreakAndRuns(lastBlock.runs, rec.runs);
           else appendRunsTo(lastBlock.runs, rec.runs);
+          lastBlock.endY = rec.y;
         } else {
-          blocks.push({ kind: 'paragraph', runs: cloneRuns(rec.runs), x: rec.x });
+          blocks.push({ kind: 'paragraph', runs: cloneRuns(rec.runs), x: rec.x, startY: rec.y, endY: rec.y });
         }
         prevRec = rec; firstLineSeen = true;
       });
 
       if (pageIdx < pagesLines.length - 1) blocks.push({ kind: 'pageBreak' });
+    });
+
+    // ── Step 4.5: assign each text block a measured "spacing before" in twips ──
+    // Walk blocks once; for each text block (paragraph/bullet/heading) the gap
+    // before it is its startY minus the previous text block's endY. We subtract
+    // expectedLineGap to express only the *extra* whitespace beyond a normal
+    // line break (Word already emits one line of leading between paragraphs).
+    // pageBreak/divider entries reset the chain since the gap there isn't real.
+    var prevEndY = null;
+    blocks.forEach(function (b) {
+      if (b.kind === 'pageBreak' || b.kind === 'divider') { prevEndY = null; return; }
+      if (typeof b.startY !== 'number') return;
+      if (prevEndY !== null) {
+        var gap = b.startY - prevEndY;
+        var extra = gap - expectedLineGap;
+        if (extra > 0.5) b.spacingBefore = Math.round(extra * 20);  // pt → twips
+      }
+      if (typeof b.endY === 'number') prevEndY = b.endY;
     });
 
     // ── Step 5: emit DOCX ──
@@ -542,8 +587,16 @@ function initDocumentConverter(config) {
       return out;
     }
 
+    function paragraphSpacing(b) {
+      // Only emit the property when we actually measured an extra gap. Word's
+      // own defaults handle the no-extra-gap case fine and over-specifying
+      // creates ugly stacked spacing.
+      return b && b.spacingBefore ? { before: b.spacingBefore } : undefined;
+    }
+
     var paragraphs = [];
     blocks.forEach(function (b) {
+      var sp = paragraphSpacing(b);
       if (b.kind === 'pageBreak') {
         paragraphs.push(new d.Paragraph({ children: [new d.PageBreak()] }));
       } else if (b.kind === 'divider') {
@@ -555,14 +608,20 @@ function initDocumentConverter(config) {
         var hl = HeadingLevel.HEADING_2;
         if (b.level === 1) hl = HeadingLevel.HEADING_1;
         else if (b.level === 3) hl = HeadingLevel.HEADING_3;
-        paragraphs.push(new d.Paragraph({ heading: hl, children: runsToTextRuns(b.runs) }));
+        var hOpts = { heading: hl, children: runsToTextRuns(b.runs) };
+        if (sp) hOpts.spacing = sp;
+        paragraphs.push(new d.Paragraph(hOpts));
       } else if (b.kind === 'bullet') {
-        paragraphs.push(new d.Paragraph({
+        var bOpts = {
           numbering: { reference: 'pdf-bullets', level: b.level || 0 },
           children: runsToTextRuns(b.runs)
-        }));
+        };
+        if (sp) bOpts.spacing = sp;
+        paragraphs.push(new d.Paragraph(bOpts));
       } else {
-        paragraphs.push(new d.Paragraph({ children: runsToTextRuns(b.runs) }));
+        var pOpts = { children: runsToTextRuns(b.runs) };
+        if (sp) pOpts.spacing = sp;
+        paragraphs.push(new d.Paragraph(pOpts));
       }
     });
 
@@ -580,9 +639,49 @@ function initDocumentConverter(config) {
       }]
     };
 
+    // ── Page size + margins ──
+    // Page size from PDF page.view (rotated if needed), margins from the
+    // tight bounding box of all text on page 1 minus a body-size fudge for
+    // the topmost line's ascent. Clamped to [0.5in, 2in] so a runaway
+    // measurement can't produce a wildly-off page setup.
+    var sectionProperties = {};
+    if (pageGeom && isFinite(bbox.minX) && isFinite(bbox.maxX)) {
+      var clampMargin = function (v) { return Math.max(36, Math.min(144, v)); };
+      var marginsPt = {
+        left: clampMargin(bbox.minX),
+        right: clampMargin(pageGeom.widthPt - bbox.maxX),
+        top: clampMargin(bbox.minY - bodySize),
+        bottom: clampMargin(pageGeom.heightPt - bbox.maxY - bodySize * 0.5)
+      };
+      sectionProperties.page = {
+        size: { width: Math.round(pageGeom.widthPt * 20), height: Math.round(pageGeom.heightPt * 20) },
+        margin: {
+          top: Math.round(marginsPt.top * 20),
+          right: Math.round(marginsPt.right * 20),
+          bottom: Math.round(marginsPt.bottom * 20),
+          left: Math.round(marginsPt.left * 20)
+        }
+      };
+    }
+
+    // ── Default line spacing ──
+    // Express measured PDF leading (expectedLineGap pt vs bodySize pt) as
+    // Word's "lines × 240" multiple, with auto rule so big headings still
+    // breathe. e.g. leading 16.8pt over 12pt body = 1.4× ≈ 336.
+    var leadingRatio = expectedLineGap / Math.max(1, bodySize);
+    var lineMultiple = Math.round(leadingRatio * 240);
+    var stylesConfig = {
+      default: {
+        document: {
+          paragraph: { spacing: { line: lineMultiple, lineRule: (d.LineRuleType && d.LineRuleType.AUTO) || 'auto' } }
+        }
+      }
+    };
+
     var docxDoc = new d.Document({
+      styles: stylesConfig,
       numbering: numbering,
-      sections: [{ properties: {}, children: paragraphs }]
+      sections: [{ properties: sectionProperties, children: paragraphs }]
     });
     return await d.Packer.toBlob(docxDoc);
   }
