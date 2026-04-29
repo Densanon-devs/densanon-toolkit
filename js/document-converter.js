@@ -515,7 +515,21 @@ function initDocumentConverter(config) {
       }]
     };
 
+    // Override Word's default Heading 1/2/3 colors (which ship blue) to black
+    // so the converted .docx matches typical PDF source text. Sizes/spacing
+    // from Word's built-in heading styles are kept — only the run color is
+    // overridden.
+    var stylesConfig = {
+      default: {
+        heading1: { run: { color: '000000' } },
+        heading2: { run: { color: '000000' } },
+        heading3: { run: { color: '000000' } },
+        heading4: { run: { color: '000000' } }
+      }
+    };
+
     var docxDoc = new d.Document({
+      styles: stylesConfig,
       numbering: numbering,
       sections: [{ properties: {}, children: paragraphs }]
     });
