@@ -347,12 +347,25 @@ function initDocumentConverter(config) {
       // Add a soft space between merged lines if neither side already has whitespace.
       if (target.length) {
         var last = target[target.length - 1];
-        if (last.str && !/\s$/.test(last.str) && !/^\s/.test(source[0].str)) last.str += ' ';
+        if (!last.br && last.str && !/\s$/.test(last.str) && !/^\s/.test(source[0].str)) last.str += ' ';
       }
       source.forEach(function (r) {
         var last = target[target.length - 1];
-        if (last && last.bold === r.bold && last.italic === r.italic) last.str += r.str;
+        if (last && !last.br && last.bold === r.bold && last.italic === r.italic) last.str += r.str;
         else target.push({ str: r.str, bold: r.bold, italic: r.italic });
+      });
+    }
+
+    function appendBreakAndRuns(target, source) {
+      // Trim trailing whitespace off the previous run before the break — the
+      // line was visually self-contained so the implicit space is wrong.
+      if (target.length) {
+        var last = target[target.length - 1];
+        if (last.str) last.str = last.str.replace(/\s+$/, '');
+      }
+      target.push({ str: '', br: true });
+      source.forEach(function (r) {
+        target.push({ str: r.str.replace(/^\s+/, ''), bold: r.bold, italic: r.italic });
       });
     }
 
@@ -431,7 +444,14 @@ function initDocumentConverter(config) {
         }
 
         if (canContinue) {
-          appendRunsTo(lastBlock.runs, rec.runs);
+          // Inside a bullet, when the prior line was an all-bold sub-heading
+          // (e.g. "Pre-Existing IP") and this line drops out of all-bold for
+          // the body content, insert a soft line break instead of a space so
+          // the bold sub-heading reads as its own line above the body text.
+          var subHeadingBreak = lastBlock.kind === 'bullet' &&
+            prevRec && prevRec.allBold && !rec.allBold && rec.text.length > 4;
+          if (subHeadingBreak) appendBreakAndRuns(lastBlock.runs, rec.runs);
+          else appendRunsTo(lastBlock.runs, rec.runs);
         } else {
           blocks.push({ kind: 'paragraph', runs: cloneRuns(rec.runs), x: rec.x });
         }
@@ -445,6 +465,7 @@ function initDocumentConverter(config) {
     function runsToTextRuns(runs) {
       var out = [];
       runs.forEach(function (r) {
+        if (r.br) { out.push(new d.TextRun({ text: '', break: 1 })); return; }
         if (!r.str) return;
         out.push(new d.TextRun({
           text: r.str,
