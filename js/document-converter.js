@@ -181,25 +181,38 @@ function initDocumentConverter(config) {
     var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
 
     // ── Step 1: extract every page into sorted lines of fragments ──
+    // Bold/italic detection: PDF.js returns item.fontName as an opaque key
+    // ("g_d0_f3"), and the human-readable font family (e.g. "Calibri-Bold")
+    // lives in content.styles[fontName].fontFamily. Office-exported PDFs
+    // need both signals — the loaded-name key sometimes has the only clue,
+    // and other PDFs put the clue only in fontFamily.
+    var BOLD_RE = /bold|black|heavy|semibold|extrabold|ultrabold|demibold|[7-9]00/i;
+    var ITALIC_RE = /italic|oblique/i;
     var pagesLines = [];
+    var debugFonts = {};
     for (var p = 1; p <= pdf.numPages; p++) {
       setStatus(statusEl, 'Processing page ' + p + ' of ' + pdf.numPages + '...', 'loading');
       var page = await pdf.getPage(p);
       var content = await page.getTextContent();
+      var styles = content.styles || {};
       var vp = page.getViewport({ scale: 1 });
       var pageHeight = vp.height;
 
       var items = content.items.map(function (item) {
         var tx = item.transform;
+        var styleEntry = styles[item.fontName] || {};
+        var ff = (styleEntry.fontFamily || '').toLowerCase();
         var fn = (item.fontName || '').toLowerCase();
+        var combined = fn + '|' + ff;
+        if (!debugFonts[combined]) debugFonts[combined] = { fn: item.fontName, ff: styleEntry.fontFamily, sample: item.str.slice(0, 24) };
         return {
           str: item.str,
           x: tx[4],
           y: pageHeight - tx[5],
           width: item.width || 0,
           fontSize: Math.abs(tx[0]) || Math.abs(tx[3]) || 12,
-          bold: fn.indexOf('bold') !== -1 || fn.indexOf('black') !== -1 || fn.indexOf('heavy') !== -1,
-          italic: fn.indexOf('italic') !== -1 || fn.indexOf('oblique') !== -1
+          bold: BOLD_RE.test(combined),
+          italic: ITALIC_RE.test(combined)
         };
       }).filter(function (it) { return it.str.length > 0; });
 
@@ -227,6 +240,12 @@ function initDocumentConverter(config) {
     });
     var bodySize = parseInt(Object.keys(sizeCounts).sort(function (a, b) { return sizeCounts[b] - sizeCounts[a]; })[0]) || 12;
     var expectedLineGap = bodySize * 1.4;
+    // One-shot debug summary so we can verify bold detection on real PDFs.
+    // Logs each unique (fontName, fontFamily) pair seen with a sample string.
+    try {
+      var fontTable = Object.keys(debugFonts).map(function (k) { var v = debugFonts[k]; return { fontName: v.fn, fontFamily: v.ff, sample: v.sample, bold: BOLD_RE.test(k), italic: ITALIC_RE.test(k) }; });
+      console.log('[PDF→DOCX] body font size pt:', bodySize, 'fonts seen:', fontTable);
+    } catch (e) { /* swallow */ }
 
     // ── Step 3: collapse each line's fragments into runs ──
     // Adjacent fragments with the same bold/italic merge; spacing is
@@ -300,8 +319,11 @@ function initDocumentConverter(config) {
         if (!rec.text.trim()) { prevRec = rec; return; }
 
         var gap = prevRec ? rec.y - prevRec.y : 0;
-        var bigGap = prevRec && gap > expectedLineGap * 1.6;
-        var hugeGap = prevRec && gap > expectedLineGap * 3.2;
+        // 1.3x catches single-blank-line gaps (where Word inserted a paragraph
+        // break with no visible empty line). 2.6x catches the wider gaps
+        // around section dividers — used to emit a horizontal-rule paragraph.
+        var bigGap = prevRec && gap > expectedLineGap * 1.3;
+        var hugeGap = prevRec && gap > expectedLineGap * 2.6;
 
         // Divider on a really large gap (mimics the PDF's horizontal rules).
         if (hugeGap) blocks.push({ kind: 'divider' });
