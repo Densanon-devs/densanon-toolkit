@@ -211,6 +211,7 @@ function initDocumentConverter(config) {
           y: pageHeight - tx[5],
           width: item.width || 0,
           fontSize: Math.abs(tx[0]) || Math.abs(tx[3]) || 12,
+          fontKey: item.fontName || '',
           bold: BOLD_RE.test(combined),
           italic: ITALIC_RE.test(combined)
         };
@@ -240,11 +241,58 @@ function initDocumentConverter(config) {
     });
     var bodySize = parseInt(Object.keys(sizeCounts).sort(function (a, b) { return sizeCounts[b] - sizeCounts[a]; })[0]) || 12;
     var expectedLineGap = bodySize * 1.4;
-    // One-shot debug summary so we can verify bold detection on real PDFs.
-    // Logs each unique (fontName, fontFamily) pair seen with a sample string.
+
+    // ── Step 1.5: classify each PDF font by glyph width to detect bold ──
+    // Office-exported PDFs frequently report fontFamily as "sans-serif" with
+    // the real face name and weight stripped (sandbox/security mode), so the
+    // name-based BOLD_RE never fires. We instead measure each font's average
+    // width per character per point. Bold fonts run ~5–15% wider than regular
+    // at the same size; a font > 6% above the median is treated as bold.
+    var fontW = {};
+    pagesLines.forEach(function (lines) {
+      lines.forEach(function (line) {
+        line.forEach(function (it) {
+          if (!it.fontKey || !it.width || !it.fontSize) return;
+          var visible = it.str.replace(/\s+/g, '');
+          if (!visible.length) return;
+          if (!fontW[it.fontKey]) fontW[it.fontKey] = { w: 0, c: 0 };
+          fontW[it.fontKey].w += it.width / it.fontSize;
+          fontW[it.fontKey].c += visible.length;
+        });
+      });
+    });
+    var perChar = {};
+    Object.keys(fontW).forEach(function (k) {
+      if (fontW[k].c > 0) perChar[k] = fontW[k].w / fontW[k].c;
+    });
+    var widthVals = Object.keys(perChar).map(function (k) { return perChar[k]; })
+      .filter(function (v) { return isFinite(v) && v > 0; })
+      .sort(function (a, b) { return a - b; });
+    var medianW = widthVals.length ? widthVals[Math.floor(widthVals.length / 2)] : 0;
+    var fontBold = {};
+    Object.keys(perChar).forEach(function (k) {
+      fontBold[k] = medianW > 0 && perChar[k] > medianW * 1.06;
+    });
+
+    // Apply width-based bold flag (additive — name-based detection still wins
+    // when it fires, and width-based classification picks up everything else).
+    pagesLines.forEach(function (lines) {
+      lines.forEach(function (line) {
+        line.forEach(function (it) {
+          if (fontBold[it.fontKey]) it.bold = true;
+        });
+      });
+    });
+
     try {
-      var fontTable = Object.keys(debugFonts).map(function (k) { var v = debugFonts[k]; return { fontName: v.fn, fontFamily: v.ff, sample: v.sample, bold: BOLD_RE.test(k), italic: ITALIC_RE.test(k) }; });
-      console.log('[PDF→DOCX] body font size pt:', bodySize, 'fonts seen:', fontTable);
+      var fontTable = Object.keys(debugFonts).map(function (k) {
+        var v = debugFonts[k];
+        return { fontName: v.fn, fontFamily: v.ff, sample: v.sample,
+          widthPerCharPerPt: perChar[v.fn] ? +perChar[v.fn].toFixed(3) : null,
+          bold: !!fontBold[v.fn] || BOLD_RE.test(k),
+          italic: ITALIC_RE.test(k) };
+      });
+      console.log('[PDF→DOCX] body font size pt:', bodySize, 'median width/char/pt:', medianW.toFixed(3), 'fonts seen:', fontTable);
     } catch (e) { /* swallow */ }
 
     // ── Step 3: collapse each line's fragments into runs ──
