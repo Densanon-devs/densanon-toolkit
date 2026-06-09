@@ -1,13 +1,13 @@
 {
-  "version": "0.4.1",
-  "releaseDate": "2026-04-26",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.4.1.exe",
-  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-0.4.1-windows.zip",
+  "version": "0.5.0",
+  "releaseDate": "2026-06-08",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.5.0.exe",
+  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-0.5.0-windows.zip",
   "changelog": [
-    "New: One-command Claude desktop setup — `densa-deck mcp config` emits a paste-ready config block with your install's exe path auto-resolved (closes the PATH gap that bit Inno-installer customers in v0.4.0).",
-    "New: `densa-deck mcp selftest` verifies the server side works without involving Claude desktop. Reports tool count + tier, exits 0/1.",
-    "New: Settings → AI client integration (MCP) panel — Show config, Copy to clipboard, Verify connection. Click-driven equivalent for non-CLI users.",
-    "Prior: MCP (Model Context Protocol) server — drive Densa Deck from Claude desktop / ulcagent / Cursor / any AI client (shipped in v0.4.0).",
-    "Prior: Operator controls — kill switch (env or config), --read-only mode, --tools whitelist (shipped in v0.4.0)."
+    "New: Budget-aware suggestions — `analyze --budget USD` shows total deck value, priciest cards, and flags everything over the per-card cap. Build tab gets a budget input and a live deck-value badge.",
+    "New: TCGPlayer search links on every suggestion row (set DENSA_TCGPLAYER_PARTNER env var to inject your affiliate ID).",
+    "New: Playgroup-aware analyst — `playgroup add/list/remove/set-default` stores the pod you actually play against (commanders + archetypes + power). `analyze --playgroup NAME` then tunes the executive summary against THAT table, including threat themes like graveyard hate or counterspells. Local-only data; never leaves your machine.",
+    "New: Iteration loop — `iterate propose/preview/history` and a new Iterate button on the Build tab. Surfaces concrete cut + add proposals, previews each one's structural impact (power, curve, role counts, value delta) before applying, and logs every accept/reject so you can see your iteration history across sessions.",
+    "Tests: 582 passing (up from 474). No regressions, no LLM cost on any new feature."
   ]
 }
