@@ -1213,4 +1213,41 @@
     }
   });
 
+  // ── Table Text → CSV ──
+  // The text-domain slice of the Document to Spreadsheet tool: reflow a
+  // whitespace/tab-aligned plain-text table (e.g. from PDF to Text) into CSV.
+  // (Binary PDF/DOCX table extraction lives in the standalone tool, which
+  // needs per-item coordinates the pipeline's Text ports can't carry.)
+  NodeRegistry.register({
+    id: 'table-text-to-csv', name: 'Table Text to CSV', category: 'Data', icon: '📐',
+    inputs: [{ name: 'text', type: 'Text', label: 'Table Text' }],
+    outputs: [{ name: 'text', type: 'Text', label: 'CSV' }],
+    config: [
+      { name: 'split', type: 'select', label: 'Column Split',
+        options: [
+          { value: 'auto', label: 'Auto (tabs or 2+ spaces)' },
+          { value: 'whitespace', label: 'Any whitespace run' },
+          { value: 'tab', label: 'Tabs only' }
+        ], default: 'auto' }
+    ],
+    execute: async function (inputs, config) {
+      if (!inputs.text) throw new Error('No text input');
+      var mode = config.split || 'auto';
+      var lines = inputs.text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+      var rows = [];
+      lines.forEach(function (line) {
+        if (!line.trim()) return;
+        var cells;
+        if (mode === 'tab') cells = line.split('\t');
+        else if (mode === 'whitespace') cells = line.trim().split(/\s+/);
+        else cells = line.split(/\t|\s{2,}/);
+        rows.push(cells.map(function (c) { return c.trim(); }));
+      });
+      var w = 0;
+      rows.forEach(function (r) { if (r.length > w) w = r.length; });
+      rows = rows.map(function (r) { while (r.length < w) r.push(''); return r; });
+      return { text: rows.map(function (r) { return r.map(escapeCsvField).join(','); }).join('\n') };
+    }
+  });
+
 })();

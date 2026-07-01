@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Document to Spreadsheet Converter Online – PDF, Word &amp; HTML to Excel/CSV | Densanon Toolkit</title>
+    <meta name="description" content="Free online document to spreadsheet converter — extract tables from PDF, Word (.docx), and HTML into Excel (.xlsx) or CSV, keeping rows and columns close to the original layout. 100% browser-based, no signup.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        /* ---- Upload Zone ---- */
+        .upload-zone {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            padding: 40px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            user-select: none;
+        }
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--color-primary);
+            background: rgba(229, 62, 62, 0.04);
+        }
+        .upload-zone .upload-icon { font-size: 2.4rem; margin-bottom: 10px; display: block; opacity: 0.65; }
+        .upload-zone .upload-text { color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 4px; }
+        .upload-zone .upload-text strong { color: var(--color-text); }
+        .upload-zone .upload-hint { color: var(--color-text-muted); font-size: 0.8rem; opacity: 0.7; margin-bottom: 14px; }
+        .btn-upload {
+            display: inline-block; padding: 9px 22px; background: var(--color-primary); color: #fff;
+            border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            font-family: inherit; transition: background 0.2s;
+        }
+        .btn-upload:hover { background: var(--color-primary-hover); }
+
+        /* ---- File Info Bar ---- */
+        .file-info-bar {
+            display: none; flex-wrap: wrap; align-items: center; gap: 10px 20px;
+            padding: 12px 16px; background: rgba(96, 165, 250, 0.07);
+            border: 1px solid rgba(96, 165, 250, 0.2); border-radius: var(--radius);
+            margin-top: 16px; font-size: 0.875rem;
+        }
+        .file-info-bar.visible { display: flex; }
+        .file-info-item { display: flex; align-items: center; gap: 6px; }
+        .file-info-label { color: var(--color-text-muted); }
+        .file-info-value { color: var(--color-accent-blue); font-weight: 600; }
+        .type-badge {
+            padding: 2px 9px; background: rgba(229, 62, 62, 0.12); color: var(--color-primary);
+            border-radius: 4px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
+        }
+        .btn-clear {
+            margin-left: auto; padding: 5px 14px; background: none; border: 1px solid var(--color-border);
+            border-radius: 6px; color: var(--color-text-muted); font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; font-family: inherit; transition: border-color 0.2s, color 0.2s;
+        }
+        .btn-clear:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+        /* ---- Status ---- */
+        .dts-status { margin-top: 14px; font-size: 0.875rem; min-height: 1.2em; }
+        .dts-status.loading { color: var(--color-accent-blue); }
+        .dts-status.error { color: #ef4444; }
+        .dts-status.success { color: var(--color-accent-green); }
+        .dts-status.warn { color: var(--color-accent-orange); }
+
+        /* ---- Step Divider ---- */
+        .step-divider { border: none; border-top: 1px solid var(--color-border); margin: 24px 0; }
+        .step-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+        .step-badge {
+            display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px;
+            background: var(--color-primary); color: #fff; border-radius: 50%; font-size: 0.72rem;
+            font-weight: 700; flex-shrink: 0;
+        }
+        .step-title { font-size: 1rem; font-weight: 700; color: var(--color-text); }
+        .step-subtitle { font-size: 0.82rem; color: var(--color-text-muted); font-weight: 400; margin-left: 4px; }
+
+        .tool-section { display: none; }
+        .tool-section.visible { display: block; }
+
+        /* ---- Options ---- */
+        .option-panel {
+            background: var(--color-bg); border: 1px solid var(--color-border);
+            border-radius: var(--radius); padding: 18px 20px; margin-bottom: 4px;
+        }
+        .option-row { display: flex; flex-wrap: wrap; gap: 20px 28px; align-items: flex-end; }
+        .option-item { display: flex; flex-direction: column; gap: 6px; }
+        .option-item label { font-size: 0.8rem; color: var(--color-text-muted); font-weight: 500; }
+        .option-item select {
+            background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px;
+            color: var(--color-text); padding: 7px 10px; font-size: 0.875rem; font-family: inherit;
+            cursor: pointer; transition: border-color 0.2s; min-width: 200px;
+        }
+        .option-item select:focus { outline: none; border-color: var(--color-primary); }
+        .option-item.pdf-only { display: none; }
+        .option-item.pdf-only.visible { display: flex; }
+        .range-wrap { display: flex; align-items: center; gap: 10px; }
+        .range-wrap input[type="range"] { accent-color: var(--color-primary); width: 180px; }
+        .range-val { font-size: 0.8rem; color: var(--color-accent-blue); font-weight: 600; min-width: 54px; }
+        .range-hint { font-size: 0.74rem; color: var(--color-text-muted); opacity: 0.8; margin-top: 2px; }
+
+        /* ---- Sheet Tabs ---- */
+        .sheet-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+        .sheet-tab {
+            padding: 6px 14px; background: var(--color-surface); border: 1px solid var(--color-border);
+            border-radius: 6px 6px 0 0; color: var(--color-text-muted); font-size: 0.82rem; font-weight: 600;
+            cursor: pointer; font-family: inherit; transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .sheet-tab.active { color: var(--color-text); border-color: var(--color-primary); background: rgba(229, 62, 62, 0.06); }
+        .sheet-tab:hover { color: var(--color-text); }
+
+        /* ---- Preview Table ---- */
+        .table-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .table-meta-text { font-size: 0.82rem; color: var(--color-text-muted); }
+        .table-container {
+            overflow: auto; max-height: 460px; border: 1px solid var(--color-border); border-radius: var(--radius);
+        }
+        .data-table {
+            width: 100%; border-collapse: collapse; font-size: 0.8rem;
+            font-family: 'Courier New', Courier, monospace; white-space: nowrap;
+        }
+        .data-table thead th {
+            background: var(--color-surface); color: var(--color-text-muted); font-weight: 600;
+            padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--color-border);
+            position: sticky; top: 0; z-index: 2;
+        }
+        .data-table thead th.col-num { min-width: 38px; text-align: center; font-weight: 400; opacity: 0.5; }
+        .data-table tbody td {
+            padding: 5px 12px; border-bottom: 1px solid rgba(42, 46, 61, 0.5); color: var(--color-text);
+            max-width: 260px; overflow: hidden; text-overflow: ellipsis;
+        }
+        .data-table tbody td.col-num { color: var(--color-text-muted); opacity: 0.4; text-align: center; font-size: 0.7rem; }
+        .data-table tbody tr:hover td { background: var(--color-surface-hover); }
+        .data-table td.cell-empty { background: rgba(251, 146, 60, 0.10); }
+
+        /* ---- Actions ---- */
+        .actions-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 7px; padding: 10px 22px; border: none;
+            border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--color-primary); color: #fff; }
+        .btn-primary:hover { background: var(--color-primary-hover); }
+        .btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+        .btn-secondary:hover { border-color: var(--color-primary); }
+        .btn-success { background: rgba(52, 211, 153, 0.12); color: var(--color-accent-green); border: 1px solid rgba(52, 211, 153, 0.25); }
+        .btn-success:hover { background: rgba(52, 211, 153, 0.22); }
+
+        .converter-all-link { margin-top: 20px; font-size: 0.9rem; }
+
+        @media (max-width: 640px) {
+            .btn { flex: 1; justify-content: center; min-height: 44px; }
+            .option-item select { min-width: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="category-header">
+            <div class="breadcrumb"></div>
+            <h1>Document to Spreadsheet Converter</h1>
+            <p>Extract tables from PDF, Word, and HTML documents into Excel (.xlsx) or CSV — rows and columns kept as close to the original layout as possible. Everything runs in your browser.</p>
+        </div>
+
+        <section class="tool-box">
+
+            <!-- STEP 1: UPLOAD -->
+            <div class="step-heading">
+                <span class="step-badge">1</span>
+                <span class="step-title">Upload a Document</span>
+            </div>
+
+            <div class="upload-zone" id="uploadZone">
+                <span class="upload-icon">&#128202;</span>
+                <p class="upload-text"><strong>Drag &amp; drop</strong> your document here</p>
+                <p class="upload-hint">Supports .pdf, .docx, .html, .csv, .tsv, .txt — tables detected automatically</p>
+                <button class="btn-upload" onclick="document.getElementById('fileInput').click(); event.stopPropagation();">Browse File</button>
+                <input type="file" id="fileInput" accept=".pdf,.docx,.html,.htm,.csv,.tsv,.txt" style="display:none;">
+            </div>
+
+            <div class="file-info-bar" id="fileInfoBar">
+                <div class="file-info-item"><span class="file-info-label">File:</span><span class="file-info-value" id="infoName">&mdash;</span></div>
+                <div class="file-info-item"><span class="file-info-label">Size:</span><span class="file-info-value" id="infoSize">&mdash;</span></div>
+                <div class="file-info-item"><span class="file-info-label">Type:</span><span class="type-badge" id="infoType">&mdash;</span></div>
+                <div class="file-info-item"><span class="file-info-label">Tables:</span><span class="file-info-value" id="infoTables">&mdash;</span></div>
+                <button class="btn-clear" onclick="resetTool()">&#10005; Clear</button>
+            </div>
+
+            <div class="dts-status" id="status"></div>
+
+            <!-- STEP 2: OPTIONS -->
+            <div class="tool-section" id="sectionOptions">
+                <hr class="step-divider">
+                <div class="step-heading">
+                    <span class="step-badge">2</span>
+                    <span class="step-title">Extraction Options</span>
+                </div>
+                <div class="option-panel">
+                    <div class="option-row">
+                        <div class="option-item">
+                            <label for="optSheets">Output layout</label>
+                            <select id="optSheets">
+                                <option value="separate">Separate sheet per page / table</option>
+                                <option value="merge">Merge everything into one sheet</option>
+                            </select>
+                        </div>
+                        <div class="option-item pdf-only" id="sensitivityItem">
+                            <label for="optGap">Column gap sensitivity (PDF)</label>
+                            <div class="range-wrap">
+                                <input type="range" id="optGap" min="2" max="30" value="8" step="1">
+                                <span class="range-val" id="optGapVal">8 pt</span>
+                            </div>
+                            <div class="range-hint">Lower = split into more columns &bull; Higher = fewer, wider columns</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: PREVIEW -->
+            <div class="tool-section" id="sectionPreview">
+                <hr class="step-divider">
+                <div class="step-heading">
+                    <span class="step-badge">3</span>
+                    <span class="step-title">Preview</span>
+                    <span class="step-subtitle" id="previewMeta"></span>
+                </div>
+                <div class="sheet-tabs" id="sheetTabs"></div>
+                <div class="table-meta">
+                    <span class="table-meta-text" id="tableMeta"></span>
+                </div>
+                <div class="table-container">
+                    <div id="previewTableWrap"></div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="downloadXLSX()">&#11015; Download Excel (.xlsx)</button>
+                    <button class="btn btn-secondary" onclick="downloadCSV()">&#11015; Download CSV (this sheet)</button>
+                    <button class="btn btn-success" id="copyBtn" onclick="copyCSV()">&#9109; Copy CSV</button>
+                </div>
+            </div>
+
+            <div class="converter-all-link">
+                <a href="../document-converter/index.html">&larr; All Document Converters</a>
+            </div>
+        </section>
+
+        <!-- SEO CONTENT -->
+        <section>
+            <h2>What is the Document to Spreadsheet Converter?</h2>
+            <p>This free, browser-based tool extracts tabular data out of documents and rebuilds it as a real spreadsheet — an Excel <code>.xlsx</code> workbook or a <code>.csv</code> file — while keeping the rows and columns as close to the original layout as possible. Unlike a plain "PDF to text" extractor that flattens everything into one unstructured stream, this tool detects where columns and rows actually are and places each value into its own cell. It works entirely in your browser: your document is read locally and never uploaded to any server.</p>
+        </section>
+
+        <section>
+            <h2>How to Convert a Document to a Spreadsheet</h2>
+            <ol>
+                <li><strong>Upload your document</strong> — drag and drop a PDF, Word (.docx), HTML, CSV, TSV, or TXT file onto the upload zone, or click "Browse File."</li>
+                <li><strong>Let it detect the tables</strong> — the tool analyzes the layout and reconstructs the rows and columns automatically. For PDFs it reads the position of every piece of text on the page to infer the grid.</li>
+                <li><strong>Adjust options if needed</strong> — for PDFs, use the column gap sensitivity slider to control how aggressively columns are split. Choose whether each page/table becomes its own sheet or everything merges into one.</li>
+                <li><strong>Preview the result</strong> — review the reconstructed grid in the preview, switching between sheets with the tabs.</li>
+                <li><strong>Download or copy</strong> — export a multi-sheet Excel <code>.xlsx</code> workbook, download the current sheet as CSV, or copy the CSV to your clipboard.</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>How Table Detection Works</h2>
+            <h3>PDF documents</h3>
+            <p>PDFs do not store tables as tables — they store text at x/y coordinates on a page. This tool reads the position and width of every text fragment, groups fragments that share a vertical position into rows, and then finds the empty vertical "gutters" that run down the page between columns. Each fragment is assigned to the column its position falls into, reconstructing the grid. This whitespace-projection approach is robust for genuine tabular layouts because real column gutters stay empty across most rows. The column gap sensitivity slider controls the minimum gutter width that counts as a column break.</p>
+            <h3>Word (.docx) and HTML documents</h3>
+            <p>Word and HTML documents store tables explicitly as table elements. The tool reads those tables directly — including cells that span multiple columns — so the output matches the source structure exactly. Each table in the document becomes its own sheet by default.</p>
+            <h3>CSV, TSV, and TXT files</h3>
+            <p>Delimited text files are parsed with automatic delimiter detection (comma, tab, semicolon, or pipe) following RFC 4180 quoting rules, then handed straight to the spreadsheet export so you can turn any delimited file into a proper Excel workbook.</p>
+        </section>
+
+        <section>
+            <h2>Common Use Cases</h2>
+            <ul>
+                <li>Turn a PDF financial report, invoice, or bank statement into an editable Excel spreadsheet</li>
+                <li>Pull data tables out of a Word document into rows and columns for analysis</li>
+                <li>Extract an HTML table from a saved web page into CSV or Excel</li>
+                <li>Convert a delimited .txt or .tsv export into a real .xlsx workbook</li>
+                <li>Rebuild a printed price list, schedule, or roster into a sortable spreadsheet</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Tips for the Best Results</h2>
+            <ul>
+                <li><strong>Text-based PDFs work best.</strong> If a PDF is a scanned image (no selectable text), there is no text to position — this tool cannot extract it, and you would need OCR first.</li>
+                <li><strong>Tune the gap sensitivity.</strong> If columns are merging together, lower the sensitivity value. If a single column is being split in two, raise it.</li>
+                <li><strong>Use "separate sheets" for multi-page reports</strong> where each page is a distinct table, and "merge" when one table continues across pages.</li>
+                <li><strong>Complex layouts</strong> with merged headers, nested tables, or heavy prose between rows may need light cleanup afterward — pair this with the <a href="../csv-cleaner/index.html">CSV Cleaner</a>.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Frequently Asked Questions</h2>
+            <h3>Is my document uploaded to a server?</h3>
+            <p>No. All processing happens entirely in your browser using JavaScript. Your document is read locally and never leaves your device, so it is safe for confidential or proprietary files.</p>
+            <h3>What file formats can I convert?</h3>
+            <p>PDF (.pdf), Word (.docx), HTML (.html/.htm), and delimited text (.csv, .tsv, .txt). Older .doc files are not supported — save them as .docx first.</p>
+            <h3>Will the spreadsheet look exactly like the original?</h3>
+            <p>It reconstructs rows and columns as closely as the source allows. Word and HTML tables map almost exactly because the structure is explicit. PDFs are reconstructed from text positions, so clean tabular layouts convert very well, while complex or irregular layouts may need minor cleanup.</p>
+            <h3>Can it handle scanned PDFs?</h3>
+            <p>Not directly. Scanned PDFs are images with no selectable text. This tool works from the text layer of a PDF, so a scanned document would first need to be run through OCR to add a text layer.</p>
+            <h3>Does it export real Excel files?</h3>
+            <p>Yes. The Excel download is a genuine .xlsx workbook (not a renamed CSV), and multi-page or multi-table documents export as a multi-sheet workbook.</p>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <a href="../pdf-to-text/index.html">PDF to Text</a>
+            <a href="../csv-cleaner/index.html">CSV Cleaner</a>
+            <a href="../json-to-csv/index.html">JSON to CSV Converter</a>
+            <a href="../document-converter/index.html">Document Converter</a>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'developer-tools',
+            title: 'Free Document to Spreadsheet Converter Online – PDF, Word &amp; HTML to Excel/CSV',
+            breadcrumbs: [
+                { label: 'Developer Tools', href: '../index.html' },
+                { label: 'Document to Spreadsheet' }
+            ]
+        });
+    </script>
+    <script>
+    (function () {
+        'use strict';
+
+        /* ─── State ─── */
+        var sheets = [];          // [{ name, grid: [[cell,...],...] }]
+        var activeSheet = 0;
+        var fileBase = 'document';
+        var lastKind = '';        // 'pdf' | 'docx' | 'html' | 'delimited'
+
+        /* ─── DOM ─── */
+        var statusEl = document.getElementById('status');
+        var gapSlider = document.getElementById('optGap');
+        var gapVal = document.getElementById('optGapVal');
+
+        /* ─── Helpers ─── */
+        function setStatus(msg, type) { statusEl.textContent = msg; statusEl.className = 'dts-status ' + (type || ''); }
+        function clearStatus() { statusEl.textContent = ''; statusEl.className = 'dts-status'; }
+        function fmtSize(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'; return (b / 1048576).toFixed(1) + ' MB'; }
+
+        /* ─── CDN loaders ─── */
+        function loadScript(src) {
+            return new Promise(function (resolve, reject) {
+                var s = document.createElement('script');
+                s.src = src; s.onload = resolve; s.onerror = function () { reject(new Error('Failed to load ' + src)); };
+                document.head.appendChild(s);
+            });
+        }
+        function loadPdfJs() {
+            if (typeof pdfjsLib !== 'undefined') return Promise.resolve();
+            return loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js').then(function () {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            });
+        }
+        function loadMammoth() {
+            if (typeof mammoth !== 'undefined') return Promise.resolve();
+            return loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js');
+        }
+        function loadXLSX() {
+            if (typeof XLSX !== 'undefined') return Promise.resolve();
+            return loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+        }
+
+        /* ══════════════════════════════════════
+           PDF → grid (whitespace-projection columns)
+           ══════════════════════════════════════ */
+        function median(arr) {
+            if (!arr.length) return 0;
+            var s = arr.slice().sort(function (a, b) { return a - b; });
+            var m = Math.floor(s.length / 2);
+            return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+        }
+
+        // Cluster items into visual rows by their y baseline.
+        function clusterRows(items, yTol) {
+            var sorted = items.slice().sort(function (a, b) { return a.y - b.y; });
+            var rows = [], cur = [], base = null;
+            sorted.forEach(function (it) {
+                if (base === null || (it.y - base) <= yTol) { cur.push(it); if (base === null) base = it.y; }
+                else { rows.push(cur); cur = [it]; base = it.y; }
+            });
+            if (cur.length) rows.push(cur);
+            return rows;
+        }
+
+        // Detect column segments as the spans between empty vertical gutters.
+        function detectColumns(items, rows, minGapPt) {
+            var minX = Infinity, maxX = -Infinity;
+            items.forEach(function (it) {
+                var w = it.width > 0 ? it.width : 1;
+                if (it.x < minX) minX = it.x;
+                if (it.x + w > maxX) maxX = it.x + w;
+            });
+            if (!isFinite(minX)) return null;
+            var span = maxX - minX;
+            if (span <= 0) return null;
+            var bin = 1; // 1pt resolution
+            var nbins = Math.max(1, Math.ceil(span / bin));
+            var occ = new Int32Array(nbins); // number of rows covering each bin
+
+            rows.forEach(function (rowItems) {
+                var covered = new Uint8Array(nbins);
+                rowItems.forEach(function (it) {
+                    var w = it.width > 0 ? it.width : 1;
+                    var b0 = Math.max(0, Math.floor((it.x - minX) / bin));
+                    var b1 = Math.min(nbins - 1, Math.floor((it.x + w - minX) / bin));
+                    for (var b = b0; b <= b1; b++) covered[b] = 1;
+                });
+                for (var b = 0; b < nbins; b++) occ[b] += covered[b];
+            });
+
+            var emptyThresh = Math.floor(rows.length * 0.05); // tolerate stray overflow into a gutter
+            var minGapBins = Math.max(1, Math.round(minGapPt / bin));
+
+            // Walk bins, carving segments separated by empty runs >= minGapBins.
+            var segments = [], segStart = null, emptyRun = 0;
+            for (var b = 0; b < nbins; b++) {
+                var isEmpty = occ[b] <= emptyThresh;
+                if (isEmpty) {
+                    emptyRun++;
+                } else {
+                    if (segStart === null) {
+                        segStart = b;
+                    } else if (emptyRun >= minGapBins) {
+                        segments.push({ start: segStart, end: b - emptyRun - 1 });
+                        segStart = b;
+                    }
+                    emptyRun = 0;
+                }
+            }
+            if (segStart !== null) segments.push({ start: segStart, end: nbins - 1 - (occ[nbins - 1] <= emptyThresh ? emptyRun : 0) });
+            if (!segments.length) return null;
+
+            // Column boundary = midpoint between the end of one segment and the start of the next.
+            var bounds = []; // right-edge x of each column except the last
+            for (var i = 0; i < segments.length - 1; i++) {
+                var gapMidBin = (segments[i].end + segments[i + 1].start) / 2;
+                bounds.push(minX + gapMidBin * bin);
+            }
+            return { bounds: bounds, count: segments.length, minX: minX };
+        }
+
+        function assignCol(centerX, bounds) {
+            for (var c = 0; c < bounds.length; c++) { if (centerX < bounds[c]) return c; }
+            return bounds.length; // last column
+        }
+
+        function pageToGrid(items, minGapPt) {
+            items = items.filter(function (it) { return it.str && it.str.length; });
+            if (!items.length) return [];
+            var fontSizes = items.map(function (it) { return it.fontSize || 12; });
+            var yTol = Math.max(2, median(fontSizes) * 0.5);
+            var rows = clusterRows(items, yTol);
+
+            var cols = detectColumns(items, rows, minGapPt);
+            var grid = [];
+
+            rows.forEach(function (rowItems) {
+                var ordered = rowItems.slice().sort(function (a, b) { return a.x - b.x; });
+                if (!cols || cols.count <= 1) {
+                    // Fallback: single detected column — split the line on runs of 2+ spaces.
+                    var line = ordered.map(function (it) { return it.str; }).join(' ').replace(/\s+/g, ' ').trim();
+                    var parts = line.split(/\s{2,}|\t/).map(function (s) { return s.trim(); });
+                    grid.push(parts.length ? parts : [line]);
+                    return;
+                }
+                var cells = new Array(cols.count).fill('');
+                ordered.forEach(function (it) {
+                    var w = it.width > 0 ? it.width : 1;
+                    var center = it.x + w / 2;
+                    var c = assignCol(center, cols.bounds);
+                    cells[c] = cells[c] ? (cells[c] + ' ' + it.str) : it.str;
+                });
+                grid.push(cells.map(function (s) { return s.trim(); }));
+            });
+            return grid;
+        }
+
+        async function extractPdf(file, minGapPt) {
+            await loadPdfJs();
+            var buf = await file.arrayBuffer();
+            var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+            var pageGrids = [];
+            for (var p = 1; p <= pdf.numPages; p++) {
+                setStatus('Reading page ' + p + ' of ' + pdf.numPages + '…', 'loading');
+                var page = await pdf.getPage(p);
+                var content = await page.getTextContent();
+                var vp = page.getViewport({ scale: 1 });
+                var pageHeight = vp.height;
+                var items = content.items.map(function (item) {
+                    var tx = item.transform;
+                    return {
+                        str: item.str,
+                        x: tx[4],
+                        y: pageHeight - tx[5],
+                        width: item.width || 0,
+                        fontSize: Math.abs(tx[0]) || Math.abs(tx[3]) || 12
+                    };
+                });
+                var grid = pageToGrid(items, minGapPt);
+                grid = trimGrid(grid);
+                if (grid.length) pageGrids.push({ name: 'Page ' + p, grid: grid });
+            }
+            return pageGrids;
+        }
+
+        /* ══════════════════════════════════════
+           DOCX / HTML → grids (explicit tables)
+           ══════════════════════════════════════ */
+        function tablesFromHtml(htmlString) {
+            var doc = new DOMParser().parseFromString(htmlString, 'text/html');
+            var tables = Array.prototype.slice.call(doc.querySelectorAll('table'));
+            var out = [];
+            tables.forEach(function (table, ti) {
+                var grid = [];
+                var trs = Array.prototype.slice.call(table.querySelectorAll('tr'));
+                // Track row-spans so spanned cells push into subsequent rows.
+                var pending = {}; // colIndex -> { text, rows }
+                trs.forEach(function (tr) {
+                    var row = [];
+                    var cells = Array.prototype.slice.call(tr.children).filter(function (el) {
+                        return el.tagName === 'TD' || el.tagName === 'TH';
+                    });
+                    var col = 0;
+                    function fillPending() {
+                        while (pending[col] && pending[col].rows > 0) {
+                            row[col] = pending[col].text;
+                            pending[col].rows--;
+                            if (pending[col].rows === 0) delete pending[col];
+                            col++;
+                        }
+                    }
+                    fillPending();
+                    cells.forEach(function (cell) {
+                        var text = (cell.textContent || '').replace(/\s+/g, ' ').trim();
+                        var colspan = parseInt(cell.getAttribute('colspan') || '1', 10) || 1;
+                        var rowspan = parseInt(cell.getAttribute('rowspan') || '1', 10) || 1;
+                        for (var cs = 0; cs < colspan; cs++) {
+                            row[col] = cs === 0 ? text : '';
+                            if (rowspan > 1) pending[col] = { text: cs === 0 ? text : '', rows: rowspan - 1 };
+                            col++;
+                            fillPending();
+                        }
+                    });
+                    grid.push(row);
+                });
+                grid = trimGrid(normalizeWidths(grid));
+                if (grid.length) out.push({ name: 'Table ' + (ti + 1), grid: grid });
+            });
+            return out;
+        }
+
+        async function extractDocx(file) {
+            await loadMammoth();
+            var buf = await file.arrayBuffer();
+            var result = await mammoth.convertToHtml({ arrayBuffer: buf });
+            return tablesFromHtml(result.value || '');
+        }
+
+        async function extractHtml(file) {
+            var text = await file.text();
+            return tablesFromHtml(text);
+        }
+
+        /* ══════════════════════════════════════
+           Delimited (CSV / TSV / TXT)
+           ══════════════════════════════════════ */
+        function detectDelimiter(text) {
+            var candidates = [',', '\t', ';', '|'];
+            var firstLine = text.split('\n')[0] || '';
+            var best = ',', bestCount = 0;
+            candidates.forEach(function (d) {
+                var count = 0, inQ = false;
+                for (var i = 0; i < firstLine.length; i++) {
+                    if (firstLine[i] === '"') inQ = !inQ;
+                    else if (!inQ && firstLine[i] === d) count++;
+                }
+                if (count > bestCount) { bestCount = count; best = d; }
+            });
+            return best;
+        }
+        function parseDelimited(text, delim) {
+            var rows = [], i = 0, n = text.length;
+            while (i < n) {
+                var row = [];
+                while (i < n) {
+                    var cell = '';
+                    if (text[i] === '"') {
+                        i++;
+                        while (i < n) {
+                            if (text[i] === '"') {
+                                if (i + 1 < n && text[i + 1] === '"') { cell += '"'; i += 2; }
+                                else { i++; break; }
+                            } else { cell += text[i++]; }
+                        }
+                        while (i < n && text[i] !== delim && text[i] !== '\n') i++;
+                    } else {
+                        while (i < n && text[i] !== delim && text[i] !== '\n') cell += text[i++];
+                    }
+                    row.push(cell);
+                    if (i < n && text[i] === delim) { i++; } else { break; }
+                }
+                if (i < n && text[i] === '\n') i++;
+                if (row.length === 1 && row[0] === '' && i >= n) break;
+                rows.push(row);
+            }
+            return rows;
+        }
+        async function extractDelimited(file) {
+            var raw = await file.text();
+            var text = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            var delim = detectDelimiter(text);
+            var grid = trimGrid(normalizeWidths(parseDelimited(text, delim)));
+            return grid.length ? [{ name: 'Sheet 1', grid: grid }] : [];
+        }
+
+        /* ─── Grid utilities ─── */
+        function normalizeWidths(grid) {
+            var w = 0;
+            grid.forEach(function (r) { if (r.length > w) w = r.length; });
+            return grid.map(function (r) {
+                var out = r.slice();
+                while (out.length < w) out.push('');
+                return out;
+            });
+        }
+        function trimGrid(grid) {
+            // Drop fully-empty rows, then fully-empty leading/trailing columns.
+            grid = normalizeWidths(grid).filter(function (r) { return r.some(function (c) { return String(c).trim() !== ''; }); });
+            if (!grid.length) return grid;
+            var w = grid[0].length;
+            var keep = [];
+            for (var c = 0; c < w; c++) {
+                var any = grid.some(function (r) { return String(r[c]).trim() !== ''; });
+                if (any) keep.push(c);
+            }
+            if (!keep.length) return [];
+            return grid.map(function (r) { return keep.map(function (c) { return r[c]; }); });
+        }
+
+        /* ─── Sheet handling / merge ─── */
+        function applyLayout(rawSheets) {
+            var mode = document.getElementById('optSheets').value;
+            if (mode === 'merge' && rawSheets.length > 1) {
+                var merged = [];
+                rawSheets.forEach(function (s) { s.grid.forEach(function (r) { merged.push(r); }); });
+                return [{ name: 'Merged', grid: normalizeWidths(merged) }];
+            }
+            return rawSheets.map(function (s) { return { name: s.name, grid: s.grid }; });
+        }
+
+        /* ─── Rendering ─── */
+        function renderSheetTabs() {
+            var wrap = document.getElementById('sheetTabs');
+            wrap.innerHTML = '';
+            if (sheets.length <= 1) { wrap.style.display = 'none'; return; }
+            wrap.style.display = 'flex';
+            sheets.forEach(function (s, idx) {
+                var btn = document.createElement('button');
+                btn.className = 'sheet-tab' + (idx === activeSheet ? ' active' : '');
+                btn.textContent = s.name + ' (' + s.grid.length + '×' + (s.grid[0] ? s.grid[0].length : 0) + ')';
+                btn.addEventListener('click', function () { activeSheet = idx; renderSheetTabs(); renderPreview(); });
+                wrap.appendChild(btn);
+            });
+        }
+        function renderPreview() {
+            var grid = sheets[activeSheet] ? sheets[activeSheet].grid : [];
+            var rows = grid.length, cols = grid[0] ? grid[0].length : 0;
+            document.getElementById('tableMeta').textContent =
+                rows.toLocaleString() + ' rows × ' + cols + ' columns' + (rows > 100 ? ' — showing first 100' : '');
+
+            var table = document.createElement('table');
+            table.className = 'data-table';
+            var thead = document.createElement('thead');
+            var htr = document.createElement('tr');
+            var hnum = document.createElement('th'); hnum.className = 'col-num'; hnum.textContent = '#'; htr.appendChild(hnum);
+            var header = grid[0] || [];
+            for (var c = 0; c < cols; c++) {
+                var th = document.createElement('th');
+                th.textContent = header[c] !== undefined ? header[c] : '';
+                th.title = th.textContent; htr.appendChild(th);
+            }
+            thead.appendChild(htr); table.appendChild(thead);
+
+            var tbody = document.createElement('tbody');
+            var limit = Math.min(rows, 101);
+            for (var ri = 1; ri < limit; ri++) {
+                var tr = document.createElement('tr');
+                var tnum = document.createElement('td'); tnum.className = 'col-num'; tnum.textContent = ri; tr.appendChild(tnum);
+                for (var ci = 0; ci < cols; ci++) {
+                    var td = document.createElement('td');
+                    var val = grid[ri] && grid[ri][ci] !== undefined ? grid[ri][ci] : '';
+                    if (String(val).trim() === '') td.className = 'cell-empty';
+                    td.textContent = val; td.title = val;
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+            table.appendChild(tbody);
+            var wrap = document.getElementById('previewTableWrap');
+            wrap.innerHTML = ''; wrap.appendChild(table);
+        }
+
+        /* ─── Main pipeline ─── */
+        function detectKind(file) {
+            var n = file.name.toLowerCase();
+            if (n.endsWith('.pdf')) return 'pdf';
+            if (n.endsWith('.docx')) return 'docx';
+            if (n.endsWith('.html') || n.endsWith('.htm')) return 'html';
+            if (n.endsWith('.csv') || n.endsWith('.tsv') || n.endsWith('.txt')) return 'delimited';
+            if (n.endsWith('.doc')) return 'doc-legacy';
+            return 'unknown';
+        }
+
+        async function processFile(file) {
+            if (!file) return;
+            fileBase = file.name.replace(/\.[^.]+$/, '') || 'document';
+            var kind = detectKind(file);
+            lastKind = kind;
+
+            document.getElementById('infoName').textContent = file.name;
+            document.getElementById('infoSize').textContent = fmtSize(file.size);
+            document.getElementById('infoType').textContent = kind === 'delimited' ? 'CSV/TSV' : kind;
+            document.getElementById('infoTables').textContent = '…';
+            document.getElementById('fileInfoBar').classList.add('visible');
+
+            // PDF-only options
+            document.getElementById('sensitivityItem').classList.toggle('visible', kind === 'pdf');
+
+            if (kind === 'unknown') { setStatus('Unsupported file type. Use PDF, DOCX, HTML, CSV, TSV, or TXT.', 'error'); return; }
+            if (kind === 'doc-legacy') { setStatus('Legacy .doc is not supported — save it as .docx and try again.', 'error'); return; }
+
+            setStatus('Analyzing document…', 'loading');
+            try {
+                var raw;
+                var minGapPt = parseInt(gapSlider.value, 10) || 8;
+                if (kind === 'pdf') raw = await extractPdf(file, minGapPt);
+                else if (kind === 'docx') raw = await extractDocx(file);
+                else if (kind === 'html') raw = await extractHtml(file);
+                else raw = await extractDelimited(file);
+
+                if (!raw || !raw.length) {
+                    document.getElementById('infoTables').textContent = '0';
+                    if (kind === 'pdf') setStatus('No extractable table text found. This PDF may be a scanned image (no text layer).', 'error');
+                    else if (kind === 'docx' || kind === 'html') setStatus('No tables found in this document.', 'warn');
+                    else setStatus('No data found in this file.', 'warn');
+                    document.getElementById('sectionPreview').classList.remove('visible');
+                    return;
+                }
+
+                window.__rawSheets = raw;
+                sheets = applyLayout(raw);
+                activeSheet = 0;
+                document.getElementById('infoTables').textContent = raw.length;
+
+                document.getElementById('sectionOptions').classList.add('visible');
+                document.getElementById('sectionPreview').classList.add('visible');
+                document.getElementById('previewMeta').textContent =
+                    '— ' + raw.length + (kind === 'pdf' ? ' page(s)' : ' table(s)') + ' detected';
+                renderSheetTabs();
+                renderPreview();
+
+                var totalRows = sheets.reduce(function (a, s) { return a + s.grid.length; }, 0);
+                setStatus('Extracted ' + sheets.length + ' sheet(s), ' + totalRows.toLocaleString() + ' rows total.', 'success');
+            } catch (err) {
+                console.error(err);
+                setStatus('Error: ' + (err && err.message ? err.message : 'could not process file'), 'error');
+            }
+        }
+
+        /* ─── Re-apply options without re-parsing ─── */
+        function reapply() {
+            if (!window.__rawSheets) return;
+            sheets = applyLayout(window.__rawSheets);
+            if (activeSheet >= sheets.length) activeSheet = 0;
+            renderSheetTabs();
+            renderPreview();
+        }
+        document.getElementById('optSheets').addEventListener('change', reapply);
+
+        // Gap slider: live label; re-extract PDFs (needs re-parse) on release.
+        gapSlider.addEventListener('input', function () { gapVal.textContent = gapSlider.value + ' pt'; });
+        gapSlider.addEventListener('change', function () {
+            if (lastKind === 'pdf' && lastFile) processFile(lastFile);
+        });
+
+        /* ─── CSV generation ─── */
+        function toCsv(grid) {
+            return grid.map(function (row) {
+                return row.map(function (cell) {
+                    var s = String(cell == null ? '' : cell);
+                    if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
+                        return '"' + s.replace(/"/g, '""') + '"';
+                    }
+                    return s;
+                }).join(',');
+            }).join('\n');
+        }
+
+        /* ─── Exports ─── */
+        function safeSheetName(name, used) {
+            var n = String(name).replace(/[\[\]\*\?\/\\:]/g, ' ').slice(0, 31).trim() || 'Sheet';
+            var base = n, i = 2;
+            while (used[n.toLowerCase()]) { n = (base.slice(0, 28) + ' ' + i).slice(0, 31); i++; }
+            used[n.toLowerCase()] = true;
+            return n;
+        }
+        window.downloadXLSX = async function () {
+            if (!sheets.length) return;
+            setStatus('Building Excel workbook…', 'loading');
+            try {
+                await loadXLSX();
+                var wb = XLSX.utils.book_new();
+                var used = {};
+                sheets.forEach(function (s) {
+                    var ws = XLSX.utils.aoa_to_sheet(s.grid);
+                    XLSX.utils.book_append_sheet(wb, ws, safeSheetName(s.name, used));
+                });
+                XLSX.writeFile(wb, fileBase + '.xlsx');
+                setStatus('Excel workbook downloaded.', 'success');
+            } catch (err) {
+                console.error(err);
+                setStatus('Error building Excel: ' + (err && err.message ? err.message : 'unknown'), 'error');
+            }
+        };
+        window.downloadCSV = function () {
+            if (!sheets[activeSheet]) return;
+            var csv = toCsv(sheets[activeSheet].grid);
+            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            var suffix = sheets.length > 1 ? '-' + sheets[activeSheet].name.replace(/\s+/g, '_') : '';
+            a.href = url; a.download = fileBase + suffix + '.csv';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+        };
+        window.copyCSV = async function () {
+            if (!sheets[activeSheet]) return;
+            var csv = toCsv(sheets[activeSheet].grid);
+            var btn = document.getElementById('copyBtn');
+            try { await navigator.clipboard.writeText(csv); }
+            catch (_) {
+                var ta = document.createElement('textarea');
+                ta.value = csv; ta.style.cssText = 'position:fixed;opacity:0';
+                document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            }
+            btn.textContent = '✓ Copied!';
+            setTimeout(function () { btn.innerHTML = '&#9109; Copy CSV'; }, 2000);
+        };
+
+        /* ─── Reset ─── */
+        window.resetTool = function () {
+            sheets = []; activeSheet = 0; window.__rawSheets = null; lastFile = null; lastKind = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfoBar').classList.remove('visible');
+            document.getElementById('sectionOptions').classList.remove('visible');
+            document.getElementById('sectionPreview').classList.remove('visible');
+            document.getElementById('previewTableWrap').innerHTML = '';
+            document.getElementById('sheetTabs').innerHTML = '';
+            clearStatus();
+        };
+
+        /* ─── Wiring ─── */
+        var lastFile = null;
+        function handle(file) { lastFile = file; processFile(file); }
+
+        var zone = document.getElementById('uploadZone');
+        zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('dragover'); });
+        zone.addEventListener('dragleave', function () { zone.classList.remove('dragover'); });
+        zone.addEventListener('drop', function (e) {
+            e.preventDefault(); zone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) handle(e.dataTransfer.files[0]);
+        });
+        zone.addEventListener('click', function (e) {
+            if (e.target.tagName !== 'BUTTON') document.getElementById('fileInput').click();
+        });
+        document.getElementById('fileInput').addEventListener('change', function (e) {
+            if (e.target.files[0]) handle(e.target.files[0]);
+        });
+    })();
+    </script>
+</body>
+</html>
