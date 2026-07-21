@@ -4,6 +4,7 @@
 
 const TOOLKIT_TOOLS = [
   { name: 'Sprite Slicer', desc: 'Upload a sprite sheet and slice it into individual frames by rows and columns.', category: 'game-dev-tools', categoryLabel: 'Game Dev', slug: 'sprite-slicer', keywords: 'sprite sheet slicer split frames animation pixel art' },
+  { name: 'Image Tiler', desc: 'Tile images into patterns — single repeat, checkered, layered, 4x4 border, or random mix grids up to 10x10.', category: 'game-dev-tools', categoryLabel: 'Game Dev', slug: 'image-tiler', keywords: 'image tiler tile pattern generator texture repeat seamless checkered grid background game' },
   { name: 'Dice Combination Sheet', desc: 'Calculate dice roll probabilities with full distribution tables and charts.', category: 'game-dev-tools', categoryLabel: 'Game Dev', slug: 'dice-combination-sheet', keywords: 'dice probability calculator 2d6 3d6 1d20 roll odds tabletop rpg' },
   { name: 'Card Deck Generator', desc: 'Design and export printable cards for board games or TCG prototypes.', category: 'game-dev-tools', categoryLabel: 'Game Dev', slug: 'card-deck-generator', keywords: 'card generator maker tcg board game printable prototype deck' },
   { name: 'Fantasy Name Generator', desc: 'Generate character names for D&D, games, and writing across 9 fantasy races.', category: 'game-dev-tools', categoryLabel: 'Game Dev', slug: 'fantasy-name-generator', keywords: 'fantasy name generator dnd npc character elf dwarf orc dragon rpg' },

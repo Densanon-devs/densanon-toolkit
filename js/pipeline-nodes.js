@@ -1250,4 +1250,76 @@
     }
   });
 
+  // ── Image Tiler ──
+  NodeRegistry.register({
+    id: 'image-tiler',
+    name: 'Image Tiler',
+    category: 'Image',
+    icon: '🧱',
+    inputs: [
+      { name: 'image1', type: 'Image', label: 'Image 1' },
+      { name: 'image2', type: 'Image', label: 'Image 2' },
+      { name: 'images', type: 'ImageArray', label: 'More Images' }
+    ],
+    outputs: [{ name: 'image', type: 'Image', label: 'Tiled' }],
+    config: [
+      { name: 'mode', type: 'select', label: 'Mode',
+        options: [
+          { value: 'single', label: 'Single (repeat image 1)' },
+          { value: 'checkered', label: 'Checkered (images 1+2)' },
+          { value: 'layers', label: 'Layers (stack all, repeat)' },
+          { value: 'pattern4x4', label: '4x4 Pattern (1=center/corners, 2=edges)' },
+          { value: 'mix', label: 'Mix (random placement)' }
+        ], default: 'single' },
+      { name: 'cols', type: 'number', label: 'Columns (2-10)', default: 4 },
+      { name: 'rows', type: 'number', label: 'Rows (2-10)', default: 4 },
+      { name: 'tile', type: 'number', label: 'Tile Size px (0 = auto)', default: 0 }
+    ],
+    execute: async function (inputs, config) {
+      var blobs = [];
+      if (inputs.image1) blobs.push(inputs.image1);
+      if (inputs.image2) blobs.push(inputs.image2);
+      if (Array.isArray(inputs.images)) blobs = blobs.concat(inputs.images);
+      if (blobs.length === 0) throw new Error('No images connected');
+
+      var mode = config.mode || 'single';
+      var minImages = { single: 1, checkered: 2, layers: 2, pattern4x4: 2, mix: 1 };
+      if (blobs.length < minImages[mode]) {
+        throw new Error(mode + ' mode needs at least ' + minImages[mode] + ' images (got ' + blobs.length + ')');
+      }
+
+      var imgs = [];
+      for (var i = 0; i < blobs.length; i++) imgs.push(await blobToImage(blobs[i]));
+
+      var clampGrid = function (v) { return Math.max(2, Math.min(10, parseInt(v, 10) || 4)); };
+      var cols = mode === 'pattern4x4' ? 4 : clampGrid(config.cols);
+      var rows = mode === 'pattern4x4' ? 4 : clampGrid(config.rows);
+      var tile = parseInt(config.tile, 10) || 0;
+      var tw = tile > 0 ? Math.min(tile, 1024) : Math.min(imgs[0].width, 512);
+      var th = tile > 0 ? Math.min(tile, 1024) : Math.min(imgs[0].height, 512);
+
+      var cc = drawImageToCanvas(imgs[0], cols * tw, rows * th);
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < cols; c++) {
+          var x = c * tw, y = r * th;
+          if (mode === 'layers') {
+            for (var l = 0; l < imgs.length; l++) cc.ctx.drawImage(imgs[l], x, y, tw, th);
+          } else {
+            var idx = 0;
+            if (mode === 'checkered') idx = (r + c) % 2;
+            else if (mode === 'pattern4x4') {
+              var corner = (r === 0 || r === 3) && (c === 0 || c === 3);
+              var center = r >= 1 && r <= 2 && c >= 1 && c <= 2;
+              idx = (corner || center) ? 0 : 1;
+            } else if (mode === 'mix') idx = Math.floor(Math.random() * imgs.length);
+            cc.ctx.drawImage(imgs[idx], x, y, tw, th);
+          }
+        }
+      }
+      var blob = await canvasToBlob(cc.canvas, 'image/png');
+      cc.canvas.width = 0;
+      return { image: blob };
+    }
+  });
+
 })();

@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Tiler Online Free - Tile Patterns, Checkered & Mixed Grids | Densanon Toolkit</title>
+    <meta name="description" content="Free online image tiler for game textures and backgrounds. Tile one or more images into single, checkered, layered, 4x4, or randomly mixed grid patterns. 100% browser-based, no signup required.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="../../../css/style.css">
+    <style>
+        .tiler-drop-zone {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            padding: 36px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            background: var(--color-surface);
+            margin-bottom: 20px;
+        }
+        .tiler-drop-zone:hover,
+        .tiler-drop-zone.dragover {
+            border-color: var(--color-primary);
+            background: rgba(229, 62, 62, 0.05);
+        }
+        .tiler-drop-zone .drop-icon { font-size: 2.4rem; display: block; margin-bottom: 10px; opacity: 0.65; }
+        .tiler-drop-zone .drop-label { color: var(--color-text-muted); font-size: 1rem; margin-bottom: 4px; }
+        .tiler-drop-zone .drop-label strong { color: var(--color-text); }
+        .tiler-drop-zone .drop-hint { font-size: 0.82rem; color: var(--color-text-muted); opacity: 0.6; }
+
+        .tiler-app { display: none; flex-direction: column; gap: 16px; }
+        .tiler-app.visible { display: flex; }
+
+        /* Image slot strip */
+        .slot-strip {
+            display: flex; flex-wrap: wrap; gap: 10px;
+            background: var(--color-surface); border: 1px solid var(--color-border);
+            border-radius: var(--radius); padding: 12px;
+        }
+        .slot-card {
+            position: relative; width: 92px; display: flex; flex-direction: column; gap: 4px;
+            border: 1px solid var(--color-border); border-radius: 6px; padding: 6px;
+            background: var(--color-bg);
+        }
+        .slot-card .slot-thumb {
+            width: 78px; height: 78px; object-fit: contain; display: block;
+            background: repeating-conic-gradient(#1a1d27 0% 25%, #15171f 0% 50%) 0 0 / 12px 12px;
+            border-radius: 4px;
+        }
+        .slot-card .slot-num {
+            position: absolute; top: 2px; left: 2px;
+            background: var(--color-primary); color: #fff; font-size: 0.68rem; font-weight: 700;
+            border-radius: 4px; padding: 1px 6px;
+        }
+        .slot-card .slot-name {
+            font-size: 0.66rem; color: var(--color-text-muted);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .slot-card .slot-btns { display: flex; gap: 3px; }
+        .slot-card .slot-btns button {
+            flex: 1; background: var(--color-surface); border: 1px solid var(--color-border);
+            border-radius: 4px; color: var(--color-text-muted); font-size: 0.72rem;
+            cursor: pointer; padding: 2px 0; font-family: inherit; line-height: 1.4;
+        }
+        .slot-card .slot-btns button:hover { border-color: var(--color-primary); color: var(--color-text); }
+        .slot-add {
+            width: 92px; min-height: 120px; display: flex; align-items: center; justify-content: center;
+            border: 1px dashed var(--color-border); border-radius: 6px; cursor: pointer;
+            color: var(--color-text-muted); font-size: 1.6rem; transition: border-color 0.2s, color 0.2s;
+        }
+        .slot-add:hover { border-color: var(--color-primary); color: var(--color-primary); }
+        .slot-card.active-slot { border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
+        .slot-card.excluded { opacity: 0.35; }
+        .slot-card .slot-thumb { cursor: pointer; }
+        .role-badge {
+            position: absolute; top: 2px; right: 2px;
+            color: #fff; font-size: 0.68rem; font-weight: 700;
+            border-radius: 4px; padding: 1px 6px;
+        }
+        .role-badge.role-a { background: var(--color-primary); }
+        .role-badge.role-b { background: #3e7ce5; }
+        .role-row select {
+            padding: 8px 10px; background: var(--color-bg); border: 1px solid var(--color-border);
+            border-radius: 6px; color: var(--color-text); font-size: 0.9rem; font-family: inherit;
+            max-width: 220px;
+        }
+        .role-row select:focus { border-color: var(--color-primary); outline: none; }
+
+        /* Mode tabs */
+        .mode-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+        .mode-tab {
+            flex: 1; min-width: 110px; padding: 10px 12px; background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 6px; color: var(--color-text-muted); font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; text-align: center; font-family: inherit;
+        }
+        .mode-tab:hover { border-color: var(--color-text-muted); color: var(--color-text); }
+        .mode-tab.active { border-color: var(--color-primary); color: var(--color-primary); background: rgba(229, 62, 62, 0.06); }
+
+        /* Controls */
+        .controls-panel {
+            background: var(--color-surface); border: 1px solid var(--color-border);
+            border-radius: var(--radius); padding: 16px;
+        }
+        .controls-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+        .control-group { display: flex; flex-direction: column; gap: 4px; }
+        .control-group label { font-size: 0.78rem; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+        .control-group input[type="number"] {
+            width: 90px; padding: 8px 10px; background: var(--color-bg); border: 1px solid var(--color-border);
+            border-radius: 6px; color: var(--color-text); font-size: 0.9rem; font-family: inherit;
+        }
+        .control-group input[type="number"]:focus { border-color: var(--color-primary); outline: none; }
+        .control-group input[type="number"]:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-shuffle {
+            padding: 9px 18px; background: transparent; border: 1px solid var(--color-border);
+            border-radius: 6px; color: var(--color-text-muted); font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: border-color 0.2s, color 0.2s; font-family: inherit;
+        }
+        .btn-shuffle:hover { border-color: var(--color-primary); color: var(--color-text); }
+        .mode-hint { font-size: 0.82rem; color: var(--color-text-muted); margin-top: 10px; line-height: 1.5; }
+        .mode-hint.warn { color: #e5a53e; }
+
+        /* Preview */
+        .preview-container {
+            border: 1px solid var(--color-border); border-radius: var(--radius);
+            overflow: auto; background: repeating-conic-gradient(#1a1d27 0% 25%, #15171f 0% 50%) 0 0 / 16px 16px;
+            display: flex; align-items: center; justify-content: center; min-height: 200px; max-height: 560px; padding: 12px;
+        }
+        .preview-container canvas { max-width: 100%; height: auto; display: block; }
+        .preview-dims {
+            padding: 8px 14px; font-size: 0.78rem; color: var(--color-text-muted);
+            background: var(--color-surface); border: 1px solid var(--color-border);
+            border-radius: var(--radius); margin-top: 6px;
+        }
+
+        /* Actions */
+        .tiler-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn-primary {
+            padding: 12px 28px; background: var(--color-primary); color: #fff; border: none;
+            border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer;
+            transition: background 0.2s; font-family: inherit;
+        }
+        .btn-primary:hover { background: var(--color-primary-hover); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary {
+            padding: 12px 28px; background: transparent; border: 1px solid var(--color-border);
+            border-radius: 6px; color: var(--color-text-muted); font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: border-color 0.2s, color 0.2s; font-family: inherit;
+        }
+        .btn-secondary:hover { border-color: var(--color-primary); color: var(--color-text); }
+
+        /* SEO content */
+        .content-section { margin-top: 40px; }
+        .content-section h2 { color: var(--color-text); margin-bottom: 12px; }
+        .content-section p,
+        .content-section li { color: var(--color-text-muted); line-height: 1.7; }
+        .content-section ol, .content-section ul { padding-left: 20px; }
+        .content-section ol li, .content-section ul li { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="tool-header">
+            <div class="breadcrumb"></div>
+            <h1>Image Tiler</h1>
+            <p>Combine one or more images into tiled patterns — repeat a single tile, alternate two in a checkerboard, stack layers, build a 4&times;4 border pattern, or scatter a random mix across a grid. All processing happens in your browser &mdash; your images never leave your device.</p>
+        </div>
+
+        <!-- Drop Zone -->
+        <div class="tiler-drop-zone" id="dropZone">
+            <span class="drop-icon">&#129513;</span>
+            <p class="drop-label"><strong>Drop images here</strong> or click to browse (multiple allowed)</p>
+            <p class="drop-hint">PNG, JPG, WebP, BMP, GIF &mdash; add more at any time</p>
+            <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+        </div>
+
+        <!-- App -->
+        <div class="tiler-app" id="tilerApp">
+            <!-- Image slots -->
+            <div class="slot-strip" id="slotStrip"></div>
+
+            <!-- Mode Tabs -->
+            <div class="mode-tabs">
+                <button class="mode-tab active" data-mode="single">Single</button>
+                <button class="mode-tab" data-mode="checkered">Checkered</button>
+                <button class="mode-tab" data-mode="layers">Layers</button>
+                <button class="mode-tab" data-mode="pattern4x4">4&times;4 Pattern</button>
+                <button class="mode-tab" data-mode="mix">Mix</button>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-panel">
+                <div class="controls-row role-row" id="roleRow" style="display:none; margin-bottom:12px;"></div>
+                <div class="controls-row">
+                    <div class="control-group">
+                        <label for="gridCols">Columns</label>
+                        <input type="number" id="gridCols" value="4" min="2" max="10">
+                    </div>
+                    <div class="control-group">
+                        <label for="gridRows">Rows</label>
+                        <input type="number" id="gridRows" value="4" min="2" max="10">
+                    </div>
+                    <div class="control-group">
+                        <label for="tileW">Tile Width (px)</label>
+                        <input type="number" id="tileW" value="128" min="8" max="1024">
+                    </div>
+                    <div class="control-group">
+                        <label for="tileH">Tile Height (px)</label>
+                        <input type="number" id="tileH" value="128" min="8" max="1024">
+                    </div>
+                    <button class="btn-shuffle" id="btnShuffle" style="display:none">&#127922; Shuffle</button>
+                </div>
+                <p class="mode-hint" id="modeHint"></p>
+            </div>
+
+            <!-- Preview -->
+            <div class="preview-container">
+                <canvas id="previewCanvas"></canvas>
+            </div>
+            <div class="preview-dims" id="previewDims">No images loaded</div>
+
+            <!-- Actions -->
+            <div class="tiler-actions">
+                <button class="btn-primary" id="btnDownload">Download PNG</button>
+                <button class="btn-secondary" id="btnReset">Start Over</button>
+            </div>
+        </div>
+
+        <!-- SEO Content -->
+        <section class="content-section">
+            <h2>What is Image Tiler?</h2>
+            <p>The Image Tiler combines one or more images into a single tiled output image — the fast way to build repeating textures, backgrounds, and pattern sheets for games and design work. Import several tiles, pick a layout mode, and the tool scales every image to a uniform tile size and paints them onto a grid you control. Five modes cover the common cases: repeat one tile everywhere, alternate two tiles in a checkerboard, stack semi-transparent layers into a composite tile, frame a 4&times;4 pattern where the corners match the center and the edges use a second tile, or scatter a random mix of every imported image across a grid from 2&times;2 up to 10&times;10. Everything runs on the HTML5 Canvas in your browser, so your images are never uploaded to any server.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Tiling Modes</h2>
+            <ul>
+                <li><strong>Single:</strong> Repeats one image across every cell of the grid — click any imported tile to make it the active one. The classic way to preview and export a seamless texture repeat.</li>
+                <li><strong>Checkered:</strong> Alternates two images like a checkerboard — assign any imported image to the A and B roles. Ideal for floor tiles, board-game surfaces, and two-tone backgrounds.</li>
+                <li><strong>Layers:</strong> Stacks your enabled images on top of each other (in slot order) into one composite tile, then repeats that tile across the grid — click tiles to toggle them in or out of the stack. Use transparent PNGs to build up decals, overlays, and grunge on a base texture.</li>
+                <li><strong>4&times;4 Pattern:</strong> A fixed 4&times;4 grid where the four corners and the 2&times;2 center use one image and the edge cells use another — assign both roles from any imported tiles for a quick bordered-panel or window pattern.</li>
+                <li><strong>Mix:</strong> Randomly places your enabled images across the grid (2&times;2 up to 10&times;10) — toggle tiles in or out of the pool, then hit Shuffle until you like the arrangement. Great for organic variation in ground tiles, foliage, and rubble.</li>
+            </ul>
+        </section>
+
+        <section class="content-section">
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Import Images:</strong> Drag and drop one or more images, or click to browse. Use the <em>+</em> card to add more later; each image gets a numbered slot, and you can reorder or remove them.</li>
+                <li><strong>Pick a Mode and Assign Tiles:</strong> Choose Single, Checkered, Layers, 4&times;4 Pattern, or Mix. Click a tile to set the active image (Single) or the A / Center role, use the dropdowns to assign both roles in two-image modes, and click tiles to toggle them on or off in Layers and Mix.</li>
+                <li><strong>Set the Grid and Tile Size:</strong> Choose columns and rows (2&ndash;10) and the pixel size each tile is scaled to. The 4&times;4 Pattern mode locks the grid at 4&times;4.</li>
+                <li><strong>Preview Live:</strong> The result re-renders instantly as you change anything. In Mix mode, click Shuffle to re-roll the arrangement.</li>
+                <li><strong>Download:</strong> Click "Download PNG" to save the tiled image to your device.</li>
+            </ol>
+        </section>
+
+        <section class="content-section">
+            <h2>Common Uses</h2>
+            <ol>
+                <li><strong>Game backgrounds:</strong> Turn a single ground or wall tile into a full repeating background sheet sized exactly to your level.</li>
+                <li><strong>Texture variation:</strong> Use Mix mode with several grass, stone, or dirt variants to break up obvious repetition in terrain.</li>
+                <li><strong>Board and puzzle surfaces:</strong> Build checkerboards, tile floors, and game boards from two alternating tiles.</li>
+                <li><strong>Composite tiles:</strong> Layer transparent decals (cracks, moss, markings) over a base texture and repeat the result.</li>
+                <li><strong>Pattern prototyping:</strong> Quickly mock up wallpaper, fabric, and UI panel patterns before committing to full-resolution art.</li>
+            </ol>
+        </section>
+
+        <section class="content-section">
+            <h2>Frequently Asked Questions</h2>
+
+            <h3>What image formats can I import?</h3>
+            <p>PNG, JPG, GIF, BMP, and WebP. Transparency in PNG and WebP images is preserved — which is exactly what makes Layers mode work for stacking decals over a base tile. The output always downloads as PNG so nothing is lost to compression.</p>
+
+            <h3>Do my images need to be the same size?</h3>
+            <p>No. Every image is scaled to the tile width and height you set in the controls, so mixed sizes and aspect ratios are fine. The tile size defaults to the dimensions of the first image you import; images with a different aspect ratio will be stretched to fit the tile, so tiles work best when your sources share proportions.</p>
+
+            <h3>How do I choose which image each mode uses?</h3>
+            <p>Click a thumbnail to set the active image in Single mode (or the A / Center role in the two-image modes), use the dropdowns to assign both roles in Checkered and 4&times;4 Pattern, and click thumbnails to toggle images in or out of the stack or random pool in Layers and Mix.</p>
+
+            <h3>How does the 4&times;4 Pattern mode decide which image goes where?</h3>
+            <p>The grid is fixed at 4&times;4. The four corner cells and the four center cells (the middle 2&times;2 block) use the Center image; the twelve remaining edge cells use the Edge image. The result reads as a framed panel — useful for windows, bordered floors, and UI plate textures.</p>
+
+            <h3>How large can the output image be?</h3>
+            <p>Up to a 10&times;10 grid of 1024px tiles — 10,240&times;10,240 pixels. That is within what desktop browsers support, but very large canvases can be slow on lower-end devices; for most game work, tiles of 64&ndash;256px are plenty.</p>
+
+            <h3>Is my image uploaded anywhere?</h3>
+            <p>No. All tiling happens entirely in your browser using the HTML Canvas API. Your images never leave your device — there are no server uploads, no cloud processing, and nothing is stored anywhere.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Related Tools</h2>
+            <div class="related-tools">
+                <a href="../sprite-slicer/index.html">Sprite Slicer</a>
+                <a href="../../image-tools/image-crop/index.html">Image Crop</a>
+                <a href="../../image-tools/pixel-art-palette/index.html">Pixel Art Palette Generator</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../../js/page-consistency.js"></script>
+    <script>
+        initPage({
+            depth: 3,
+            activeCategory: 'game-dev-tools',
+            title: 'Image Tiler',
+            breadcrumbs: [
+                { label: 'Game Dev Tools', href: '../index.html' },
+                { label: 'Image Tiler' }
+            ]
+        });
+    </script>
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const tilerApp = document.getElementById('tilerApp');
+        const slotStrip = document.getElementById('slotStrip');
+        const modeTabs = document.querySelectorAll('.mode-tab');
+        const gridCols = document.getElementById('gridCols');
+        const gridRows = document.getElementById('gridRows');
+        const tileW = document.getElementById('tileW');
+        const tileH = document.getElementById('tileH');
+        const btnShuffle = document.getElementById('btnShuffle');
+        const modeHint = document.getElementById('modeHint');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const previewDims = document.getElementById('previewDims');
+
+        let images = [];        // { img: HTMLImageElement, name: string }
+        let currentMode = 'single';
+        let mixMap = null;      // rows x cols array of image indices
+        let mixKey = '';        // invalidation key for mixMap
+        let roleA = 0;          // active image (Single) / image A (Checkered) / center+corners (4×4)
+        let roleB = 1;          // image B (Checkered) / edges (4×4)
+        let excluded = new Set(); // image indices toggled off in Layers / Mix
+
+        const MODE_INFO = {
+            single:     { min: 1, hint: 'Repeats the active image. Click a tile above (or use the selector) to choose which one.' },
+            checkered:  { min: 2, hint: 'Alternates images A and B in a checkerboard. Click a tile to set A, or use the selectors.' },
+            layers:     { min: 2, hint: 'Stacks the enabled images in slot order into one composite tile, then repeats it. Click a tile to toggle it on or off.' },
+            pattern4x4: { min: 2, hint: 'Fixed 4×4 grid — corners and 2×2 center use the Center image, edges use the Edge image. Click a tile to set Center.' },
+            mix:        { min: 1, hint: 'Randomly scatters the enabled images. Click a tile to toggle it on or off; Shuffle to re-roll.' }
+        };
+
+        // ---- Import ----
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            addFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', () => {
+            addFiles(fileInput.files);
+            fileInput.value = '';
+        });
+
+        function addFiles(fileList) {
+            const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const first = images.length === 0;
+                        images.push({ img, name: file.name });
+                        if (first) {
+                            // Default tile size from the first image, capped for sane canvases
+                            tileW.value = Math.max(8, Math.min(img.naturalWidth, 256));
+                            tileH.value = Math.max(8, Math.min(img.naturalHeight, 256));
+                        }
+                        tilerApp.classList.add('visible');
+                        renderSlots();
+                        renderRoleRow();
+                        render();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ---- Slot strip ----
+        function renderSlots() {
+            slotStrip.innerHTML = '';
+            images.forEach((entry, i) => {
+                const card = document.createElement('div');
+                card.className = 'slot-card';
+                if (currentMode === 'single' && i === roleA) card.classList.add('active-slot');
+                if ((currentMode === 'layers' || currentMode === 'mix') && excluded.has(i)) card.classList.add('excluded');
+
+                const num = document.createElement('span');
+                num.className = 'slot-num';
+                num.textContent = i + 1;
+
+                if ((currentMode === 'checkered' || currentMode === 'pattern4x4') && (i === roleA || i === roleB)) {
+                    const badge = document.createElement('span');
+                    badge.className = 'role-badge ' + (i === roleA ? 'role-a' : 'role-b');
+                    badge.textContent = (i === roleA && i === roleB) ? 'A/B' : (i === roleA ? 'A' : 'B');
+                    card.appendChild(badge);
+                }
+
+                const thumb = document.createElement('img');
+                thumb.className = 'slot-thumb';
+                thumb.src = entry.img.src;
+                thumb.alt = entry.name;
+                thumb.addEventListener('click', () => slotClicked(i));
+
+                const name = document.createElement('span');
+                name.className = 'slot-name';
+                name.textContent = entry.name;
+                name.title = entry.name;
+
+                const btns = document.createElement('div');
+                btns.className = 'slot-btns';
+                const mkBtn = (label, title, fn) => {
+                    const b = document.createElement('button');
+                    b.textContent = label;
+                    b.title = title;
+                    b.addEventListener('click', fn);
+                    return b;
+                };
+                btns.appendChild(mkBtn('◀', 'Move earlier', () => moveImage(i, -1)));
+                btns.appendChild(mkBtn('✕', 'Remove', () => removeImage(i)));
+                btns.appendChild(mkBtn('▶', 'Move later', () => moveImage(i, 1)));
+
+                card.appendChild(num);
+                card.appendChild(thumb);
+                card.appendChild(name);
+                card.appendChild(btns);
+                slotStrip.appendChild(card);
+            });
+
+            const add = document.createElement('div');
+            add.className = 'slot-add';
+            add.textContent = '+';
+            add.title = 'Add more images';
+            add.addEventListener('click', () => fileInput.click());
+            slotStrip.appendChild(add);
+        }
+
+        function slotClicked(i) {
+            if (currentMode === 'layers' || currentMode === 'mix') {
+                if (excluded.has(i)) excluded.delete(i); else excluded.add(i);
+            } else {
+                roleA = i; // Single: active image; Checkered/4×4: assign A / Center
+            }
+            renderSlots();
+            renderRoleRow();
+            render();
+        }
+
+        function moveImage(i, dir) {
+            const j = i + dir;
+            if (j < 0 || j >= images.length) return;
+            [images[i], images[j]] = [images[j], images[i]];
+            // Roles and toggles follow their image to its new slot
+            const mapIdx = v => v === i ? j : (v === j ? i : v);
+            roleA = mapIdx(roleA);
+            roleB = mapIdx(roleB);
+            const hadI = excluded.has(i), hadJ = excluded.has(j);
+            excluded.delete(i); excluded.delete(j);
+            if (hadI) excluded.add(j);
+            if (hadJ) excluded.add(i);
+            renderSlots();
+            renderRoleRow();
+            render();
+        }
+
+        function removeImage(i) {
+            images.splice(i, 1);
+            const shift = v => v > i ? v - 1 : (v === i ? 0 : v);
+            roleA = images.length ? Math.min(shift(roleA), images.length - 1) : 0;
+            roleB = images.length ? Math.min(shift(roleB), images.length - 1) : 1;
+            const next = new Set();
+            excluded.forEach(v => { if (v !== i) next.add(v > i ? v - 1 : v); });
+            excluded = next;
+            if (images.length === 0) {
+                tilerApp.classList.remove('visible');
+            }
+            renderSlots();
+            renderRoleRow();
+            render();
+        }
+
+        // ---- Role selectors (Single / Checkered / 4×4) ----
+        const roleRow = document.getElementById('roleRow');
+        function renderRoleRow() {
+            const labels = currentMode === 'checkered' ? ['Image A', 'Image B']
+                : currentMode === 'pattern4x4' ? ['Center + Corners', 'Edges']
+                : currentMode === 'single' ? ['Active Image']
+                : null;
+            roleRow.innerHTML = '';
+            if (!labels || images.length === 0) { roleRow.style.display = 'none'; return; }
+            roleRow.style.display = '';
+            labels.forEach((labelText, which) => {
+                const group = document.createElement('div');
+                group.className = 'control-group';
+                const lab = document.createElement('label');
+                lab.textContent = labelText;
+                const sel = document.createElement('select');
+                images.forEach((entry, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = (i + 1) + ' — ' + entry.name;
+                    sel.appendChild(opt);
+                });
+                sel.value = which === 0 ? roleA : roleB;
+                sel.addEventListener('change', () => {
+                    if (which === 0) roleA = parseInt(sel.value, 10);
+                    else roleB = parseInt(sel.value, 10);
+                    renderSlots();
+                    render();
+                });
+                group.appendChild(lab);
+                group.appendChild(sel);
+                roleRow.appendChild(group);
+            });
+        }
+
+        // ---- Mode tabs ----
+        modeTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                modeTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentMode = tab.dataset.mode;
+                syncControls();
+                renderSlots();
+                renderRoleRow();
+                render();
+            });
+        });
+
+        function syncControls() {
+            const locked = currentMode === 'pattern4x4';
+            gridCols.disabled = locked;
+            gridRows.disabled = locked;
+            if (locked) { gridCols.value = 4; gridRows.value = 4; }
+            btnShuffle.style.display = currentMode === 'mix' ? '' : 'none';
+        }
+
+        // ---- Controls ----
+        [gridCols, gridRows, tileW, tileH].forEach(el => el.addEventListener('input', render));
+        btnShuffle.addEventListener('click', () => { mixMap = null; render(); });
+
+        function clampInt(el, min, max, fallback) {
+            const v = parseInt(el.value, 10);
+            if (isNaN(v)) return fallback;
+            return Math.max(min, Math.min(max, v));
+        }
+
+        // ---- Cell lookup per mode ----
+        function is4x4Primary(r, c) {
+            const corner = (r === 0 || r === 3) && (c === 0 || c === 3);
+            const center = r >= 1 && r <= 2 && c >= 1 && c <= 2;
+            return corner || center;
+        }
+
+        function ensureMixMap(rows, cols, pool) {
+            const key = rows + 'x' + cols + ':' + pool.join(',');
+            if (mixMap && mixKey === key) return;
+            mixKey = key;
+            mixMap = [];
+            for (let r = 0; r < rows; r++) {
+                const row = [];
+                for (let c = 0; c < cols; c++) {
+                    row.push(pool[Math.floor(Math.random() * pool.length)]);
+                }
+                mixMap.push(row);
+            }
+        }
+
+        // ---- Render ----
+        function render() {
+            if (images.length === 0) {
+                previewCanvas.width = 0;
+                previewCanvas.height = 0;
+                previewDims.textContent = 'No images loaded';
+                return;
+            }
+
+            const info = MODE_INFO[currentMode];
+            if (images.length < info.min) {
+                modeHint.textContent = info.hint + ' ⚠ Needs at least ' + info.min + ' images — add ' + (info.min - images.length) + ' more.';
+                modeHint.classList.add('warn');
+                previewCanvas.width = 0;
+                previewCanvas.height = 0;
+                previewDims.textContent = 'Waiting for more images';
+                return;
+            }
+            // Resolve which images this mode actually uses
+            const imgA = images[Math.min(roleA, images.length - 1)];
+            const imgB = images[Math.min(roleB, images.length - 1)];
+            let activeIdxs = null;
+            if (currentMode === 'layers' || currentMode === 'mix') {
+                activeIdxs = images.map((_, i) => i).filter(i => !excluded.has(i));
+                if (activeIdxs.length === 0) {
+                    modeHint.textContent = info.hint + ' ⚠ All tiles are toggled off — click one to enable it.';
+                    modeHint.classList.add('warn');
+                    previewCanvas.width = 0;
+                    previewCanvas.height = 0;
+                    previewDims.textContent = 'No tiles enabled';
+                    return;
+                }
+            }
+
+            modeHint.textContent = info.hint + (currentMode === 'mix' && activeIdxs.length === 1
+                ? ' Enable more images to get real variety.' : '');
+            modeHint.classList.remove('warn');
+
+            const locked = currentMode === 'pattern4x4';
+            const cols = locked ? 4 : clampInt(gridCols, 2, 10, 4);
+            const rows = locked ? 4 : clampInt(gridRows, 2, 10, 4);
+            const tw = clampInt(tileW, 8, 1024, 128);
+            const th = clampInt(tileH, 8, 1024, 128);
+
+            previewCanvas.width = cols * tw;
+            previewCanvas.height = rows * th;
+            const ctx = previewCanvas.getContext('2d');
+            ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+            ctx.imageSmoothingEnabled = tw >= 64; // keep pixel art crisp when shrinking to small tiles
+
+            if (currentMode === 'mix') ensureMixMap(rows, cols, activeIdxs);
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const x = c * tw, y = r * th;
+                    if (currentMode === 'layers') {
+                        activeIdxs.forEach(ai => ctx.drawImage(images[ai].img, x, y, tw, th));
+                    } else {
+                        let src = imgA;
+                        if (currentMode === 'checkered') src = (r + c) % 2 === 0 ? imgA : imgB;
+                        else if (currentMode === 'pattern4x4') src = is4x4Primary(r, c) ? imgA : imgB;
+                        else if (currentMode === 'mix') src = images[mixMap[r][c]];
+                        ctx.drawImage(src.img, x, y, tw, th);
+                    }
+                }
+            }
+
+            previewDims.textContent = (cols * tw) + ' x ' + (rows * th) + ' px — ' +
+                cols + '×' + rows + ' grid of ' + tw + '×' + th + ' tiles';
+        }
+
+        // ---- Download ----
+        document.getElementById('btnDownload').addEventListener('click', () => {
+            if (previewCanvas.width === 0) return;
+            previewCanvas.toBlob(blob => {
+                if (!blob) return;
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'tiled-' + currentMode + '.png';
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+            }, 'image/png');
+        });
+
+        // ---- Reset ----
+        document.getElementById('btnReset').addEventListener('click', () => {
+            images = [];
+            mixMap = null;
+            roleA = 0;
+            roleB = 1;
+            excluded = new Set();
+            tilerApp.classList.remove('visible');
+            previewCanvas.width = 0;
+            previewCanvas.height = 0;
+            previewDims.textContent = 'No images loaded';
+            slotStrip.innerHTML = '';
+            renderRoleRow();
+        });
+
+        syncControls();
+    </script>
+</body>
+</html>
