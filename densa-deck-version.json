@@ -1,13 +1,17 @@
 {
-  "version": "0.5.0",
-  "releaseDate": "2026-06-08",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.5.0.exe",
-  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-0.5.0-windows.zip",
+  "version": "0.6.0",
+  "releaseDate": "2026-08-11",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.6.0.exe",
+  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-0.6.0-windows.zip",
   "changelog": [
-    "New: Budget-aware suggestions — `analyze --budget USD` shows total deck value, priciest cards, and flags everything over the per-card cap. Build tab gets a budget input and a live deck-value badge.",
-    "New: TCGPlayer search links on every suggestion row (set DENSA_TCGPLAYER_PARTNER env var to inject your affiliate ID).",
-    "New: Playgroup-aware analyst — `playgroup add/list/remove/set-default` stores the pod you actually play against (commanders + archetypes + power). `analyze --playgroup NAME` then tunes the executive summary against THAT table, including threat themes like graveyard hate or counterspells. Local-only data; never leaves your machine.",
-    "New: Iteration loop — `iterate propose/preview/history` and a new Iterate button on the Build tab. Surfaces concrete cut + add proposals, previews each one's structural impact (power, curve, role counts, value delta) before applying, and logs every accept/reject so you can see your iteration history across sessions.",
-    "Tests: 582 passing (up from 474). No regressions, no LLM cost on any new feature."
+    "Fixed: card downloads were broken. Scryfall changed their bulk-data API, so a fresh install couldn't get card data at all and an existing install could never update — no new sets, no ban-list refresh. The downloader now detects the file format instead of assuming it.",
+    "The simulator now resolves what cards actually do. Previously a resolved spell went to the battlefield or graveyard and nothing else happened: Cultivate never fetched a land, Divination never drew a card, Sol Ring made one mana. 34 effect families are now modelled — ramp, draw, tutors, treasure, tokens, rituals, +1/+1 counters, proliferate, delve, convoke, cascade, self-mill, reanimation and more.",
+    "Colour is real. Mana used to be a single number, so a five-colour pile played like a mono deck. Sources now carry the colours they produce and costs are paid properly. Fetchlands were being counted as colourless — they now read their colours from the land types they search for.",
+    "New: colour-weighted mana curve. Every goldfish and gauntlet run reports, per turn and per colour, what your cards demand, how many sources were in play, and what share of games could pay — plus your hardest-to-cast cards and a colour-screw rate measured separately from mana screw.",
+    "New: official rulings, opt-in. Wizards' per-card rulings as a separate ~5 MB download. Never fetched automatically, removable in one click. Settings -> Official rulings, or `densa-deck rulings download`. Free tier.",
+    "Fixed: Stax opponents now actually apply their mana tax (it was computed and discarded). Fixed: correct starting life per format — Brawl was played at 40 instead of 25, Oathbreaker and Duel Commander at 40 instead of 20.",
+    "About 2x faster: 1000 goldfish games in ~1.4 seconds including the new colour report.",
+    "Heads up: your saved numbers will move. Kill rates go up because ramp and draw now work; commander cast rates drop on multicolour decks because colour is finally modelled. The old numbers were flattering, not more accurate.",
+    "Tests: 786 passing (up from 582), with lint and CI now enforced on every change."
   ]
 }
