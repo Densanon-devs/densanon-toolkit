@@ -115,6 +115,38 @@
     .limits p { color: var(--color-text-muted); line-height: 1.65; margin: 0 0 14px; }
     .limits p:last-child { margin-bottom: 0; }
 
+    /* In-page search. Distinct from the site-wide search in the header,
+       which looks for TOOLS; this one looks inside this page. */
+    .help-search { margin: 0 0 24px; }
+    .help-search-row { display: flex; gap: 10px; align-items: stretch; }
+    .help-search input {
+      flex: 1;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      color: var(--color-text);
+      font-size: 1rem;
+      padding: 12px 14px;
+    }
+    .help-search input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+    .help-search button {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      font-size: 0.95rem;
+      padding: 0 16px;
+    }
+    .help-search button:hover { color: var(--color-text); }
+    .help-count { color: var(--color-text-muted); font-size: 0.9rem;
+      margin: 10px 2px 0; min-height: 1.2em; }
+    .help-hit { background: rgba(229, 62, 62, 0.28); border-radius: 3px; }
+    .is-hidden { display: none !important; }
+
     .help-foot-links { margin: 40px 0 60px; text-align: center; }
     .help-foot-links a { color: var(--color-text-muted); margin: 0 10px; }
   </style>
@@ -141,6 +173,20 @@
         paired. Still free.<br>
         <span class="tag tag-pro">Pro</span> needs a Densa Deck Pro licence, activated
         on the desktop.
+      </div>
+
+      <div class="help-search">
+        <div class="help-search-row">
+          <input
+            id="help-q"
+            type="search"
+            autocomplete="off"
+            placeholder="Search this page &mdash; foil, lands, prices, Pro&hellip;"
+            aria-label="Search this page"
+          >
+          <button type="button" id="help-clear">Clear</button>
+        </div>
+        <p class="help-count" id="help-count" role="status" aria-live="polite"></p>
       </div>
 
       <nav class="help-toc">
@@ -191,9 +237,10 @@
           <h3>Your collection lives on the phone <span class="tag tag-free">Free</span></h3>
           <p>
             Everything you scan is stored in a single database on the device.
-            Edits made with no signal are kept and exchanged with the desktop
-            when it is next in reach; nothing is lost in the meantime and
-            nothing is uploaded anywhere.
+            The app is offline-first: scanning, browsing, deck building and
+            prices all work with no signal at all. Edits made offline are kept
+            and exchanged with the desktop when it is next in reach; nothing is
+            lost in the meantime and nothing is uploaded anywhere.
           </p>
         </div>
       </section>
@@ -377,6 +424,18 @@
         </div>
 
         <div class="help-item">
+          <h3>Deck and sideboard <span class="tag tag-free">Free</span></h3>
+          <p>
+            A toggle above the cards switches between the maindeck and the
+            <strong>sideboard</strong>, and everything you add goes to whichever
+            is selected. Both are counted together when working out what you
+            still need to own &mdash; three in the deck and one in the board is
+            four copies to find. Pasted lists understand a
+            <code>Sideboard</code> heading, and saving writes one back out.
+          </p>
+        </div>
+
+        <div class="help-item">
           <h3>What you still need <span class="tag tag-free">Free</span></h3>
           <p>
             The deck is checked against what you own and tells you the
@@ -492,12 +551,14 @@
         </div>
 
         <div class="help-item">
-          <h3>Two devices, one collection <span class="tag tag-pc">Needs a PC</span></h3>
+          <h3>Two devices, one collection &mdash; syncing
+            <span class="tag tag-pc">Needs a PC</span></h3>
           <p>
-            Edits travel both ways as events rather than as totals, so a card
+            Edits sync both ways as events rather than as totals, so a card
             added on the phone with no signal and a card added on the PC at the
-            same time both survive. Settings shows what each device thinks you
-            own, which is the only place that can tell you they disagree.
+            same time both survive the sync rather than one overwriting the
+            other. Settings shows what each device thinks you own, which is the
+            only place that can tell you they disagree.
           </p>
         </div>
 
@@ -600,41 +661,37 @@
         </p>
 
         <div class="limits">
-          <h3>Guess at a card</h3>
-          <p>
-            The phone matches exactly or not at all. A card it cannot place is
+          <div class="help-item limit-item">
+            <h3>Guess at a card</h3>
+            <p>The phone matches exactly or not at all. A card it cannot place is
             offered as a list to choose from, or refused with the reason &mdash;
             it never files a card it is not sure about. Fuzzy name matching
-            lives on the desktop, where a person is looking at the screen.
-          </p>
-
-          <h3>Read a foil off the card</h3>
-          <p>
-            The foil marker in the collector line is the one glyph the
+            lives on the desktop, where a person is looking at the screen.</p>
+          </div>
+          <div class="help-item limit-item">
+            <h3>Read a foil off the card</h3>
+            <p>The foil marker in the collector line is the one glyph the
             recogniser reliably loses. That is why there is a switch rather
-            than a guess.
-          </p>
-
-          <h3>Work out which copy is in a deck when you own both</h3>
-          <p>
-            If you own a foil and a plain copy of the same printing and the
+            than a guess.</p>
+          </div>
+          <div class="help-item limit-item">
+            <h3>Work out which copy is in a deck when you own both</h3>
+            <p>If you own a foil and a plain copy of the same printing and the
             deck slot does not say which, the app cannot know. It takes the
             lower price rather than the flattering one. Set the finish on the
-            slot to be exact.
-          </p>
-
-          <h3>Resume an interrupted index download</h3>
-          <p>
-            A bulk file has to be read from the start, so an interrupted
+            slot to be exact.</p>
+          </div>
+          <div class="help-item limit-item">
+            <h3>Resume an interrupted index download</h3>
+            <p>A bulk file has to be read from the start, so an interrupted
             download starts that file again. The printings are fetched first,
-            so scanning works even if the second half is interrupted.
-          </p>
-
-          <h3>Record a card that does not exist</h3>
-          <p>
-            Once the index knows which printings come in foil, the app will not
-            let you record a foil of one that was never printed that way.
-          </p>
+            so scanning works even if the second half is interrupted.</p>
+          </div>
+          <div class="help-item limit-item">
+            <h3>Record a card that does not exist</h3>
+            <p>Once the index knows which printings come in foil, the app will not
+            let you record a foil of one that was never printed that way.</p>
+          </div>
         </div>
       </section>
 
@@ -710,6 +767,116 @@
   <script src="js/page-consistency.js"></script>
   <script>
     initPage({ depth: 0, title: 'Densa Deck — How it works' });
+
+    /* ------------------------------------------------------------------
+       Searching this page.
+
+       Separate from the site search in the header, which looks for
+       TOOLS. This looks inside the guide, because the guide is three
+       thousand words and "how do I mark something foil" is the actual
+       question people arrive with.
+
+       It filters whole entries rather than jumping between matches: the
+       answer to a question is a paragraph, not a word, and a highlight
+       you have to scroll to find is not an answer. Sections with no
+       surviving entry are hidden too, so you never get a heading over
+       nothing.
+       ------------------------------------------------------------------ */
+    (function () {
+      var box = document.getElementById('help-q');
+      var clear = document.getElementById('help-clear');
+      var count = document.getElementById('help-count');
+      if (!box) return;
+
+      var items = [].slice.call(document.querySelectorAll('.help-item'));
+      var sections = [].slice.call(document.querySelectorAll('.help-section'));
+      // Hidden while searching: a table of contents for a filtered page
+      // points at things that are not there, and "everything above is
+      // free" stops being true the moment the page is reordered by a
+      // filter. The per-entry tags still say which is which.
+      var chrome = [].slice.call(
+        document.querySelectorAll('.help-toc, .pro-break, .limits'));
+
+      // The original markup of every entry, so highlighting can be undone
+      // without rebuilding the page. Restoring from a string is safe here
+      // because nothing in this page is interactive.
+      items.forEach(function (el) { el.dataset.html = el.innerHTML; });
+
+      function escapeRe(text) {
+        return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+
+      function highlight(el, terms) {
+        el.innerHTML = el.dataset.html;
+        if (!terms.length) return;
+        var re = new RegExp('(' + terms.map(escapeRe).join('|') + ')', 'gi');
+        var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        var texts = [];
+        while (walker.nextNode()) texts.push(walker.currentNode);
+        texts.forEach(function (node) {
+          if (!re.test(node.nodeValue)) return;
+          re.lastIndex = 0;
+          var span = document.createElement('span');
+          span.innerHTML = node.nodeValue.replace(
+            re, '<mark class="help-hit">$1</mark>');
+          node.parentNode.replaceChild(span, node);
+        });
+      }
+
+      function run() {
+        var q = box.value.trim().toLowerCase();
+        // Every word has to appear somewhere in the entry, in any order.
+        // "foil deck" should find the deck slot entry without anyone
+        // having to guess the wording.
+        var terms = q ? q.split(/\s+/).filter(Boolean) : [];
+        var hits = 0;
+
+        items.forEach(function (el) {
+          var hay = (el.textContent || '').toLowerCase();
+          var match = terms.every(function (t) { return hay.indexOf(t) !== -1; });
+          el.classList.toggle('is-hidden', !match);
+          if (match) hits += 1;
+          highlight(el, match ? terms : []);
+        });
+
+        sections.forEach(function (sec) {
+          var alive = sec.querySelector('.help-item:not(.is-hidden)');
+          sec.classList.toggle('is-hidden', Boolean(terms.length) && !alive);
+        });
+
+        chrome.forEach(function (el) {
+          // The limits box keeps its frame only while its entries show.
+          var keep = !terms.length
+            || (el.classList.contains('limits')
+              && el.querySelector('.help-item:not(.is-hidden)'));
+          el.classList.toggle('is-hidden', !keep);
+        });
+
+        if (!terms.length) {
+          count.textContent = '';
+        } else if (!hits) {
+          count.textContent = 'Nothing on this page matches “' + box.value.trim()
+            + '”. Try a single word — foil, lands, prices, sync.';
+        } else {
+          count.textContent = hits + (hits === 1 ? ' entry' : ' entries')
+            + ' match “' + box.value.trim() + '”';
+        }
+      }
+
+      box.addEventListener('input', run);
+      box.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { box.value = ''; run(); }
+      });
+      clear.addEventListener('click', function () {
+        box.value = '';
+        run();
+        box.focus();
+      });
+
+      // A link from elsewhere can prefill it: densa-deck-help.html?q=foil
+      var asked = new URLSearchParams(window.location.search).get('q');
+      if (asked) { box.value = asked; run(); }
+    })();
   </script>
 </body>
 </html>
