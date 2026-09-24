@@ -26,11 +26,20 @@ const ITEMS = entries();
 console.log('entries found:', ITEMS.length);
 assert.ok(ITEMS.length >= 30, `only ${ITEMS.length} entries parsed`);
 
-/** The same rule the page uses: every word, anywhere, any order. */
+/**
+ * The same rule the page uses: every word, anywhere, any order.
+ *
+ * Hyphens and apostrophes are dropped from both sides, because the
+ * page writes "Wi-Fi" and people type "wifi". This has to match the
+ * page's own `flat()` or the check is testing something the visitor
+ * never runs.
+ */
+const flat = (t) => (t || '').toLowerCase().replace(/[-’']/g, '');
+
 function search(q) {
-  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const terms = q.split(/\s+/).filter(Boolean).map(flat);
   return ITEMS.filter((t) => {
-    const hay = t.toLowerCase();
+    const hay = flat(t);
     return terms.every((w) => hay.includes(w));
   });
 }
@@ -54,6 +63,15 @@ const MUST_FIND = [
   'deck art',
   'quantity',
   'tap to add',
+  // The connection section, which is the thing people are stuck on when
+  // they go looking. Each of these is a word someone types verbatim.
+  'wifi',
+  'wi-fi',
+  'tailscale',
+  'firewall',
+  'pair',
+  'qr',
+  'away from home',
 ];
 
 let bad = 0;

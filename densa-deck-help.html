@@ -198,6 +198,7 @@
           <li><a href="#decks">Building decks</a></li>
           <li><a href="#money">Prices and value</a></li>
           <li><a href="#index">The card index</a></li>
+          <li><a href="#connect">Connecting to a PC</a></li>
           <li><a href="#pc">What a PC adds</a></li>
           <li><a href="#pro">Pro</a></li>
           <li><a href="#limits">What it will not do</a></li>
@@ -507,6 +508,96 @@
         </div>
       </section>
 
+      <!-- ========================================================= CONNECT -->
+      <section class="help-section" id="connect">
+        <h2>Connecting to a PC</h2>
+        <p class="lede">
+          Over your own Wi-Fi first. Tailscale is an addition for using the
+          PC when you are not at home, not something you need in order to
+          start.
+        </p>
+
+        <div class="help-item">
+          <h3>Over Wi-Fi <span class="tag tag-pc">Needs a PC</span></h3>
+          <p>
+            The normal way, and the fast one. The phone and the desktop talk
+            directly across your own network &mdash; nothing leaves the
+            building, there is no account and no third party involved.
+          </p>
+          <p>
+            <strong>1.</strong> Put the phone and the PC on the same Wi-Fi.
+            Mobile data cannot reach a PC in your house.<br>
+            <strong>2.</strong> Open Densa Deck on the PC and turn on
+            <strong>phone scanning</strong> in its settings. It shows a QR code
+            and a web address.<br>
+            <strong>3.</strong> On the phone, choose <strong>Connect a
+            PC</strong> and scan the code, or type the address in.<br>
+            <strong>4.</strong> Windows Firewall will ask once whether to allow
+            it. Say yes &mdash; answering &ldquo;Cancel&rdquo; that one time is
+            permanent, and is the most common reason this fails.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Over Tailscale, when you are away
+            <span class="tag tag-pc">Needs a PC</span></h3>
+          <p>
+            Optional. It buys one thing: the same connection from somewhere
+            that is not your house &mdash; a shop, a game night, anywhere. It
+            is a private network between your own devices, free for personal
+            use, and it is the only way the phone can reach your PC from
+            outside.
+          </p>
+          <p>
+            <strong>1.</strong> Install Tailscale on the PC and sign in.<br>
+            <strong>2.</strong> Install it on the phone and sign in to the same
+            account.<br>
+            <strong>3.</strong> Pair as above. The desktop notices Tailscale is
+            running and puts both addresses in the same QR code.<br>
+            <strong>4.</strong> Leave Tailscale running on the phone. It has to
+            be on at both ends, which is the usual reason it works at home and
+            not away.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Which path it uses <span class="tag tag-pc">Needs a PC</span></h3>
+          <p>
+            Wi-Fi whenever Wi-Fi answers, because it is faster and the traffic
+            stays in the house. The tunnel is used when it does not. You do not
+            choose &mdash; the phone tries the local address first on every
+            connection and falls back on its own, and Settings shows which path
+            the last one took.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>When your PC&rsquo;s address changes
+            <span class="tag tag-pc">Needs a PC</span></h3>
+          <p>
+            Home networks hand out addresses on a lease, and the PC&rsquo;s can
+            change when it reconnects. The phone re-learns the current one from
+            the desktop on any successful contact, including over Tailscale
+            &mdash; which is the path that always works, so it is the one that
+            carries the news. With Wi-Fi alone and no tunnel there is nothing to
+            carry it, so a changed address means pairing again.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Nothing is exposed to the internet
+            <span class="tag tag-pc">Needs a PC</span></h3>
+          <p>
+            The desktop listens on its own loopback address, its private Wi-Fi
+            address, and its Tailscale address when there is one. Never on
+            everything &mdash; that distinction is what stops the bridge
+            answering on whatever caf&eacute; network the laptop joins next.
+            Every request carries the pairing token, and only the handful of
+            routes the phone needs will answer at all.
+          </p>
+        </div>
+      </section>
+
       <!-- ============================================================== PC -->
       <section class="help-section" id="pc">
         <h2>What a PC adds</h2>
@@ -730,9 +821,12 @@
           <h3>The phone cannot see the PC</h3>
           <p>
             Settings shows what every address did when asked, rather than one
-            word. The usual causes: the desktop app is not running or phone
-            scanning is off, Tailscale is not running on the phone, or the PC
-            has moved to a different address since you paired.
+            word. In the order they usually turn out to be wrong: the desktop
+            app is not running or phone scanning is off; the phone is on mobile
+            data rather than the house Wi-Fi; Windows Firewall was told
+            &ldquo;Cancel&rdquo; when it asked; the PC&rsquo;s address has
+            changed since you paired; or, if you use it, Tailscale is running
+            on the PC and not on the phone.
           </p>
         </div>
 
@@ -802,6 +896,21 @@
       // because nothing in this page is interactive.
       items.forEach(function (el) { el.dataset.html = el.innerHTML; });
 
+      /*
+        How a word is compared.
+
+        Hyphens and apostrophes come out, because the page writes
+        "Wi-Fi" and people type "wifi" -- and a search that answers
+        nothing to the most likely spelling of its own subject is
+        worse than no search. Only the COMPARISON is normalised;
+        highlighting still uses what was typed, so a match found this
+        way simply shows without a highlight rather than lying about
+        where it is.
+      */
+      function flat(text) {
+        return (text || '').toLowerCase().replace(/[-’']/g, '');
+      }
+
       function escapeRe(text) {
         return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       }
@@ -832,8 +941,10 @@
         var hits = 0;
 
         items.forEach(function (el) {
-          var hay = (el.textContent || '').toLowerCase();
-          var match = terms.every(function (t) { return hay.indexOf(t) !== -1; });
+          var hay = flat(el.textContent);
+          var match = terms.every(function (t) {
+            return hay.indexOf(flat(t)) !== -1;
+          });
           el.classList.toggle('is-hidden', !match);
           if (match) hits += 1;
           highlight(el, match ? terms : []);
