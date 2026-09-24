@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Densa Deck — How it works | Densanon Toolkit</title>
+  <meta name="description" content="Everything Densa Deck can do, on the phone and on the desktop: scanning cards, collections, deck building, prices, and what changes when you connect a PC or activate Pro.">
+  <link rel="icon" type="image/png" href="images/densa-deck-logo.png">
+  <meta property="og:image" content="https://toolkit.densanon.com/images/densa-deck-logo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .help-head { padding: 48px 0 24px; }
+    .help-head h1 { font-size: 2.2rem; margin-bottom: 10px; }
+    .help-head h1 span { color: var(--color-primary); }
+    .help-head .subtitle {
+      color: var(--color-text-muted);
+      max-width: 680px;
+      line-height: 1.65;
+    }
+
+    /* Contents rail — a long page needs a way in. */
+    .help-toc {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin: 24px 0 36px;
+    }
+    .help-toc h2 { font-size: 0.85rem; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--color-text-muted); margin-bottom: 10px; }
+    .help-toc ul { list-style: none; padding: 0; margin: 0;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 6px 20px; }
+    .help-toc a { color: var(--color-text); text-decoration: none; font-size: 0.95rem; }
+    .help-toc a:hover { color: var(--color-primary); }
+
+    .help-section { margin: 0 0 40px; scroll-margin-top: 80px; }
+    .help-section > h2 {
+      font-size: 1.5rem;
+      margin-bottom: 6px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .help-section > .lede { color: var(--color-text-muted); margin-bottom: 18px; line-height: 1.6; }
+
+    .help-item { margin: 0 0 20px; }
+    .help-item h3 { font-size: 1.05rem; margin-bottom: 5px; }
+    .help-item p { color: var(--color-text-muted); line-height: 1.65; margin: 0 0 8px; }
+    .help-item p strong { color: var(--color-text); }
+
+    /* Where free stops and Pro starts. Deliberately loud: the whole
+       point of the page is that nobody has to guess which side of the
+       line a feature is on. */
+    .pro-break {
+      margin: 56px 0 36px;
+      padding: 28px 24px;
+      border-radius: var(--radius);
+      border: 2px solid var(--color-primary);
+      background: linear-gradient(180deg, rgba(229, 62, 62, 0.10), rgba(229, 62, 62, 0.02));
+      text-align: center;
+    }
+    .pro-break .rule-label {
+      display: inline-block;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+    }
+    .pro-break h2 { font-size: 1.6rem; margin-bottom: 8px; }
+    .pro-break p { color: var(--color-text-muted); max-width: 620px;
+      margin: 0 auto 6px; line-height: 1.6; }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .tag-free { background: rgba(56, 161, 105, 0.16); color: #68d391;
+      border: 1px solid rgba(56, 161, 105, 0.4); }
+    .tag-pc { background: rgba(47, 111, 159, 0.16); color: #8ec5ff;
+      border: 1px solid rgba(47, 111, 159, 0.45); }
+    .tag-pro { background: var(--color-primary); color: #fff; }
+
+    .key {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin: 0 0 30px;
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      line-height: 1.9;
+    }
+
+    .limits {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-left: 3px solid var(--color-text-muted);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+    }
+    .limits h3 { font-size: 1rem; margin-bottom: 4px; }
+    .limits p { color: var(--color-text-muted); line-height: 1.65; margin: 0 0 14px; }
+    .limits p:last-child { margin-bottom: 0; }
+
+    .help-foot-links { margin: 40px 0 60px; text-align: center; }
+    .help-foot-links a { color: var(--color-text-muted); margin: 0 10px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="container">
+
+      <section class="help-head">
+        <h1>Densa Deck &mdash; <span>how it works</span></h1>
+        <p class="subtitle">
+          Everything the app can do, on the phone and on the desktop, in one
+          page. Each entry is tagged with what it needs: nothing, a PC in
+          reach, or a Pro licence. If something here does not match what your
+          app does, the app is right and this page is out of date &mdash;
+          <a href="https://github.com/densanon-devs/densa-deck/issues">say so</a>.
+        </p>
+      </section>
+
+      <div class="key">
+        <span class="tag tag-free">Free</span> works on the phone on its own, with no
+        account and no signal.<br>
+        <span class="tag tag-pc">Needs a PC</span> works when the desktop app is running and
+        paired. Still free.<br>
+        <span class="tag tag-pro">Pro</span> needs a Densa Deck Pro licence, activated
+        on the desktop.
+      </div>
+
+      <nav class="help-toc">
+        <h2>On this page</h2>
+        <ul>
+          <li><a href="#start">Getting started</a></li>
+          <li><a href="#scanning">Scanning cards</a></li>
+          <li><a href="#collection">Your collection</a></li>
+          <li><a href="#decks">Building decks</a></li>
+          <li><a href="#money">Prices and value</a></li>
+          <li><a href="#index">The card index</a></li>
+          <li><a href="#pc">What a PC adds</a></li>
+          <li><a href="#pro">Pro</a></li>
+          <li><a href="#limits">What it will not do</a></li>
+          <li><a href="#trouble">When something goes wrong</a></li>
+        </ul>
+      </nav>
+
+      <!-- ================================================= GETTING STARTED -->
+      <section class="help-section" id="start">
+        <h2>Getting started</h2>
+        <p class="lede">
+          The phone app works entirely on its own. A PC is an addition, not a
+          requirement.
+        </p>
+
+        <div class="help-item">
+          <h3>This phone only, or with a PC <span class="tag tag-free">Free</span></h3>
+          <p>
+            The first thing the app asks is whether you have a desktop. Choose
+            <strong>This phone only</strong> and nothing ever asks again &mdash; no
+            pairing, no network, no account. You can connect a PC later from
+            Settings, and you can disconnect one the same way.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>The card index <span class="tag tag-free">Free</span></h3>
+          <p>
+            Before scanning works, the phone needs to know what cards exist.
+            It downloads that once &mdash; about 79&nbsp;MB from Scryfall, or
+            faster from your PC if you have one paired. After that, scanning,
+            searching and pricing all work with no signal at all.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Your collection lives on the phone <span class="tag tag-free">Free</span></h3>
+          <p>
+            Everything you scan is stored in a single database on the device.
+            Edits made with no signal are kept and exchanged with the desktop
+            when it is next in reach; nothing is lost in the meantime and
+            nothing is uploaded anywhere.
+          </p>
+        </div>
+      </section>
+
+      <!-- ======================================================== SCANNING -->
+      <section class="help-section" id="scanning">
+        <h2>Scanning cards</h2>
+        <p class="lede">
+          The phone reads the card itself. The set code and collector number
+          along the bottom edge are what identify it exactly.
+        </p>
+
+        <div class="help-item">
+          <h3>Capture, or auto scan <span class="tag tag-free">Free</span></h3>
+          <p>
+            <strong>Capture</strong> takes one picture. <strong>Auto scan</strong>
+            keeps taking them while you feed cards past the camera, and stops
+            on its own if the camera freezes or nothing is being read. The
+            phone vibrates when a card is seen, not on every frame.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Add cards, or tag what you own <span class="tag tag-free">Free</span></h3>
+          <p>
+            <strong>Add cards</strong> files each scan into the collection you
+            pick. <strong>Tag what I own</strong> puts cards you already have
+            into a group &mdash; a bundle to sell, a pile to lend &mdash; without
+            adding or removing anything. Tagging needs a PC.
+            <span class="tag tag-pc">Needs a PC</span>
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Foil, and prerelease promos <span class="tag tag-free">Free</span></h3>
+          <p>
+            Two switches at the top of the scanner, because neither can be read
+            off the card reliably. <strong>Foil</strong> stays on until you turn
+            it off &mdash; foils come in runs &mdash; and the green confirmation
+            says <strong>FOIL</strong> so a mistake is one card old rather than
+            thirty. <strong>Prerelease promo</strong> files the date-stamped
+            printing instead of the ordinary one.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>How many, and which printing <span class="tag tag-free">Free</span></h3>
+          <p>
+            When a card needs a choice, the picker shows the actual card art for
+            each printing, with the set name, number and rarity colour. Set a
+            quantity first to file several at once. For a card with hundreds of
+            printings there is a set box to narrow it down.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Basic lands <span class="tag tag-free">Free</span></h3>
+          <p>
+            An Island has 671 printings in the index, so the name alone cannot
+            identify one. If the collector number will not read, the app falls
+            back to the <strong>artist and copyright year</strong> along the
+            bottom edge, which narrows most basics to a handful of cards you
+            can pick by sight. Cards printed before 1995 carry no set code at
+            all, and for those this is the only route.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Typing a card in <span class="tag tag-free">Free</span></h3>
+          <p>
+            Under the camera there is a name box. Some cards the camera was
+            never going to place &mdash; a worn land, a card in a heavy sleeve
+            &mdash; and typing four letters is faster than fighting it.
+          </p>
+        </div>
+      </section>
+
+      <!-- ====================================================== COLLECTION -->
+      <section class="help-section" id="collection">
+        <h2>Your collection</h2>
+
+        <div class="help-item">
+          <h3>Collections and groups <span class="tag tag-free">Free</span></h3>
+          <p>
+            A card is filed in one place &mdash; that is where the physical card
+            lives &mdash; and can be tagged into any number of lists on top of
+            that. Deleting a group needs a PC.
+            <span class="tag tag-pc">Needs a PC</span>
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Browsing and searching <span class="tag tag-free">Free</span></h3>
+          <p>
+            Search by name, rules text, colour, type, rarity, set or mana value.
+            <strong>Only mine</strong> narrows it to what you own, and can be
+            pointed at a single collection &mdash; &ldquo;only the cards in my
+            Modern binder&rdquo;.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Wrong printing, or wrong finish <span class="tag tag-free">Free</span></h3>
+          <p>
+            Open a card you own and you can move it onto a different printing,
+            or mark it as foil after the fact &mdash; all of it, or just one
+            copy of four. Nothing is deleted on the way: the new stack is
+            created before the old one is reduced.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Card art <span class="tag tag-free">Free</span></h3>
+          <p>
+            Every picture comes from Scryfall and is cached on the device after
+            it has been seen once. Nothing is bundled into the app and nothing
+            is re-hosted.
+          </p>
+        </div>
+      </section>
+
+      <!-- =========================================================== DECKS -->
+      <section class="help-section" id="decks">
+        <h2>Building decks</h2>
+
+        <div class="help-item">
+          <h3>Browse, or paste a list <span class="tag tag-free">Free</span></h3>
+          <p>
+            Search the catalogue and tap to add, or paste a decklist from
+            anywhere &mdash; set codes, collector numbers and Moxfield-style
+            <code>*F*</code> foil markers are all understood and stripped off
+            the card name. The text box is the deck; editing it and saving
+            rewrites the list.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Tap to add <span class="tag tag-free">Free</span></h3>
+          <p>
+            A checkbox under the filters. With it on, a tap adds the card
+            immediately at its <strong>cheapest printing</strong> rather than
+            opening it to be read. Hold a card to open it anyway &mdash; to read
+            it, swipe the printings, or take one out.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Scanning straight into a deck <span class="tag tag-free">Free</span></h3>
+          <p>
+            Open a deck and there is a scanner with the same camera, picker and
+            switches. Two modes: <strong>From my collection</strong> puts the
+            card in the deck and leaves your collection alone, and
+            <strong>New card</strong> files it as well. If you scan something
+            that is not catalogued, it says so and offers to file it &mdash; or to
+            put it in the deck anyway, which is the right answer for a proxy or
+            a borrowed card.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Commander, colours and deck art <span class="tag tag-free">Free</span></h3>
+          <p>
+            Set a commander and the browser locks to its colour identity,
+            greying anything outside it with a reason rather than hiding it.
+            The deck shows its colours as pips with a count of each, so you can
+            see a splash from an even pair. Any card in the deck can be chosen
+            as the deck&rsquo;s picture &mdash; it does not have to be the
+            commander.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Foil slots <span class="tag tag-free">Free</span></h3>
+          <p>
+            A deck slot records which finish is going in the sleeve, so your
+            foil copy and your plain one are two different slots, counted and
+            priced apart. The readable decklist stays clean &mdash; no
+            <code>*F*</code> down the side &mdash; and the finish is restored
+            when the text comes back.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>What you still need <span class="tag tag-free">Free</span></h3>
+          <p>
+            The deck is checked against what you own and tells you the
+            shortfall, plus format warnings &mdash; size, copy limits, colour
+            identity.
+          </p>
+        </div>
+      </section>
+
+      <!-- =========================================================== MONEY -->
+      <section class="help-section" id="money">
+        <h2>Prices and value</h2>
+
+        <div class="help-item">
+          <h3>Where the numbers come from <span class="tag tag-free">Free</span></h3>
+          <p>
+            Scryfall. Prices arrive with the card index and are refreshed for
+            the cards you own and the cards your decks point at &mdash; a couple
+            of requests rather than another download. There is a button in
+            Settings, and it happens along with the card check when prices are
+            more than a week old.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>A foil is priced as a foil <span class="tag tag-free">Free</span></h3>
+          <p>
+            Where the copy on your shelf is the shiny one, the deck is valued
+            at the foil price. Where you own both and the slot does not say
+            which, it takes the lower number: a total that guesses upward reads
+            as a valuation and is a wish.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>A card with no price is not free <span class="tag tag-free">Free</span></h3>
+          <p>
+            Cards Scryfall has no price for are counted and reported separately
+            &mdash; &ldquo;3 cards couldn&rsquo;t be priced&rdquo; &mdash; rather
+            than folded in as zero.
+          </p>
+        </div>
+      </section>
+
+      <!-- =========================================================== INDEX -->
+      <section class="help-section" id="index">
+        <h2>The card index</h2>
+
+        <div class="help-item">
+          <h3>Keeping up with new sets <span class="tag tag-free">Free</span></h3>
+          <p>
+            Settings can check whether a set has come out that the phone does
+            not have. Checking is tiny; downloading is not, so it never
+            downloads without asking. You can opt in to it checking for you
+            &mdash; it follows Scryfall&rsquo;s real release calendar, and looks
+            at least once a quarter regardless.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Sets that will never arrive <span class="tag tag-free">Free</span></h3>
+          <p>
+            The index keeps English paper cards. A few released sets have none
+            &mdash; Foreign Black Border, Renaissance, Rinascimento and others
+            are non-English printings of cards that exist in English elsewhere.
+            After a complete download the app writes those off so it stops
+            reporting them as missing.
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================== PC -->
+      <section class="help-section" id="pc">
+        <h2>What a PC adds</h2>
+        <p class="lede">
+          All of this is still free. The desktop app is a free download; a
+          licence only matters for the Pro section below.
+        </p>
+
+        <div class="help-item">
+          <h3>Deck analysis and suggestions <span class="tag tag-pc">Needs a PC</span></h3>
+          <p>
+            Mana curve, archetype detection, colour and type breakdowns, and
+            recommendations for what to add or cut. The phone asks the desktop
+            for these; it cannot compute them alone.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Combo detection and Rule 0 <span class="tag tag-pc">Needs a PC</span></h3>
+          <p>
+            Two-card and longer combos in your deck, near-misses you are one
+            card away from, and a pre-game disclosure sheet naming the lines.
+            Combo data is from Commander Spellbook.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Bracket fit <span class="tag tag-pc">Needs a PC</span></h3>
+          <p>
+            Where the deck sits on the 1&ndash;5 Commander bracket scale, and
+            what to change if it is pitched wrong.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Building from your collection <span class="tag tag-pc">Needs a PC</span></h3>
+          <p>
+            Ask the desktop to assemble a deck out of what you actually own.
+            The judging is over the whole catalogue, which is why it needs the
+            machine with the whole catalogue on it.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Two devices, one collection <span class="tag tag-pc">Needs a PC</span></h3>
+          <p>
+            Edits travel both ways as events rather than as totals, so a card
+            added on the phone with no signal and a card added on the PC at the
+            same time both survive. Settings shows what each device thinks you
+            own, which is the only place that can tell you they disagree.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Exports <span class="tag tag-pc">Needs a PC</span></h3>
+          <p>
+            Decklists out to MTGA, MTGO and Moxfield formats, and reports as
+            JSON, Markdown or HTML.
+          </p>
+        </div>
+      </section>
+
+      <!-- ===================================== THE LINE BETWEEN FREE AND PRO -->
+      <div class="pro-break" id="pro">
+        <span class="rule-label">Everything above is free</span>
+        <h2>Densa Deck Pro</h2>
+        <p>
+          A one-time purchase, activated on the desktop. No subscription, no
+          server, and it keeps working offline. The phone picks it up on the
+          next sync.
+        </p>
+        <p>
+          <a href="densa-deck.html#pricing">See pricing on the product page</a>
+        </p>
+      </div>
+
+      <section class="help-section">
+        <h2>What Pro adds</h2>
+        <p class="lede">
+          All of it on the desktop. The phone shows the results when the
+          desktop is in reach.
+        </p>
+
+        <div class="help-item">
+          <h3>Goldfish simulation <span class="tag tag-pro">Pro</span></h3>
+          <p>
+            Play the deck out against no opposition, thousands of games, and
+            see how fast it does what it is trying to do &mdash; including how
+            often it assembles a combo and on which turn.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Matchup gauntlet <span class="tag tag-pro">Pro</span></h3>
+          <p>
+            The deck against eleven archetype profiles, with win rates and the
+            reason each game ended.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Probability tools <span class="tag tag-pro">Pro</span></h3>
+          <p>
+            Opening-hand simulation, mana development, and the odds of having a
+            given card by a given turn.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Deep analysis <span class="tag tag-pro">Pro</span></h3>
+          <p>
+            Synergy, castability, mana base quality and a 1&ndash;10 power level
+            rating, plus exporting the full report.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Version history <span class="tag tag-pro">Pro</span></h3>
+          <p>
+            Save a deck as a version, compare any two, see what a change did to
+            the deck&rsquo;s power and whether it broke a combo.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>The analyst and coach <span class="tag tag-pro">Pro</span></h3>
+          <p>
+            A local AI that has read your deck: explain why a card is in it,
+            compare two decks in prose, and answer questions about the list.
+            It runs on your machine &mdash; nothing is sent anywhere.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>More saved decks and groups <span class="tag tag-pro">Pro</span></h3>
+          <p>
+            Free keeps a limited number of saved decks and groups of your own;
+            Pro removes the limit. Scanning, filing and the size of your
+            collection are unlimited either way. Settings on the phone shows
+            your exact allowance.
+          </p>
+        </div>
+      </section>
+
+      <!-- ========================================================== LIMITS -->
+      <section class="help-section" id="limits">
+        <h2>What it will not do</h2>
+        <p class="lede">
+          Worth knowing before you go looking for them.
+        </p>
+
+        <div class="limits">
+          <h3>Guess at a card</h3>
+          <p>
+            The phone matches exactly or not at all. A card it cannot place is
+            offered as a list to choose from, or refused with the reason &mdash;
+            it never files a card it is not sure about. Fuzzy name matching
+            lives on the desktop, where a person is looking at the screen.
+          </p>
+
+          <h3>Read a foil off the card</h3>
+          <p>
+            The foil marker in the collector line is the one glyph the
+            recogniser reliably loses. That is why there is a switch rather
+            than a guess.
+          </p>
+
+          <h3>Work out which copy is in a deck when you own both</h3>
+          <p>
+            If you own a foil and a plain copy of the same printing and the
+            deck slot does not say which, the app cannot know. It takes the
+            lower price rather than the flattering one. Set the finish on the
+            slot to be exact.
+          </p>
+
+          <h3>Resume an interrupted index download</h3>
+          <p>
+            A bulk file has to be read from the start, so an interrupted
+            download starts that file again. The printings are fetched first,
+            so scanning works even if the second half is interrupted.
+          </p>
+
+          <h3>Record a card that does not exist</h3>
+          <p>
+            Once the index knows which printings come in foil, the app will not
+            let you record a foil of one that was never printed that way.
+          </p>
+        </div>
+      </section>
+
+      <!-- ========================================================= TROUBLE -->
+      <section class="help-section" id="trouble">
+        <h2>When something goes wrong</h2>
+
+        <div class="help-item">
+          <h3>A land will not scan</h3>
+          <p>
+            Basics need the artist line if the collector number will not read,
+            and that needs an index downloaded since the app learned to keep
+            artist names. Refresh the card index in Settings. The app says so
+            explicitly rather than blaming the card.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>A card scans as the wrong version</h3>
+          <p>
+            Open it in your collection and change the printing &mdash; the
+            quantity, finish, condition and collection all travel with it.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>Prices are zero, or missing</h3>
+          <p>
+            Prices only reach the index with a download. Use
+            <strong>Update prices now</strong> in Settings, which fetches the
+            cards you own and the cards in your decks in a couple of requests.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>The phone cannot see the PC</h3>
+          <p>
+            Settings shows what every address did when asked, rather than one
+            word. The usual causes: the desktop app is not running or phone
+            scanning is off, Tailscale is not running on the phone, or the PC
+            has moved to a different address since you paired.
+          </p>
+        </div>
+
+        <div class="help-item">
+          <h3>A scan says it read the wrong thing</h3>
+          <p>
+            When the app cannot place a card it quotes what it actually read
+            off it. That line is the useful thing to report &mdash; it is the
+            difference between a bad photograph and a card the index does not
+            have.
+          </p>
+        </div>
+      </section>
+
+      <p class="help-foot-links">
+        <a href="densa-deck.html">Product page</a> &middot;
+        <a href="densa-deck.html#faq">FAQ</a> &middot;
+        <a href="densa-deck.html#privacy">Privacy</a> &middot;
+        <a href="https://github.com/densanon-devs/densa-deck/issues">Report a problem</a>
+      </p>
+
+      <p class="help-foot-links" style="font-size:0.85rem;">
+        Card data and images from <a href="https://scryfall.com">Scryfall</a>.
+        Combo data via Commander Spellbook (MIT, &copy; 2023 Commander-Spellbook).
+        Densa Deck is unofficial Fan Content permitted under the Wizards of the
+        Coast Fan Content Policy. Not approved or endorsed by Wizards.
+      </p>
+
+    </div>
+  </main>
+
+  <script src="js/page-consistency.js"></script>
+  <script>
+    initPage({ depth: 0, title: 'Densa Deck — How it works' });
+  </script>
+</body>
+</html>
