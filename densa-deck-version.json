@@ -1,8 +1,8 @@
 {
   "version": "0.6.0",
   "releaseDate": "2026-08-11",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-Setup-0.6.0.exe",
-  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/latest/download/Densa-Deck-0.6.0-windows.zip",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/download/v0.6.0/Densa-Deck-Setup-0.6.0.exe",
+  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/download/v0.6.0/Densa-Deck-0.6.0-windows.zip",
   "changelog": [
     "Fixed: card downloads were broken. Scryfall changed their bulk-data API, so a fresh install couldn't get card data at all and an existing install could never update — no new sets, no ban-list refresh. The downloader now detects the file format instead of assuming it.",
     "The simulator now resolves what cards actually do. Previously a resolved spell went to the battlefield or graveyard and nothing else happened: Cultivate never fetched a land, Divination never drew a card, Sol Ring made one mana. 34 effect families are now modelled — ramp, draw, tutors, treasure, tokens, rituals, +1/+1 counters, proliferate, delve, convoke, cascade, self-mill, reanimation and more.",
