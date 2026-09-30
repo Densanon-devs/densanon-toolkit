@@ -1,0 +1,11 @@
+{
+  "version": "0.63.0",
+  "versionCode": 143,
+  "releaseDate": "2026-09-29",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/download/companion-v0.63.0/DensaDeck-Companion-0.63.0.apk",
+  "changelog": [
+    "The app now tells you when a new version is out (Settings -> App updates to switch it off).",
+    "Deck analysis as a readable breakdown, including combos, bracket fit and Rule 0 to share with your table; Pro adds goldfish and the matchup gauntlet. An unchanged deck keeps its analysis, even offline.",
+    "Pull down on any tab to sync; photos your PC couldn't identify can be reviewed; wishlist shows the card and lets you remove what you added."
+  ]
+}
