@@ -1,15 +1,11 @@
 {
-  "version": "0.7.0",
-  "releaseDate": "2026-09-29",
-  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/download/v0.7.0/Densa-Deck-Setup-0.7.0.exe",
-  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/download/v0.7.0/Densa-Deck-0.7.0-windows.zip",
+  "version": "0.7.1",
+  "releaseDate": "2026-10-23",
+  "downloadUrl": "https://github.com/Densanon-devs/densa-deck/releases/download/v0.7.1/Densa-Deck-Setup-0.7.1.exe",
+  "zipUrl": "https://github.com/Densanon-devs/densa-deck/releases/download/v0.7.1/Densa-Deck-0.7.1-windows.zip",
   "changelog": [
-    "Your collection: track every card you own by printing, finish and condition, with prices and value history, overlapping collections and a wishlist of what your decks need.",
-    "The phone app: an Android companion that scans cards, holds its own card index and builds decks with no PC, and pairs with this computer over your Wi-Fi (Tailscale optional).",
-    "The Build tab is laid out like MTG Arena: cards across the top, filters in the middle, your deck stacked by mana value along the bottom.",
-    "Card art everywhere: hover a card name to see the card, with thumbnails in lists. Official rulings in the card view, and a Buy on TCGplayer link.",
-    "Combo data downloads as one file: all ~111,000 Commander Spellbook combos in about a minute.",
-    "Fixed: double-clicking densa-deck.exe from the ZIP now opens the app; saving a new version no longer renames the deck; free users can save from Analyze (3 decks).",
-    "Settings -> App updates: switch this update check off, or check now. Nothing ever installs itself."
+    "Security update: refreshed the built-in certificate list to drop the eMudhra/emSign certificates whose keys leaked in October 2026. Densa Deck carries its own list, so Windows and browser updates do not cover it.",
+    "The update check and analyst model download now trust only that list, not Windows' root store, which still let the compromised certificates through.",
+    "No other changes from 0.7.0."
   ]
 }
